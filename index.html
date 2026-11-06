@@ -196,6 +196,12 @@
       <label class="field">Your mobile (for test calls)<input name="test_phone" placeholder="+971 50 123 4567"></label>
       <label class="field">Your hand-off hours (Dubai)<input name="handoff_hours" placeholder="Mon–Fri 10:00–17:00"></label>
       <label class="field">Meeting length (minutes)<input name="meeting_length" inputmode="numeric" placeholder="20"></label>
+      <div class="full eyebrow" style="margin-top:6px">Report revenue assumptions (shown on every client report)</div>
+      <label class="field">Currency<input name="currency" placeholder="AED"></label>
+      <label class="field">Value of a new dental patient (first year)<input name="rev_dental" inputmode="numeric" placeholder="1500"></label>
+      <label class="field">Value of a new aesthetic patient<input name="rev_aesthetic" inputmode="numeric" placeholder="2000"></label>
+      <label class="field">Value of a new medical patient<input name="rev_medical" inputmode="numeric" placeholder="700"></label>
+      <label class="field">Missed calls a week (typical clinic)<input name="missed_calls_week" inputmode="numeric" placeholder="10"></label>
       <div class="form-f"><button class="btn btn-primary" type="submit">Save pitch</button><small id="profileNote"></small></div>
     </div>
   </form>
@@ -245,6 +251,7 @@ const KIND_PILL = {warm:["Existing contact","p-info"],cold:["Prospecting","p-war
 const STATUS = {new:["Not called","p-mute"],referral:["Got decision-maker","p-info"],hot:["Hot","p-bad"],warm:["Warm","p-warn"],cold:["Cold","p-info"],booked:["Meeting confirmed","p-ok"],callback:["Call back","p-info"],dnc:["Do not call","p-bad"]};
 const MSTATUS = {proposed:["Awaiting confirmation","p-warn"],confirmed:["Confirmed","p-ok"],done:["Held","p-info"],no_show:["No-show","p-bad"],cancelled:["Cancelled","p-mute"]};
 const DEFAULT_PROFILE = {
+currency:"AED", rev_dental:"1500", rev_aesthetic:"2000", rev_medical:"700", missed_calls_week:"10",
 freelancer_name:"Maha", agent_name:"Noor", business_name:"Mizan AI Agents", freelancer_title:"marketing and AI agents for clinics",
 freelancer_service:"marketing (social media, ads, Google reviews, websites) and AI agents (24/7 AI receptionist on calls and WhatsApp, patient recall and aftercare calls)",
 freelancer_value:"help dental and medical clinics across the GCC answer every patient call and message and book more appointments",
@@ -497,9 +504,34 @@ const dots = cats.map((c,i)=>{ const [x,y] = pt(i,c[1]===null?0:c[1]); return `<
 return `<svg viewBox="-40 0 380 285" width="100%" style="max-width:360px" aria-label="Score by area">${grid}${axes}${target}${shape}${dots}</svg>`; }
 function bar(label, val, target, unit, max){ const pv = Math.min(100, (val||0)/max*100), pt = Math.min(100, target/max*100);
 return `<div class="r2-bar"><div class="r2-bar-l"><span>${esc(label)}</span><b>${val===null||val===undefined?"–":val+unit}</b></div><div class="r2-track"><i style="width:${pv}%"></i><em style="left:${pt}%" title="Target"></em></div><div class="r2-bar-t">Target ${target}${unit}</div></div>`; }
+const LEVERS = [
+[/receptionist|missed call|after-hours/i, "Every call and WhatsApp answered in seconds, day and night, and booked straight into the diary.", "Recovers patients who called and gave up.", "missed"],
+[/website|online booking|booking page/i, "Patients who find you online can see your doctors and book in two taps instead of having to call.", "Turns searchers into booked appointments.", 5],
+[/review|rating|reputation/i, "More recent 5★ reviews lift your rating, so more people choose you when they compare clinics on Google Maps.", "More clicks and calls from Maps.", 4],
+[/search ads|google ads/i, "Your clinic appears at the top when people search for the treatments you offer, at the moment they want to book.", "Steady flow of high-value enquiries (depends on budget).", 8],
+[/recall|reactivat/i, "Past patients get a friendly call when they're due for a check-up or have unfinished treatment.", "Revenue from patients you already have.", 5],
+[/whatsapp/i, "Patients message you the way they prefer and get an instant answer and booking.", "Fewer lost enquiries.", 3],
+[/instagram|tiktok|snapchat|social/i, "Regular content shows your doctors and results, building trust before patients even call.", "New patients who already trust you.", 3],
+[/aftercare|reminder|no-show/i, "Automatic reminders and check-ins cut no-shows and bring patients back for their next visit.", "Fuller diary, fewer empty slots.", 3],
+[/arabic|landing page|seo|content/i, "Pages in Arabic and English that rank for the treatments patients search for.", "More organic enquiries over time.", 3],
+];
+function revenueModel(p){
+const pr = profile || {}, cur = pr.currency || "AED";
+const value = Number(String(p.campaign==="aesthetic" ? pr.rev_aesthetic : p.campaign==="medical" ? pr.rev_medical : pr.rev_dental).replace(/[^\d.]/g,"")) || (p.campaign==="aesthetic"?2000:p.campaign==="medical"?700:1500);
+const missed = Number(String(pr.missed_calls_week||"10").replace(/[^\d.]/g,"")) || 10;
+const items = ((p.report && p.report.propose) || []).slice(0,6).map(String).map(t=>{
+const [name] = splitItem(t); const L = LEVERS.find(l=>l[0].test(t)) || [null, "Brings in more patients through a channel you don't use yet.", "More enquiries.", 3];
+const hi = L[3]==="missed" ? Math.max(3, Math.round(missed*4*0.3)) : L[3], lo = Math.max(1, Math.round(hi*0.5));
+return {name, how:L[1], result:L[2], lo, hi, revLo:lo*value, revHi:hi*value};
+});
+const tLo = items.reduce((a,i)=>a+i.lo,0), tHi = items.reduce((a,i)=>a+i.hi,0);
+return {cur, value, missed, items, tLo, tHi, revLo:tLo*value, revHi:tHi*value};
+}
+const money = (n, cur) => `${cur} ${Math.round(n).toLocaleString("en-US")}`;
 function reportHtml(p){
 const r = p.report, prof = {...(profile || {})}, w = r.website||{}, t = r.tracking||{}, so = r.social||{}, m = r.maps||{}, ps = r.pagespeed, ins = r.review_insights||{};
 if (/example\.com/i.test(prof.freelancer_email||"")) prof.freelancer_email = ""; if (/000 ?0000/.test(prof.freelancer_phone||"")) prof.freelancer_phone = "";
+const RM = revenueModel(p), maxRev = Math.max(1, ...RM.items.map(i=>i.revHi));
 const {cats, overall} = reportScores(p), g = grade(overall), dateS = new Date(r.scanned_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
 const loc = [p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(", ");
 const yes = v => v===true ? '<span class="r2-y">✓</span>' : v===false ? '<span class="r2-n">✕</span>' : '<span class="r2-u">–</span>';
@@ -532,6 +564,14 @@ const css = `.r2{font-family:"Figtree",-apple-system,"Segoe UI",Roboto,Arial,san
 .r2-tags{display:flex;flex-wrap:wrap;gap:6px}.r2-tag{font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px}.r2-tag.g{background:#E7F6EE;color:#1C7F4E}.r2-tag.b{background:#FDECEA;color:#B8362E}.r2-tag.k{background:#F1EFFE;color:#4C3FD1}.r2-tag.m{background:#F4F6F9;color:#5A6B7C}
 .r2-opps{display:grid;grid-template-columns:1fr 1fr;gap:12px}.r2-opp{border-radius:14px;padding:14px;background:linear-gradient(180deg,#F6F5FF,#fff);border:1px solid #E6E3FB;break-inside:avoid}.r2-opp .n{width:26px;height:26px;border-radius:8px;background:#4C3FD1;color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px;margin-bottom:6px}.r2-opp b{display:block;font-size:14px}.r2-opp span{font-size:12.5px;color:#5A6B7C}
 .r2-road{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;position:relative}.r2-ph{border-radius:14px;border:1px solid #E3E8EF;padding:14px;break-inside:avoid}.r2-ph .w{font-size:11.5px;font-weight:800;color:#8A3FD1;text-transform:uppercase;letter-spacing:.06em}.r2-ph b{display:block;font-size:15px;margin:2px 0 8px}.r2-ph ul{margin:0;padding-left:16px;font-size:12.5px;display:flex;flex-direction:column;gap:4px}
+.r2-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-bottom:14px}.r2-flow div{background:#F1EFFE;color:#3B2AA8;font-weight:700;font-size:12.5px;text-align:center;padding:10px 14px;position:relative;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%)}.r2-flow div:first-child{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%)}.r2-flow div:nth-child(2){background:#E6E2FD}.r2-flow div:nth-child(3){background:#D9D3FB}.r2-flow div:nth-child(4){background:#4C3FD1;color:#fff}
+.r2-rev{display:flex;flex-direction:column;gap:10px}.r2-rrow{display:grid;grid-template-columns:28px minmax(0,1.6fr) minmax(0,1fr);gap:12px;align-items:center;border:1px solid #E3E8EF;border-radius:12px;padding:12px 14px;break-inside:avoid}
+.r2-rrow .n{width:26px;height:26px;border-radius:8px;background:#4C3FD1;color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px}.r2-rrow b{font-size:14px}.r2-rrow p{margin:2px 0 0;font-size:12.5px;color:#5A6B7C}.r2-rrow .res{font-size:12px;color:#1C7F4E;font-weight:700;margin-top:3px}
+.r2-num{text-align:right}.r2-num .bk{font-size:12.5px;color:#5A6B7C}.r2-num .rv{font-size:15px;font-weight:800;color:#0C1B2A}.r2-num .rb{height:8px;border-radius:5px;background:#EEF1F6;margin-top:6px;overflow:hidden}.r2-num .rb i{display:block;height:100%;background:linear-gradient(90deg,#1C7F4E,#36B37E);border-radius:5px}
+.r2-total{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.r2-total div{border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#0F5132,#1C7F4E);color:#fff;break-inside:avoid}.r2-total span{display:block;font-size:12px;opacity:.8}.r2-total b{display:block;font-size:22px;margin-top:2px;letter-spacing:-.01em}.r2-total small{font-size:11.5px;opacity:.8}
+.r2-str{border-radius:14px;padding:14px 16px;background:#FFF8E6;border:1px solid #F5E2B0;font-size:13px;margin-top:14px;break-inside:avoid}.r2-str b{color:#8A5A00}
+.r2-asm{font-size:11.5px;color:#5A6B7C;margin-top:10px;border-top:1px dashed #E3E8EF;padding-top:8px}
+.r2-up{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.r2-up div{border-radius:12px;background:#E7F6EE;color:#0F5132;padding:10px 14px;font-size:13px}.r2-up b{font-size:16px;display:block}
 .r2-cta{margin-top:26px;border-radius:18px;background:#0C1B2A;color:#fff;padding:22px 26px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;break-inside:avoid}.r2-cta h3{margin:0;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:26px}.r2-cta p{margin:4px 0 0;opacity:.75;font-size:13px}.r2-cta .c{font-size:13.5px;text-align:right}
 .r2-foot{margin-top:14px;color:#8A97A6;font-size:11px}
 .r2-page{}
@@ -542,7 +582,8 @@ const body = `<div class="r2">
 <div class="r2-gauge">${svgGauge(overall)}<div class="r2-grade">Online health: ${esc(g[0])}</div></div></section>
 
 <section class="r2-sec"><h2>At a glance</h2><p class="r2-sub">How patients find, judge and book ${esc(p.company)} online today.</p>
-<div class="r2-sum">${esc(r.summary||"")}</div></section>
+<div class="r2-sum">${esc(r.summary||"")}</div>
+${RM.items.length?`<div class="r2-up"><div><span>Estimated extra bookings</span><b>${RM.tLo}–${RM.tHi} a month</b></div><div><span>Estimated extra revenue</span><b>${money(RM.revLo,RM.cur)}–${money(RM.revHi,RM.cur).replace(RM.cur+" ","")} a month</b></div><div><span>Over a year</span><b>${money(RM.revLo*12,RM.cur)}–${money(RM.revHi*12,RM.cur).replace(RM.cur+" ","")}</b></div></div>`:""}</section>
 
 <section class="r2-sec"><h2>Scores by area</h2><p class="r2-sub">Each area scored 0–100 from public checks. The dashed green line on the chart is the level we aim for (85).</p>
 <div class="r2-rings">${cats.map(([l,v,c])=>`<div class="r2-ring">${svgRing(v,c,80)}<b>${esc(l)}</b><span style="color:${grade(v)[1]}">${esc(grade(v)[0])}</span></div>`).join("")}</div>
@@ -571,6 +612,13 @@ ${reviews.length||typeof m.rating==="number"?`<section class="r2-sec"><h2>What p
 <section class="r2-sec r2-page"><h2>Biggest opportunities</h2><p class="r2-sub">What would bring the most new and returning patients, in order.</p>
 <div class="r2-opps">${opps.slice(0,6).map((t,i)=>{ const [a,b] = splitItem(t); return `<div class="r2-opp"><div class="n">${i+1}</div><b>${esc(a)}</b>${b?`<span>${esc(b)}</span>`:""}</div>`; }).join("")}</div></section>
 
+${RM.items.length?`<section class="r2-sec"><h2>From opportunity to revenue</h2><p class="r2-sub">How each opportunity turns into more booked patients and more revenue for ${esc(p.company)}.</p>
+<div class="r2-flow"><div>Opportunity</div><div>What changes for patients</div><div>More bookings</div><div>More revenue</div></div>
+<div class="r2-rev">${RM.items.map((i,k)=>`<div class="r2-rrow"><div class="n">${k+1}</div><div><b>${esc(i.name)}</b><p>${esc(i.how)}</p><div class="res">→ ${esc(i.result)}</div></div>
+<div class="r2-num"><div class="bk">+${i.lo}–${i.hi} bookings a month</div><div class="rv">${money(i.revLo,RM.cur)}–${money(i.revHi,RM.cur).replace(RM.cur+" ","")}</div><div class="bk">a month</div><div class="rb"><i style="width:${(i.revHi/maxRev*100).toFixed(0)}%"></i></div></div></div>`).join("")}</div>
+<div class="r2-total"><div><span>Extra bookings</span><b>${RM.tLo}–${RM.tHi}</b><small>a month, all opportunities together</small></div><div><span>Extra revenue</span><b>${money(RM.revLo,RM.cur)}–${money(RM.revHi,RM.cur).replace(RM.cur+" ","")}</b><small>a month</small></div><div><span>Over 12 months</span><b>${money(RM.revLo*12,RM.cur)}–${money(RM.revHi*12,RM.cur).replace(RM.cur+" ","")}</b><small>if results hold steady</small></div></div>
+${(ins.praise||[]).length?`<div class="r2-str"><b>Your strengths become your growth engine.</b> Patients already praise ${esc(ins.praise.slice(0,3).join(", ").toLowerCase())}. Every channel above puts that in front of new patients, so the people who book are likely to have the same great experience, return, and leave the next 5★ review.</div>`:""}
+<p class="r2-asm">Illustrative estimate, not a guarantee. Based on: average value of a new ${p.campaign==="aesthetic"?"aesthetic":p.campaign==="medical"?"medical":"dental"} patient of ${money(RM.value,RM.cur)} in their first year; about ${RM.missed} missed calls a week, with 3 in 10 of those callers likely to book if answered; conservative (low) and expected (high) uptake for each channel. Channels overlap, so ranges are kept deliberately modest. Ads results depend on budget. We'll replace these with your real numbers (call volume, treatment mix, average spend) in our first meeting.</p></section>`:""}
 <section class="r2-sec"><h2>Quick wins on what you already have</h2><p class="r2-sub">Improvements that make your current website, Google profile and ads work harder.</p>
 <div class="r2-card"><ul class="r2-ck" style="grid-template-columns:1fr">${quick.slice(0,8).map(x=>`<li><span class="r2-y">→</span> ${esc(x)}</li>`).join("")||"<li>No major issues found.</li>"}</ul></div></section>
 
