@@ -12,7 +12,21 @@
 .acc-grid table{min-width:560px}.acc-grid td,.acc-grid th{padding:9px 12px}.acc-grid tbody tr{cursor:default}.acc-grid tfoot td{font-weight:800;border-top:1px solid var(--line2)}
 .sync{padding:16px;display:flex;flex-direction:column;gap:12px;font-size:13.5px}.sync .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.sync .row span{color:var(--muted)}.sync .btns{display:flex;gap:8px;flex-wrap:wrap}.qbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--sunk)}.qbar i{display:block;height:100%}
 .qflag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px;white-space:nowrap}.qf-ok{background:var(--ok-soft);color:var(--ok)}.qf-warn{background:var(--warn-soft);color:var(--warn)}.qf-bad{background:var(--bad-soft);color:var(--bad)}
-[hidden]{display:none!important}#calls .wrap{max-width:1720px}#calls .work{grid-template-columns:minmax(0,1fr) 380px}@media (max-width:1320px){#calls .work{grid-template-columns:minmax(0,1fr)}#calls .call{position:static;max-height:none}}#queue td:nth-child(3){min-width:150px}#queue tr[data-id] td:last-child{white-space:nowrap}#queue tr.stx-row td{white-space:normal}.stx{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr))}.stx-c{overflow-wrap:anywhere}.stx-c li,.stx-c p,.nd-ul li{white-space:normal}.stx-wide{grid-column:1/-1}@media (max-width:1300px){.stx{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.stx{grid-template-columns:minmax(0,1fr)}}#queue .st{max-width:520px}.more-row td{text-align:center;cursor:default}@media (max-width:520px){#winPill{display:none}.bar-r{gap:6px}}</style>
+[hidden]{display:none!important}
+#queue{font-size:13px}#calls table{min-width:1180px}.qc{min-width:170px;max-width:260px}.qc-have{min-width:200px}.qc-rev{min-width:130px}
+.ql{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}.ql li{font-size:12.5px;line-height:1.35;padding-left:12px;position:relative}.ql li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--c,var(--brand))}
+.ql.prop li{--c:var(--brand)}.ql.enh li{--c:var(--warn)}.ql li b{font-weight:700}.qmore{font-size:11.5px;color:var(--muted)}
+.chips2{display:flex;flex-wrap:wrap;gap:4px}.c2{font-size:11.5px;font-weight:700;border-radius:7px;padding:2px 7px;white-space:nowrap}.c2.y{background:var(--ok-soft);color:var(--ok)}.c2.n{background:var(--bad-soft);color:var(--bad)}.c2.u{background:var(--sunk);color:var(--muted)}
+.stars{font-family:var(--f-mono);font-weight:600;font-size:13px}.stars i{font-style:normal;color:#E0A100}.revtag{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-top:4px}.revtag.bad{background:var(--bad-soft);color:var(--bad)}.revtag.good{background:var(--ok-soft);color:var(--ok)}
+.rpt{grid-column:1/-1;background:var(--solid);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.rpt-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}.rpt-h h4{margin:0;font-size:15px}.rpt-sum{font-size:13.5px;line-height:1.5}
+.rpt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}@media (max-width:1100px){.rpt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:600px){.rpt-grid{grid-template-columns:minmax(0,1fr)}}
+.rp{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0;overflow-wrap:anywhere}.rp h5{margin:0;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.ck{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:12.5px}.ck li{display:flex;gap:6px}.ck .y{color:var(--ok);font-weight:800}.ck .n{color:var(--bad);font-weight:800}.ck .u{color:var(--muted);font-weight:800}
+.rv{font-size:12.5px;border-left:2px solid var(--line2);padding-left:8px}.rv .muted{font-size:11.5px}
+.score3{display:flex;gap:8px}.score3 div{flex:1;text-align:center;border-radius:8px;background:var(--sunk);padding:6px}.score3 b{display:block;font-family:var(--f-mono);font-size:18px}.score3 span{font-size:11px;color:var(--muted)}
+.pe{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media (max-width:700px){.pe{grid-template-columns:minmax(0,1fr)}}
+#reviews table{min-width:900px}#reviews tbody tr.rv-open td{background:var(--brand-soft)}.rv-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:4px 0}@media (max-width:800px){.rv-list{grid-template-columns:minmax(0,1fr)}}#calls .wrap{max-width:1760px}#calls .work{grid-template-columns:minmax(0,1fr) 380px}@media (max-width:1600px){#calls .work{grid-template-columns:minmax(0,1fr)}#calls .call{position:static;max-height:none}}#queue td:nth-child(3){min-width:150px}#queue tr[data-id] td:last-child{white-space:nowrap}#queue tr.stx-row td{white-space:normal}.stx{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr))}.stx-c{overflow-wrap:anywhere}.stx-c li,.stx-c p,.nd-ul li{white-space:normal}.stx-wide{grid-column:1/-1}@media (max-width:1300px){.stx{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.stx{grid-template-columns:minmax(0,1fr)}}#queue .st{max-width:520px}.more-row td{text-align:center;cursor:default}@media (max-width:520px){#winPill{display:none}.bar-r{gap:6px}}</style>
 <canvas id="bgfx" aria-hidden="true"></canvas>
 <div id="auth" hidden><form class="glass box" id="authForm"><div class="eyebrow">Clinic Growth Caller</div><h2>Sign in</h2><p>Private console. Only the owner can sign in.</p>
 <label class="field">Email<input id="authEmail" type="email" required autocomplete="username" placeholder="you@example.com"></label>
@@ -36,7 +50,7 @@
   </a>
   <span class="vsep" aria-hidden="true"></span>
   <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>GCC clinics</small></div>
-  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#calls">Calls</a><a href="#meetings">Meetings</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a></nav>
+  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#calls">Calls</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a></nav>
   <div class="bar-r"><span class="muted" id="whoami" style="font-size:12px"></span><button type="button" class="btn btn-sm btn-ghost" id="signOutBtn">Sign out</button><span class="pill p-ok" id="winPill"><span class="d"></span>Calling open</span><span class="pill p-mute" id="dbPill" title="Where your leads are saved"><span class="d"></span>Sample data</span></div>
 </div></header>
 <div class="testbar" id="testBar" hidden><div class="wrap"><span>Test mode: sign-in is off. Only your Netlify login protects this page.</span><button type="button" class="btn btn-sm" id="lockOpen">Lock it with a password</button></div></div>
@@ -81,7 +95,7 @@
     <div class="glass">
       <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button></div>
       <div class="opps" id="opps"></div>
-      <div class="tbl"><table><thead><tr><th>Clinic</th><th>Status · what they have, what to pitch and sell, what to do</th><th>Rule check</th><th></th></tr></thead><tbody id="queue"></tbody></table></div>
+      <div class="tbl"><table><thead><tr><th>Clinic</th><th>Has now</th><th>Propose</th><th>Enhance</th><th>Reviews</th><th>Rule check</th><th></th></tr></thead><tbody id="queue"></tbody></table></div>
     </div>
     <aside class="glass call" aria-label="Live test call">
       <div class="callee" id="callee"></div>
@@ -114,6 +128,12 @@
     <div class="card-h"><div><h3>Demo meetings</h3><small id="mtgSum"></small></div></div>
     <div class="tbl"><table><thead><tr><th>Clinic</th><th>When (clinic time)</th><th>Status</th><th style="text-align:right">Send</th></tr></thead><tbody id="mtgs"></tbody></table></div>
   </div>
+</div></section>
+<section class="blk" id="reviews"><div class="wrap">
+  <div class="sec-h"><div><h2>Reviews</h2><p>Google Maps rating and latest reviews for every account, with what patients praise and complain about. Complaints are your best opening line.</p></div>
+    <div class="leadbar"><select id="revFilter" class="btn btn-sm" aria-label="Show"><option value="">All with Google data</option><option value="low">Rated below 4.5</option><option value="few">Under 100 reviews</option><option value="complaints">Has complaints</option><option value="phone">Complaints about phones</option><option value="none">Not scanned yet</option></select></div></div>
+  <div class="acc-kpis" id="revKpis" style="margin-bottom:14px"></div>
+  <div class="glass"><div class="tbl"><table><thead><tr><th>Clinic</th><th>Rating</th><th>Reviews</th><th>Latest review</th><th>What patients say</th><th></th></tr></thead><tbody id="revRows"></tbody></table></div></div>
 </div></section>
 <section class="blk" id="leads"><div class="wrap">
   <div class="sec-h"><div><h2>Clinics</h2><p>Add clinics one by one, paste a list from a spreadsheet or Google Maps export, and export your pipeline.</p></div>
@@ -359,6 +379,116 @@ const cls = v===true?"hv-y":v===false?"hv-n":"hv-u", mark = v===true?"✓":v===f
 return editable ? `<button type="button" class="hv ${cls}" data-hv="${k}" title="Click to change: has it / missing / not checked">${mark} ${label}</button>`
 : `<span class="hv ${cls}">${mark} ${label}</span>`; }).join("");
 }
+// ---- clear queue columns ----
+const CK = {true:["y","✓"], false:["n","✕"], null:["u","?"]};
+function haveCell(p){
+const r = p.report;
+if (r && r.have && r.have.length){
+const miss = []; const h = haveMap(p);
+for (const [k,l] of [["website","Website"],["booking","Online booking"],["whatsapp","WhatsApp"],["instagram","Instagram"]]) if (h[k]===false) miss.push(l);
+return `<div class="chips2">${r.have.slice(0,6).map(x=>`<span class="c2 y">✓ ${esc(String(x).replace(/ \(.*\)$/,""))}</span>`).join("")}${miss.map(x=>`<span class="c2 n">✕ ${esc(x)}</span>`).join("")}</div>${r.have.length>6?`<span class="qmore">+${r.have.length-6} more</span>`:""}`;
+}
+const h = haveMap(p), known = HAVE_KEYS.filter(([k])=>h[k]!==null);
+if (!known.length) return `<span class="muted" style="font-size:12.5px">Not scanned yet</span><br><button type="button" class="btn btn-sm" data-deep="${esc(p.id)}" style="margin-top:6px">Full scan</button>`;
+return `<div class="chips2">${known.map(([k,l])=>`<span class="c2 ${CK[h[k]][0]}">${CK[h[k]][1]} ${esc(l)}</span>`).join("")}</div>`;
+}
+function proposeList(p){
+if (p.report && p.report.propose && p.report.propose.length) return p.report.propose.map(String);
+const n = needsFor(p); const hi = [...n.ai, ...n.marketing].filter(i=>i.pri==="high").map(i=>i.name.replace(/ \(.*\)/,""));
+return hi.length ? hi : n.ai.slice(0,2).map(i=>i.name.replace(/ \(.*\)/,""));
+}
+function splitItem(t){ const i = t.indexOf(":"); return i>0 && i<60 ? [t.slice(0,i), t.slice(i+1).trim()] : [t, ""]; }
+function proposeCell(p){
+const L = proposeList(p).slice(0,3);
+return L.length ? `<ul class="ql prop">${L.map(t=>{ const [a,b]=splitItem(t); return `<li><b>${esc(a)}</b>${b?`<span class="muted"> · ${esc(b.length>70?b.slice(0,68)+"…":b)}</span>`:""}</li>`; }).join("")}</ul>` : `<span class="muted">Ask on the call</span>`;
+}
+function enhanceCell(p){
+const r = p.report;
+if (!r) return `<span class="muted" style="font-size:12.5px">Run a full scan to see what to improve</span>`;
+const L = (r.enhance||[]).slice(0,3);
+return L.length ? `<ul class="ql enh">${L.map(t=>`<li>${esc(String(t).length>90?String(t).slice(0,88)+"…":t)}</li>`).join("")}</ul>${(r.enhance||[]).length>3?`<span class="qmore">+${r.enhance.length-3} more in the report</span>`:""}` : `<span class="muted">Nothing major found</span>`;
+}
+function ratingOf(p){ const m = p.report && p.report.maps; const a = p.audit||{};
+if (m && typeof m.rating==="number") return {r:m.rating, n:m.count||0, url:m.url};
+if (typeof a.gRating==="number") return {r:a.gRating, n:a.gReviews||0, url:null};
+return null; }
+function reviewsCell(p){
+const g = ratingOf(p), ins = (p.report && p.report.review_insights) || {};
+if (!g) return `<span class="muted" style="font-size:12.5px">${p.report && p.report.maps && p.report.maps.skipped ? "Needs Google Maps key" : "No Maps data yet"}</span>`;
+const c = (ins.complaints||[])[0], pr = (ins.praise||[])[0];
+return `<span class="stars"><i>★</i> ${g.r.toFixed(1)}</span> <span class="muted" style="font-size:12px">· ${g.n.toLocaleString()} reviews</span>${c?`<br><span class="revtag bad">${esc(c)}</span>`:pr?`<br><span class="revtag good">${esc(pr)}</span>`:""}`;
+}
+// ---- full report ----
+const tick = v => v===true?`<span class="y">✓</span>`:v===false?`<span class="n">✕</span>`:`<span class="u">?</span>`;
+function reportSections(p){
+const r = p.report, w = r.website||{}, t = r.tracking||{}, s = r.social||{}, m = r.maps||{}, ps = r.pagespeed;
+const site = w.loaded ? `<ul class="ck">
+<li>${tick(w.https)} HTTPS</li><li>${tick(w.titleOk)} Title with treatment + city <span class="muted">${esc((w.title||"").slice(0,60))}</span></li>
+<li>${tick(!!w.metaDescription)} Meta description</li><li>${tick(!!w.h1)} H1 headline</li><li>${tick(w.viewport)} Mobile friendly tag</li>
+<li>${tick(!!(w.schema&&w.schema.length))} Schema ${esc((w.schema||[]).join(", "))}</li><li>${tick(w.sitemap)} sitemap.xml</li><li>${tick(w.robots)} robots.txt</li>
+<li>${tick(w.arabic)} Arabic content</li><li>${tick(w.blog)} Blog / articles</li><li>${tick(w.booking==="online")} Online booking ${w.booking==="form"?'<span class="muted">(form only)</span>':""}</li><li>${tick(w.noindex?false:true)} Indexable by Google</li></ul>`
+: `<p class="muted">${w.url?`Website didn't load (${esc(w.error||"error")}).`:"No website listed."}</p>`;
+const speed = ps && !ps.error ? `<div class="score3"><div><b>${ps.performance}</b><span>Mobile speed</span></div><div><b>${ps.seo}</b><span>SEO score</span></div><div><b>${ps.accessibility}</b><span>Accessibility</span></div></div><p class="muted" style="font-size:12px">Largest paint ${esc(ps.lcp||"–")} · Layout shift ${esc(ps.cls||"–")} (Google PageSpeed, mobile)</p>`
+: `<p class="muted">${ps&&ps.error?esc(ps.error):w.loaded?"Not measured.":"No website to measure."}</p>`;
+const ads = `<ul class="ck"><li>${tick(w.loaded?!!t.googleAds:null)} Google Ads tag on site</li><li>${tick(w.loaded?!!t.ga4:null)} Google Analytics 4</li><li>${tick(w.loaded?!!t.gtm:null)} Google Tag Manager</li>
+<li>${tick(w.loaded?!!t.searchConsole:null)} Google Search Console verified</li><li>${tick(w.loaded?!!t.metaPixel:null)} Meta pixel</li><li>${tick(w.loaded?!!t.tiktokPixel:null)} TikTok pixel</li><li>${tick(w.loaded?!!t.snapPixel:null)} Snapchat pixel</li></ul>
+<p class="muted" style="font-size:12px">Ad spend and Search Console data are private to the clinic. Check live ads: <a href="${esc(r.links?.google_ads_transparency||"#")}" target="_blank" rel="noopener">Google Ads</a> · <a href="${esc(r.links?.meta_ad_library||"#")}" target="_blank" rel="noopener">Meta ads</a></p>`;
+const SOC = [["instagram","Instagram"],["facebook","Facebook"],["tiktok","TikTok"],["snapchat","Snapchat"],["youtube","YouTube"],["linkedin","LinkedIn"],["x","X"],["whatsapp","WhatsApp"]];
+const social = `<ul class="ck">${SOC.map(([k,l])=>`<li>${tick(w.loaded||s[k]?!!s[k]:null)} ${s[k]?`<a href="${esc(s[k])}" target="_blank" rel="noopener">${l}</a>`:l}</li>`).join("")}</ul><p class="muted" style="font-size:12px">Found from links on their website. Follower counts need the platforms' own tools.</p>`;
+const maps = m.skipped ? `<p class="muted">${esc(m.skipped)}</p>` : m.error ? `<p class="muted">${esc(m.error)}</p>` :
+`<div><span class="stars"><i>★</i> ${m.rating!=null?m.rating.toFixed(1):"–"}</span> <span class="muted">· ${(m.count||0).toLocaleString()} reviews · ${m.photos||0} photos${m.status&&m.status!=="OPERATIONAL"?` · <b style="color:var(--bad)">${esc(m.status)}</b>`:""}</span></div>
+${m.phoneMatches===false?`<p class="muted" style="font-size:12px">Phone on Google differs from ours; confirm it's the same clinic.</p>`:""}
+${(m.reviews||[]).slice(0,2).map(v=>`<div class="rv"><b>${"★".repeat(v.rating||0)}</b> <span class="muted">${esc(v.when||"")}</span><br>${esc((v.text||"").slice(0,180))}${(v.text||"").length>180?"…":""}</div>`).join("")}
+${m.url?`<a href="${esc(m.url)}" target="_blank" rel="noopener" style="font-size:12.5px">Open on Google Maps</a>`:""}`;
+const kws = (r.keywords||[]);
+const kw = `<ul class="ck">${kws.slice(0,10).map(k=>`<li>${tick(w.loaded?!!k.onSite:null)} ${esc(k.keyword)}</li>`).join("")}</ul><p class="muted" style="font-size:12px">✓ = their website mentions it. Search volumes need Google Ads Keyword Planner.</p>`;
+return {site, speed, ads, social, maps, kw};
+}
+function reportCard(p){
+const r = p.report;
+if (!r) return `<div class="rpt"><div class="rpt-h"><div><div class="eyebrow">Clinic report</div><h4>No full scan yet</h4></div><button type="button" class="btn btn-sm btn-primary" data-deep="${esc(p.id)}">Run full scan</button></div>
+<p class="muted" style="font-size:13px">Checks the website and SEO, Google Ads and tracking tags, social profiles, keywords, mobile speed, and Google Maps rating and reviews, then writes a short report with what to propose and what to improve.</p></div>`;
+const S = reportSections(p), ins = r.review_insights||{};
+return `<div class="rpt"><div class="rpt-h"><div><div class="eyebrow">Clinic report · ${esc(r.generated_by||"")} · ${new Date(r.scanned_at).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</div><h4>${esc(p.company)}</h4></div>
+<div class="leadbar"><button type="button" class="btn btn-sm" data-deep="${esc(p.id)}">Re-scan</button><button type="button" class="btn btn-sm btn-primary" data-dl="${esc(p.id)}">Download report</button></div></div>
+<p class="rpt-sum">${esc(r.summary||"")}</p>${r.opener?`<p class="muted" style="font-size:12.5px"><b>Opener for the call:</b> ${esc(r.opener)}</p>`:""}
+${r.ai_error?`<p class="muted" style="font-size:12px">ChatGPT not used: ${esc(r.ai_error)}</p>`:""}
+<div class="pe"><div class="rp"><h5>Propose (what they're missing)</h5><ul class="ql prop">${(r.propose||[]).map(t=>{const [a,b]=splitItem(String(t));return `<li><b>${esc(a)}</b>${b?` · ${esc(b)}`:""}</li>`;}).join("")}</ul></div>
+<div class="rp"><h5>Enhance (what they have, done better)</h5><ul class="ql enh">${(r.enhance||[]).map(t=>`<li>${esc(t)}</li>`).join("")||"<li>Nothing major found</li>"}</ul></div></div>
+<div class="rpt-grid"><div class="rp"><h5>Website & SEO</h5>${S.site}</div><div class="rp"><h5>Speed (Google PageSpeed)</h5>${S.speed}</div><div class="rp"><h5>Google Ads, Analytics & Search Console</h5>${S.ads}</div>
+<div class="rp"><h5>Social media</h5>${S.social}</div><div class="rp"><h5>Google Maps & reviews</h5>${S.maps}${(ins.complaints||[]).length?`<p style="font-size:12.5px"><b style="color:var(--bad)">Complaints:</b> ${esc(ins.complaints.join(", "))}</p>`:""}${(ins.praise||[]).length?`<p style="font-size:12.5px"><b style="color:var(--ok)">Praise:</b> ${esc(ins.praise.join(", "))}</p>`:""}</div><div class="rp"><h5>Keywords</h5>${S.kw}</div></div></div>`;
+}
+function reportHtml(p){
+const r = p.report, S = reportSections(p), ins = r.review_insights||{}, prof = profile || {};
+const css = `body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#0C1B2A;max-width:900px;margin:24px auto;padding:0 20px;line-height:1.5}h1{font-size:26px;margin:0}h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:#4C3FD1;margin:22px 0 8px}
+.meta{color:#5A6B7C;font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.box{border:1px solid #DCE4EC;border-radius:10px;padding:12px}ul{margin:0;padding-left:18px}.ck{list-style:none;padding:0}.ck li{display:flex;gap:6px}.y{color:#1C7F4E;font-weight:800}.n{color:#B8362E;font-weight:800}.u{color:#5A6B7C}
+.score3{display:flex;gap:8px}.score3 div{flex:1;text-align:center;background:#F3F6F9;border-radius:8px;padding:6px}.score3 b{display:block;font-size:20px}.score3 span,.muted{color:#5A6B7C;font-size:12px}.stars i{color:#E0A100;font-style:normal}.rv{border-left:2px solid #C8D4DF;padding-left:8px;margin:6px 0;font-size:13px}
+.bar{display:flex;justify-content:space-between;align-items:center}button{background:#4C3FD1;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}@media print{button{display:none}}`;
+return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.company)} — growth report</title><style>${css}</style></head><body>
+<div class="bar"><div><div class="meta">${esc(prof.business_name||"Growth report")} · ${new Date(r.scanned_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</div><h1>${esc(p.company)}</h1><div class="meta">${esc([p.industry,p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(" · "))}</div></div><button onclick="print()">Save as PDF</button></div>
+<h2>Summary</h2><p>${esc(r.summary||"")}</p>
+<div class="grid"><div class="box"><h2 style="margin-top:0">What they have now</h2><ul>${(r.have||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+<div class="box"><h2 style="margin-top:0">What we propose</h2><ul>${(r.propose||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div>
+<h2>What we can enhance</h2><ul>${(r.enhance||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+<div class="grid"><div class="box"><h2 style="margin-top:0">Website & SEO</h2>${S.site}</div><div class="box"><h2 style="margin-top:0">Mobile speed</h2>${S.speed}</div>
+<div class="box"><h2 style="margin-top:0">Ads & tracking</h2>${S.ads}</div><div class="box"><h2 style="margin-top:0">Social media</h2>${S.social}</div>
+<div class="box"><h2 style="margin-top:0">Google Maps & reviews</h2>${S.maps}${(ins.complaints||[]).length?`<p><b>Complaints:</b> ${esc(ins.complaints.join(", "))}</p>`:""}${(ins.praise||[]).length?`<p><b>Praise:</b> ${esc(ins.praise.join(", "))}</p>`:""}</div>
+<div class="box"><h2 style="margin-top:0">Keywords to target</h2><ul>${(r.keyword_ideas||[]).slice(0,10).map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div></div>
+<p class="muted" style="margin-top:24px">Based on public information: the clinic's website, Google PageSpeed and Google Maps. ${esc(r.generated_by||"")}.</p></body></html>`;
+}
+function downloadReport(p){
+if (!p.report){ toast("Run a full scan first."); return; }
+const blob = new Blob([reportHtml(p)], {type:"text/html"}), url = URL.createObjectURL(blob);
+const w = window.open(url, "_blank");
+if (!w){ const a = document.createElement("a"); a.href = url; a.download = (p.company||"clinic").replace(/[^\w\- ]+/g,"").trim()+" report.html"; document.body.appendChild(a); a.click(); a.remove(); }
+setTimeout(()=>URL.revokeObjectURL(url), 60000);
+}
+async function deepScan(p, btn){
+if (btn){ btn.disabled = true; btn.textContent = "Scanning… (up to a minute)"; }
+const { data, error } = await sb.functions.invoke("deep-scan", {body:{lead_id:p.id}});
+if (error){ const j = await fnError(error); toast(`Couldn't scan ${p.company}: ${j.message||j.error||"error"}`); if (btn){ btn.disabled = false; btn.textContent = "Full scan"; } return false; }
+p.report = data.report; p.audit = data.audit; renderAll(); toast(`${p.company}: report ready.`); return true;
+}
 function statusCell(p){
 const s = positioning(p);
 return `<div class="st"><div class="hvrow">${haveChips(p,false)}</div>
@@ -367,10 +497,13 @@ return `<div class="st"><div class="hvrow">${haveChips(p,false)}</div>
 <div class="st-l muted"><b>Next</b> ${esc(s.next)}</div></div>`;
 }
 function statusDetail(p){
+return `<div class="stx">${reportCard(p)}${p.report ? needsCard(p) : statusDetailCards(p)}</div>`;
+}
+function statusDetailCards(p){
 const s = positioning(p), a = p.audit||{};
 const canCheck = p.website && !/instagram\.com|facebook\.com/i.test(p.website);
-return `<div class="stx">
-<div class="stx-c"><div class="eyebrow">What they have now</div>
+return `
+<div class="stx-c"><div class="eyebrow">Quick checklist (click to correct)</div>
 <div class="hvrow">${haveChips(p,true)}</div>
 <p class="muted" style="font-size:12px;margin-top:6px">${a.checkedAt ? `${a.source==="manual"?"Edited by you":"Scanned"} ${new Date(a.checkedAt).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}${a.services?` · ${esc(a.services)}`:""}${a.note?` · ${esc(a.note)}`:""}` : "Not scanned yet. Click a chip to set it, or scan the clinic."}</p>
 <div class="leadbar" style="margin-top:8px"><button type="button" class="btn btn-sm" data-audit="${esc(p.id)}" title="Website, Google Maps rating and Google Ads">${a.checkedAt&&a.source!=="manual"?"Re-scan":"Scan clinic"}</button>${canCheck?`<a class="btn btn-sm btn-ghost" href="${esc(p.website)}" target="_blank" rel="noopener">Open site</a>`:`<span class="muted" style="font-size:12px">${p.website?"Only a social profile listed.":(haveMap(p).website?"Website noted, no link saved.":"No website listed.")}</span>`}</div>
@@ -385,11 +518,14 @@ ${s.gaps.length?`<ul class="stx-ul">${s.gaps.map(g=>`<li>${esc(g)}</li>`).join("
 </div>
 <div class="stx-c"><div class="eyebrow">What needs to be done</div>
 <p style="font-size:13.5px">${esc(s.next)}</p>
-</div>${needsCard(p)}</div>`;
+</div>${needsCard(p)}`;
 }
 function positioningForPrompt(p){
 const s = positioning(p), h = s.h;
 const has = HAVE_KEYS.filter(([k])=>h[k]===true).map(([,l])=>l), missing = HAVE_KEYS.filter(([k])=>h[k]===false).map(([,l])=>l);
+const r = p.report;
+if (r && r.summary){ const ins = r.review_insights||{};
+return `Report: ${r.summary} What they have: ${(r.have||[]).slice(0,6).join(", ")||"unknown"}. Propose first: ${(r.propose||[]).slice(0,3).join("; ")}.${(ins.complaints||[]).length?` Their Google reviews mention: ${ins.complaints.slice(0,2).join(", ")}.`:""} Suggested opener: ${r.opener||""} Mention gaps gently, as observations, never as criticism.`.slice(0,900); }
 return `What they have now: ${has.length?has.join(", "):"unknown"}. Missing: ${missing.length?missing.join(", "):"unknown"}.
 Lead with: ${s.pitch} — ${s.angle} Gaps you may mention gently (never as criticism, as an observation): ${s.gaps.slice(0,3).join("; ")||"none known, ask how they book patients today"}.`;
 }
@@ -486,12 +622,12 @@ const status = g.ok ? `<span class="pill p-ok"><span class="d"></span>Cleared to
 `<div class="reasons">${g.fails.map(f=>`<span class="pill ${/outside|tried|Weekly|spoke|Weekend|booked/i.test(f.text)?"p-warn":"p-bad"}">${esc(f.text)}</span>`).join("")}</div>`;
 return `<tr data-id="${esc(p.id)}" class="${p.id===selectedId?"sel":""}">
 <td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.company)}</b>${qflag(p)}<small>${esc(isPerson(p)?p.name+(p.role?", "+p.role:""):(p.role||"Clinic manager"))}</small><small class="mono">${esc(p.phone)} · ${p.lang==="ar"?"Arabic":"English"} · ${esc(p.city?p.city+", ":"")}${(MARKETS[p.market]||MARKETS.AE).name}</small></div></div></td>
-<td>${statusCell(p)}</td>
+<td class="qc qc-have">${haveCell(p)}</td><td class="qc">${proposeCell(p)}</td><td class="qc">${enhanceCell(p)}</td><td class="qc qc-rev">${reviewsCell(p)}</td>
 <td>${status}<span class="cellsub"><span class="pill ${STATUS[p.status||"new"][1]}">${STATUS[p.status||"new"][0]}</span></span></td>
 <td style="text-align:right"><button type="button" class="btn btn-sm ${g.ok?"btn-primary":""}" data-call="${esc(p.id)}" ${call||!g.ok?"disabled":""}>${ICON.phone}Call</button></td></tr>
-${p.id===selectedId?`<tr class="stx-row"><td colspan="4">${statusDetail(p)}</td></tr>`:""}`;
-}).join("") : `<tr><td colspan="4" class="muted" style="cursor:default">No clinics in this campaign yet. Add some under Clinics.</td></tr>`)
-+ (graded.length > queueLimit ? `<tr class="more-row"><td colspan="4"><button type="button" class="btn btn-sm" data-more>Show ${Math.min(60, graded.length-queueLimit)} more of ${graded.length-queueLimit}</button></td></tr>` : "");
+${p.id===selectedId?`<tr class="stx-row"><td colspan="7">${statusDetail(p)}</td></tr>`:""}`;
+}).join("") : `<tr><td colspan="7" class="muted" style="cursor:default">No clinics in this campaign yet. Add some under Clinics.</td></tr>`)
++ (graded.length > queueLimit ? `<tr class="more-row"><td colspan="7"><button type="button" class="btn btn-sm" data-more>Show ${Math.min(60, graded.length-queueLimit)} more of ${graded.length-queueLimit}</button></td></tr>` : "");
 $("queueSum").textContent = `${list.length} clinics · ${ready} cleared · ${list.length-ready} held back by the rules · ${list.filter(p=>p.audit).length} scanned`; if(!auditRun) $("auditAllBtn").disabled = !list.some(p=>!p.audit); renderOpps();
 }
 
@@ -736,6 +872,8 @@ $("nowBtn").onclick = ()=>{ simTime = Date.now(); renderAll(); };
 $("campaigns").addEventListener("click", e=>{ const b=e.target.closest("[data-camp]"); if(!b) return; activeCamp=b.dataset.camp; const first=state.leads.find(p=>p.campaign===activeCamp); if(!call) selectedId=first?first.id:null; renderCampaigns(); renderQueue(); if(!call) renderCallee(); });
 $("queue").addEventListener("click", async e=>{
 if (e.target.closest("[data-more]")){ queueLimit += 60; renderQueue(); return; }
+const dp = e.target.closest("[data-deep]"); if (dp){ const p = state.leads.find(x=>x.id===dp.dataset.deep); if (p) deepScan(p, dp); return; }
+const dl = e.target.closest("[data-dl]"); if (dl){ const p = state.leads.find(x=>x.id===dl.dataset.dl); if (p) downloadReport(p); return; }
 const hv = e.target.closest("[data-hv]"), au = e.target.closest("[data-audit]");
 if (hv || au){ const p = state.leads.find(x=>x.id===selectedId); if (!p) return;
 if (au){ au.disabled = true; au.textContent = "Scanning…"; const ok = await auditLead(p); if (ok) toast(`${p.company}: scanned.`); renderQueue(); return; }
@@ -745,6 +883,12 @@ a.checkedAt = Date.now(); a.source = "manual"; p.audit = a; await saveLead(p); r
 const cb = e.target.closest("[data-call]"); const tr = e.target.closest("tr[data-id]"); if(!tr || call) return;
 selectedId = tr.dataset.id; renderQueue(); renderCallee();
 if (cb){ const p = state.leads.find(x=>x.id===selectedId); if (p && checkLead(p,p.campaign,simTime).ok) startCall(p); }
+});
+$("revFilter").addEventListener("change", ()=>{ revLimit = 50; renderReviews(); });
+$("revRows").addEventListener("click", e=>{
+if (e.target.closest("[data-revmore]")){ revLimit += 50; renderReviews(); return; }
+const o = e.target.closest("[data-revopen]"); if (o){ revOpen = revOpen===o.dataset.revopen ? null : o.dataset.revopen; renderReviews(); return; }
+const dp = e.target.closest("[data-deep]"); if (dp){ const p = state.leads.find(x=>x.id===dp.dataset.deep); if (p) deepScan(p, dp); }
 });
 $("log").addEventListener("click", e=>{ const tr=e.target.closest("tr[data-log]"); if(!tr) return; selectedLog=tr.dataset.log; renderLog(); renderDetail(); });
 $("sendForm").addEventListener("submit", e=>{ e.preventDefault(); prospectSays($("msg").value); });
@@ -921,7 +1065,30 @@ async function loadSync(){
 const { data } = await sb.from("sync_runs").select("*").order("id",{ascending:false}).limit(20);
 syncRuns = data || []; renderAccounts();
 }
-function renderAll(){ syncLive(); renderClock(); renderAccounts(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderTranscriptEmpty(); }
+let revOpen = null, revLimit = 50;
+function renderReviews(){
+const L = state.leads, f = ($("revFilter")||{}).value || "";
+const withG = L.filter(p=>ratingOf(p));
+const comp = p => ((p.report&&p.report.review_insights&&p.report.review_insights.complaints)||[]);
+const phoneC = withG.filter(p=>comp(p).some(c=>/phone/i.test(c)));
+const avg = withG.length ? (withG.reduce((s,p)=>s+ratingOf(p).r,0)/withG.length).toFixed(2) : "–";
+$("revKpis").innerHTML = [["Accounts with Google data", withG.length, `of ${L.length}`],["Average rating", avg, "★ across those accounts"],["Below 4.5★", withG.filter(p=>ratingOf(p).r<4.5).length, "reputation pitch"],["Phone complaints", phoneC.length, "AI receptionist pitch"],["Not scanned", L.filter(p=>!p.report).length, "run a full scan"]]
+.map(([a,b,c])=>`<div class="glass kpi"><span class="h">${a}</span><b>${b}</b><small>${esc(c)}</small></div>`).join("");
+let list = f==="none" ? L.filter(p=>!p.report) : withG;
+if (f==="low") list = list.filter(p=>ratingOf(p).r<4.5); else if (f==="few") list = list.filter(p=>ratingOf(p).n<100);
+else if (f==="complaints") list = list.filter(p=>comp(p).length); else if (f==="phone") list = phoneC;
+const total = list.length; list = list.slice().sort((a,b)=>(ratingOf(a)?.r??9)-(ratingOf(b)?.r??9)).slice(0,revLimit);
+$("revRows").innerHTML = list.length ? list.map(p=>{ const g = ratingOf(p), m = (p.report&&p.report.maps)||{}, rv = (m.reviews||[])[0], ins = (p.report&&p.report.review_insights)||{};
+return `<tr data-rev="${esc(p.id)}" class="${revOpen===p.id?"rv-open":""}"><td><b>${esc(p.company)}</b><small class="cellsub">${esc([p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(", "))}</small></td>
+<td>${g?`<span class="stars"><i>★</i> ${g.r.toFixed(1)}</span>`:'<span class="muted">–</span>'}</td><td class="mono">${g?g.n.toLocaleString():"–"}</td>
+<td style="max-width:340px">${rv?`<b>${"★".repeat(rv.rating||0)}</b> <span class="muted">${esc(rv.when||"")}</span><br><span style="font-size:12.5px">${esc((rv.text||"").slice(0,140))}${(rv.text||"").length>140?"…":""}</span>`:'<span class="muted">No review text yet</span>'}</td>
+<td>${(ins.complaints||[]).slice(0,2).map(c=>`<span class="revtag bad">${esc(c)}</span> `).join("")}${(ins.praise||[]).slice(0,2).map(c=>`<span class="revtag good">${esc(c)}</span> `).join("")}</td>
+<td style="text-align:right;white-space:nowrap">${p.report?`<button type="button" class="btn btn-sm" data-revopen="${esc(p.id)}">${revOpen===p.id?"Hide":"Read all"}</button>`:`<button type="button" class="btn btn-sm" data-deep="${esc(p.id)}">Full scan</button>`}</td></tr>
+${revOpen===p.id?`<tr class="stx-row"><td colspan="6"><div class="rv-list">${(m.reviews||[]).map(v=>`<div class="rv"><b>${"★".repeat(v.rating||0)}</b> <span class="muted">${esc(v.author||"")} · ${esc(v.when||"")}</span><br>${esc(v.text||"")}</div>`).join("")||'<p class="muted">Google returned no review text.</p>'}</div>${m.url?`<a href="${esc(m.url)}" target="_blank" rel="noopener" style="font-size:12.5px">All reviews on Google Maps</a>`:""}</td></tr>`:""}`; }).join("")
+: `<tr><td colspan="6" class="muted" style="cursor:default">${f==="none"?"Every account has been scanned.":"No Google Maps data yet. Add a Google Places API key in Supabase, then run full scans."}</td></tr>`;
+if (total > revLimit) $("revRows").insertAdjacentHTML("beforeend", `<tr class="more-row"><td colspan="6"><button type="button" class="btn btn-sm" data-revmore>Show 50 more of ${total-revLimit}</button></td></tr>`);
+}
+function renderAll(){ syncLive(); renderClock(); renderAccounts(); renderReviews(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderTranscriptEmpty(); }
 let callBusy = false;
 function lastCallFor(id){ return state.log.filter(l=>l.pid===id).sort((a,b)=>b.at-a.at)[0] || null; }
 function callPayload(p){
@@ -990,13 +1157,13 @@ ${(l.transcript||[]).length?`<div class="t">${l.transcript.map(t=>`<div dir="aut
 }
 function leadName(id){ const p = state.leads.find(x=>x.id===id); return p ? p.company : "Removed clinic"; }
 async function auditLead(p, quiet){
-const { data, error } = await sb.functions.invoke("scan-clinic", {body:{lead_id:p.id}});
+const { data, error } = await sb.functions.invoke("deep-scan", {body:{lead_id:p.id}});
 if (error){ if (!quiet){ const j = await fnError(error); toast(`Couldn't scan ${p.company}: ${j.message||j.error||"error"}`); } return false; }
-p.audit = data.audit; renderAll(); return true;
+p.audit = data.audit; if (data.report) p.report = data.report; renderAll(); return true;
 }
 async function auditAll(){
 if (auditRun){ auditRun.stop = true; return; }
-const list = state.leads.filter(p=>p.campaign===activeCamp && !p.audit && p.status!=="dnc" && !p.optedOut);
+const list = state.leads.filter(p=>p.campaign===activeCamp && !p.report && p.status!=="dnc" && !p.optedOut);
 if (!list.length){ toast("Every clinic in this campaign is already scanned."); return; }
 auditRun = {stop:false}; let done = 0;
 for (const p of list){ if (auditRun.stop) break; $("auditAllBtn").textContent = `Stop scanning (${done}/${list.length})`; if (await auditLead(p, true)) done++; }
