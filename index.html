@@ -469,9 +469,9 @@ const pct = (arr) => arr.length ? Math.round(arr.filter(Boolean).length/arr.leng
 const site = w.loaded ? pct([w.https, w.titleOk, !!w.metaDescription, !!w.h1, w.viewport, !!(w.schema&&w.schema.length), w.sitemap, w.robots, w.arabic, w.blog, !w.noindex]) : (w.url ? null : 0);
 const speed = ps && !ps.error && typeof ps.performance==="number" ? ps.performance : null;
 const rep = typeof m.rating==="number" ? Math.round(Math.min(100, (m.rating/5)*70 + Math.min((m.count||0)/300,1)*30)) : null;
-const social = (w.loaded || Object.values(so).some(Boolean)) ? pct([so.instagram, so.facebook, so.tiktok, so.snapchat, so.youtube, so.whatsapp]) : null;
+const social = (w.loaded || r.social_checked || Object.values(so).some(Boolean)) ? pct([so.instagram, so.facebook, so.tiktok, so.snapchat, so.youtube, so.whatsapp]) : null;
 const ads = w.loaded ? pct([t.googleAds, t.ga4||t.gtm, t.searchConsole, t.metaPixel]) : null;
-const access = w.loaded ? pct([w.booking==="online", !!so.whatsapp, !!w.chat]) : null;
+const access = w.loaded ? pct([w.booking==="online", !!so.whatsapp, !!w.chat]) : (!w.url ? pct([false, !!so.whatsapp, false]) : null);
 const cats = [["Website & SEO", site, "#4C3FD1"],["Mobile speed", speed, "#0E9F8E"],["Google reputation", rep, "#E0A100"],["Social presence", social, "#D9477A"],["Ads & measurement", ads, "#245E9E"],["Patient access", access, "#8A3FD1"]];
 const known = cats.filter(c=>c[1]!==null);
 const overall = known.length ? Math.round(known.reduce((x,c)=>x+c[1],0)/known.length) : null;
@@ -498,7 +498,8 @@ return `<svg viewBox="-40 0 380 285" width="100%" style="max-width:360px" aria-l
 function bar(label, val, target, unit, max){ const pv = Math.min(100, (val||0)/max*100), pt = Math.min(100, target/max*100);
 return `<div class="r2-bar"><div class="r2-bar-l"><span>${esc(label)}</span><b>${val===null||val===undefined?"–":val+unit}</b></div><div class="r2-track"><i style="width:${pv}%"></i><em style="left:${pt}%" title="Target"></em></div><div class="r2-bar-t">Target ${target}${unit}</div></div>`; }
 function reportHtml(p){
-const r = p.report, prof = profile || {}, w = r.website||{}, t = r.tracking||{}, so = r.social||{}, m = r.maps||{}, ps = r.pagespeed, ins = r.review_insights||{};
+const r = p.report, prof = {...(profile || {})}, w = r.website||{}, t = r.tracking||{}, so = r.social||{}, m = r.maps||{}, ps = r.pagespeed, ins = r.review_insights||{};
+if (/example\.com/i.test(prof.freelancer_email||"")) prof.freelancer_email = ""; if (/000 ?0000/.test(prof.freelancer_phone||"")) prof.freelancer_phone = "";
 const {cats, overall} = reportScores(p), g = grade(overall), dateS = new Date(r.scanned_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
 const loc = [p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(", ");
 const yes = v => v===true ? '<span class="r2-y">✓</span>' : v===false ? '<span class="r2-n">✕</span>' : '<span class="r2-u">–</span>';
