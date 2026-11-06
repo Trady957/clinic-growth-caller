@@ -633,13 +633,14 @@ ${(ins.praise||[]).length?`<div class="r2-str"><b>Your strengths become your gro
 <p class="r2-foot">Based on public information collected on ${esc(dateS)}: the clinic's website, Google PageSpeed and Google Maps. Scores are indicative and meant to guide priorities. Private data such as ad spend and Search Console figures are not included.</p>
 </div>`;
 const clinic = ["dental","aesthetic","medical"].includes(p.campaign) || /clinic|dental|medical|dent/i.test(p.industry||"");
+const VOC = Object.assign({who:"customers",Who:"Customers",one:"customer",acts:"orders",Acts:"Extra orders",act:"ordering",Act:"Online ordering",done:"ordered",verb:"order",cta:"Let's turn this into more orders.",access:"Customer access",biz:"business"}, (r.vocab||{}));
 const V = clinic ? (x=>x) : (x=>x
- .replace(/Let's turn this into booked patients\./g,"Let's turn this into more orders.")
- .replace(/more booked patients/g,"more orders").replace(/\bnew and returning patients\b/g,"new and returning customers").replace(/\bPatient access\b/g,"Customer access")
- .replace(/\bpatients\b/g,"customers").replace(/\bPatients\b/g,"Customers").replace(/\bpatient\b/g,"customer")
- .replace(/\bExtra bookings\b/g,"Extra orders").replace(/\bbookings\b/g,"orders").replace(/\bbooking\b/g,"ordering").replace(/\bOnline booking\b/g,"Online ordering")
- .replace(/\bbooked\b/g,"ordered").replace(/\bbook\b/g,"order").replace(/Clinic details for Google/g,"Business details for Google")
- .replace(/for the clinic\b/g,"for the business").replace(/a clinic\b/g,"a business").replace(/the clinic's\b/g,"the business's").replace(/your clinic\b/g,"your business"));
+ .replace(/Let's turn this into booked patients\./g, VOC.cta)
+ .replace(/more booked patients/g,"more "+VOC.acts).replace(/\bnew and returning patients\b/g,"new and returning "+VOC.who).replace(/\bPatient access\b/g,VOC.access)
+ .replace(/\bpatients\b/g,VOC.who).replace(/\bPatients\b/g,VOC.Who).replace(/\bpatient\b/g,VOC.one)
+ .replace(/\bExtra bookings\b/g,VOC.Acts).replace(/\bbookings\b/g,VOC.acts).replace(/\bOnline booking\b/g,VOC.Act).replace(/\bbooking\b/g,VOC.act)
+ .replace(/\bbooked\b/g,VOC.done).replace(/\bbook\b/g,VOC.verb).replace(/Clinic details for Google/g,"Business details for Google")
+ .replace(/for the clinic\b/g,"for the "+VOC.biz).replace(/a clinic\b/g,"a "+VOC.biz).replace(/the clinic's\b/g,"the "+VOC.biz+"'s").replace(/your clinic\b/g,"your "+VOC.biz));
 return V(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.company)} — digital growth report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800&family=Instrument+Serif&display=swap" rel="stylesheet">
 <style>body{margin:24px auto;max-width:920px;padding:0 20px;background:#fff}@page{size:A4;margin:12mm}.pbtn{position:fixed;right:18px;top:18px;background:#4C3FD1;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit}@media print{.pbtn{display:none}body{margin:0;max-width:none;padding:0}}</style></head>
