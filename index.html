@@ -13,6 +13,11 @@
 .sync{padding:16px;display:flex;flex-direction:column;gap:12px;font-size:13.5px}.sync .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.sync .row span{color:var(--muted)}.sync .btns{display:flex;gap:8px;flex-wrap:wrap}.qbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--sunk)}.qbar i{display:block;height:100%}
 .qflag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px;white-space:nowrap}.qf-ok{background:var(--ok-soft);color:var(--ok)}.qf-warn{background:var(--warn-soft);color:var(--warn)}.qf-bad{background:var(--bad-soft);color:var(--bad)}
 [hidden]{display:none!important}
+#rptView{position:fixed;inset:0;z-index:120;background:#fff;color:#0C1B2A;overflow:auto;padding:0 16px 40px}#rptView .rv-bar{position:sticky;top:0;background:#fff;display:flex;gap:8px;justify-content:flex-end;padding:12px 0;border-bottom:1px solid #DCE4EC;max-width:900px;margin:0 auto}
+#rptBody{max-width:900px;margin:0 auto;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;color:#0C1B2A}#rptBody h1{font-size:26px;margin:0}#rptBody h2{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#4C3FD1;margin:20px 0 8px}
+#rptBody .meta{color:#5A6B7C;font-size:13px}#rptBody .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}#rptBody .box{border:1px solid #DCE4EC;border-radius:10px;padding:12px;break-inside:avoid}#rptBody ul{margin:0;padding-left:18px}#rptBody .ck{list-style:none;padding:0}
+#rptBody .score3 div{background:#F3F6F9}#rptBody a{color:#4C3FD1}
+@media print{body.rpt-open>*:not(#rptView){display:none!important}body.rpt-open{background:#fff!important}body.rpt-open #rptView{position:static;overflow:visible;padding:0}#rptView .rv-bar{display:none!important}@page{margin:14mm}}
 #queue{font-size:13px}#calls table{min-width:1180px}.qc{min-width:170px;max-width:260px}.qc-have{min-width:200px}.qc-rev{min-width:130px}
 .ql{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}.ql li{font-size:12.5px;line-height:1.35;padding-left:12px;position:relative}.ql li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--c,var(--brand))}
 .ql.prop li{--c:var(--brand)}.ql.enh li{--c:var(--warn)}.ql li b{font-weight:700}.qmore{font-size:11.5px;color:var(--muted)}
@@ -38,6 +43,7 @@
 <label class="field">New password (at least 10 characters)<input id="lockPass" type="password" required minlength="10" autocomplete="new-password"></label>
 <label class="field">Type it again<input id="lockPass2" type="password" required minlength="10" autocomplete="new-password"></label>
 <div style="display:flex;gap:8px"><button class="btn btn-primary" type="submit" id="lockBtn">Lock and sign in</button><button class="btn btn-ghost" type="button" id="lockCancel">Not now</button></div><p id="lockMsg" role="status"></p></form></div>
+<div id="rptView" hidden><div class="rv-bar"><button type="button" class="btn btn-primary" id="rptPrint">Save as PDF</button><button type="button" class="btn" id="rptHtml">Download HTML</button><button type="button" class="btn btn-ghost" id="rptClose">Close</button></div><div id="rptBody"></div></div>
 <div class="page">
 <header class="appbar"><div class="wrap">
   <a class="brandmk" href="#top" aria-label="Clinic Growth Caller">
@@ -476,13 +482,19 @@ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="v
 <div class="box"><h2 style="margin-top:0">Keywords to target</h2><ul>${(r.keyword_ideas||[]).slice(0,10).map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div></div>
 <p class="muted" style="margin-top:24px">Based on public information: the clinic's website, Google PageSpeed and Google Maps. ${esc(r.generated_by||"")}.</p></body></html>`;
 }
+let rptLead = null;
 function downloadReport(p){
 if (!p.report){ toast("Run a full scan first."); return; }
-const blob = new Blob([reportHtml(p)], {type:"text/html"}), url = URL.createObjectURL(blob);
-const w = window.open(url, "_blank");
-if (!w){ const a = document.createElement("a"); a.href = url; a.download = (p.company||"clinic").replace(/[^\w\- ]+/g,"").trim()+" report.html"; document.body.appendChild(a); a.click(); a.remove(); }
-setTimeout(()=>URL.revokeObjectURL(url), 60000);
+rptLead = p;
+const html = reportHtml(p), body = html.slice(html.indexOf("<body>")+6, html.lastIndexOf("</body>"));
+$("rptBody").innerHTML = body.replace(/<button onclick="print\(\)">Save as PDF<\/button>/, "");
+$("rptView").hidden = false; $("rptView").scrollTop = 0; document.body.classList.add("rpt-open");
+document.title = `${p.company} - growth report`;
 }
+$("rptClose").onclick = ()=>{ $("rptView").hidden = true; document.body.classList.remove("rpt-open"); document.title = "Clinic Growth Caller"; };
+$("rptPrint").onclick = ()=>window.print();
+$("rptHtml").onclick = ()=>{ if (!rptLead) return; const blob = new Blob([reportHtml(rptLead)], {type:"text/html"}), url = URL.createObjectURL(blob), a = document.createElement("a");
+a.href = url; a.download = (rptLead.company||"clinic").replace(/[^\w\- ]+/g,"").trim()+" report.html"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 30000); };
 async function deepScan(p, btn){
 if (btn){ btn.disabled = true; btn.textContent = "Scanning… (up to a minute)"; }
 const { data, error } = await sb.functions.invoke("deep-scan", {body:{lead_id:p.id}});
