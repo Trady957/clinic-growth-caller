@@ -919,11 +919,15 @@ $("authMsg").textContent = error ? `Couldn't send the link: ${error.message}` : 
 });
 $("signOutBtn").onclick = async ()=>{ await sb.auth.signOut(); location.reload(); };
 let started = false;
+// TEST MODE: skips sign-in while testing. Server side it's switched by the settings row "test_mode".
+const TEST_MODE = true;
 async function boot(session){
-if (!session){ showAuth(); return; }
+if (!session && !TEST_MODE){ showAuth(); return; }
+if (session){
 const { data: own } = await sb.from("app_owners").select("email").maybeSingle();
-if (!own){ showAuth(`${session.user.email} isn't allowed to use this console.`); await sb.auth.signOut(); return; }
-hideAuth(); $("whoami").textContent = session.user.email;
+if (!own && !TEST_MODE){ showAuth(`${session.user.email} isn't allowed to use this console.`); await sb.auth.signOut(); return; }
+}
+hideAuth(); $("whoami").textContent = session ? session.user.email : "Test mode";
 if (started) return; started = true;
 db = makeDb(); downloads = downloadsShim; sample = null; mcp = null;
 goLive();
