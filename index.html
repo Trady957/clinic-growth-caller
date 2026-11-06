@@ -14,10 +14,8 @@
 .qflag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px;white-space:nowrap}.qf-ok{background:var(--ok-soft);color:var(--ok)}.qf-warn{background:var(--warn-soft);color:var(--warn)}.qf-bad{background:var(--bad-soft);color:var(--bad)}
 [hidden]{display:none!important}
 #rptView{position:fixed;inset:0;z-index:120;background:#fff;color:#0C1B2A;overflow:auto;padding:0 16px 40px}#rptView .rv-bar{position:sticky;top:0;background:#fff;display:flex;gap:8px;justify-content:flex-end;padding:12px 0;border-bottom:1px solid #DCE4EC;max-width:900px;margin:0 auto}
-#rptBody{max-width:900px;margin:0 auto;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;color:#0C1B2A}#rptBody h1{font-size:26px;margin:0}#rptBody h2{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#4C3FD1;margin:20px 0 8px}
-#rptBody .meta{color:#5A6B7C;font-size:13px}#rptBody .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}#rptBody .box{border:1px solid #DCE4EC;border-radius:10px;padding:12px;break-inside:avoid}#rptBody ul{margin:0;padding-left:18px}#rptBody .ck{list-style:none;padding:0}
-#rptBody .score3 div{background:#F3F6F9}#rptBody a{color:#4C3FD1}
-@media print{body.rpt-open>*:not(#rptView){display:none!important}body.rpt-open{background:#fff!important}body.rpt-open #rptView{position:static;overflow:visible;padding:0}#rptView .rv-bar{display:none!important}@page{margin:14mm}}
+#rptBody{max-width:920px;margin:16px auto 0}
+@media print{body.rpt-open>*:not(#rptView){display:none!important}html,body.rpt-open{background:#fff!important}body.rpt-open #rptView{position:static;overflow:visible;padding:0}#rptView .rv-bar{display:none!important}@page{margin:14mm}}
 #queue{font-size:13px}#calls table{min-width:1180px}.qc{min-width:170px;max-width:260px}.qc-have{min-width:200px}.qc-rev{min-width:130px}
 .ql{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}.ql li{font-size:12.5px;line-height:1.35;padding-left:12px;position:relative}.ql li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--c,var(--brand))}
 .ql.prop li{--c:var(--brand)}.ql.enh li{--c:var(--warn)}.ql li b{font-weight:700}.qmore{font-size:11.5px;color:var(--muted)}
@@ -464,30 +462,135 @@ ${r.ai_error?`<p class="muted" style="font-size:12px">ChatGPT not used: ${esc(r.
 <div class="rpt-grid"><div class="rp"><h5>Website & SEO</h5>${S.site}</div><div class="rp"><h5>Speed (Google PageSpeed)</h5>${S.speed}</div><div class="rp"><h5>Google Ads, Analytics & Search Console</h5>${S.ads}</div>
 <div class="rp"><h5>Social media</h5>${S.social}</div><div class="rp"><h5>Google Maps & reviews</h5>${S.maps}${(ins.complaints||[]).length?`<p style="font-size:12.5px"><b style="color:var(--bad)">Complaints:</b> ${esc(ins.complaints.join(", "))}</p>`:""}${(ins.praise||[]).length?`<p style="font-size:12.5px"><b style="color:var(--ok)">Praise:</b> ${esc(ins.praise.join(", "))}</p>`:""}</div><div class="rp"><h5>Keywords</h5>${S.kw}</div></div></div>`;
 }
+// ---- client-ready report ----
+function reportScores(p){
+const r = p.report||{}, w = r.website||{}, t = r.tracking||{}, so = r.social||{}, m = r.maps||{}, ps = r.pagespeed;
+const pct = (arr) => arr.length ? Math.round(arr.filter(Boolean).length/arr.length*100) : null;
+const site = w.loaded ? pct([w.https, w.titleOk, !!w.metaDescription, !!w.h1, w.viewport, !!(w.schema&&w.schema.length), w.sitemap, w.robots, w.arabic, w.blog, !w.noindex]) : (w.url ? null : 0);
+const speed = ps && !ps.error && typeof ps.performance==="number" ? ps.performance : null;
+const rep = typeof m.rating==="number" ? Math.round(Math.min(100, (m.rating/5)*70 + Math.min((m.count||0)/300,1)*30)) : null;
+const social = (w.loaded || Object.values(so).some(Boolean)) ? pct([so.instagram, so.facebook, so.tiktok, so.snapchat, so.youtube, so.whatsapp]) : null;
+const ads = w.loaded ? pct([t.googleAds, t.ga4||t.gtm, t.searchConsole, t.metaPixel]) : null;
+const access = w.loaded ? pct([w.booking==="online", !!so.whatsapp, !!w.chat]) : null;
+const cats = [["Website & SEO", site, "#4C3FD1"],["Mobile speed", speed, "#0E9F8E"],["Google reputation", rep, "#E0A100"],["Social presence", social, "#D9477A"],["Ads & measurement", ads, "#245E9E"],["Patient access", access, "#8A3FD1"]];
+const known = cats.filter(c=>c[1]!==null);
+const overall = known.length ? Math.round(known.reduce((x,c)=>x+c[1],0)/known.length) : null;
+return {cats, overall};
+}
+function grade(v){ return v===null ? ["Not measured","#8A97A6"] : v>=80 ? ["Strong","#1C7F4E"] : v>=60 ? ["Good, with gaps","#5E8C1C"] : v>=40 ? ["Needs work","#C27A0E"] : ["Urgent","#B8362E"]; }
+function svgRing(v, color, size){ size = size||92; const r = size/2-8, c = 2*Math.PI*r, val = v===null?0:v;
+return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#EEF1F6" stroke-width="9"/>
+<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(c*val/100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/>
+<text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle" font-size="${size/4}" font-weight="700" fill="#0C1B2A">${v===null?"–":v}</text></svg>`; }
+function svgGauge(v){ const R = 92, cx = 110, cy = 108, ang = Math.PI*(1-(v||0)/100), x = cx + R*Math.cos(ang), y = cy - R*Math.sin(ang), g = grade(v);
+return `<svg width="220" height="130" viewBox="0 0 220 130" aria-hidden="true"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#B8362E"/><stop offset=".5" stop-color="#E0A100"/><stop offset="1" stop-color="#1C7F4E"/></linearGradient></defs>
+<path d="M18 108 A92 92 0 0 1 202 108" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="16" stroke-linecap="round"/>
+<path d="M18 108 A92 92 0 0 1 202 108" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round" stroke-dasharray="${(Math.PI*R*(v||0)/100).toFixed(1)} 999"/>
+<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="#fff" stroke="${g[1]}" stroke-width="4"/>
+<text x="110" y="96" text-anchor="middle" font-size="44" font-weight="800" fill="#fff">${v===null?"–":v}</text><text x="110" y="122" text-anchor="middle" font-size="12" fill="rgba(255,255,255,.75)">out of 100</text></svg>`; }
+function svgRadar(cats){ const n = cats.length, cx = 150, cy = 140, R = 100, pt = (i, v) => { const a = -Math.PI/2 + i*2*Math.PI/n; return [cx + R*v/100*Math.cos(a), cy + R*v/100*Math.sin(a)]; };
+const grid = [25,50,75,100].map(l=>`<polygon points="${cats.map((_,i)=>pt(i,l).map(x=>x.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="#E3E8EF"/>`).join("");
+const axes = cats.map((c,i)=>{ const [x,y] = pt(i,100), [lx,ly] = pt(i,124); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#E3E8EF"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#5A6B7C">${esc(c[0])}</text>`; }).join("");
+const target = `<polygon points="${cats.map((_,i)=>pt(i,85).map(x=>x.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="#1C7F4E" stroke-dasharray="4 4" stroke-width="1.5"/>`;
+const shape = `<polygon points="${cats.map((c,i)=>pt(i,c[1]===null?0:c[1]).map(x=>x.toFixed(1)).join(",")).join(" ")}" fill="rgba(76,63,209,.22)" stroke="#4C3FD1" stroke-width="2"/>`;
+const dots = cats.map((c,i)=>{ const [x,y] = pt(i,c[1]===null?0:c[1]); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#4C3FD1"/>`; }).join("");
+return `<svg viewBox="-40 0 380 285" width="100%" style="max-width:360px" aria-label="Score by area">${grid}${axes}${target}${shape}${dots}</svg>`; }
+function bar(label, val, target, unit, max){ const pv = Math.min(100, (val||0)/max*100), pt = Math.min(100, target/max*100);
+return `<div class="r2-bar"><div class="r2-bar-l"><span>${esc(label)}</span><b>${val===null||val===undefined?"–":val+unit}</b></div><div class="r2-track"><i style="width:${pv}%"></i><em style="left:${pt}%" title="Target"></em></div><div class="r2-bar-t">Target ${target}${unit}</div></div>`; }
 function reportHtml(p){
-const r = p.report, S = reportSections(p), ins = r.review_insights||{}, prof = profile || {};
-const css = `body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#0C1B2A;max-width:900px;margin:24px auto;padding:0 20px;line-height:1.5}h1{font-size:26px;margin:0}h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:#4C3FD1;margin:22px 0 8px}
-.meta{color:#5A6B7C;font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.box{border:1px solid #DCE4EC;border-radius:10px;padding:12px}ul{margin:0;padding-left:18px}.ck{list-style:none;padding:0}.ck li{display:flex;gap:6px}.y{color:#1C7F4E;font-weight:800}.n{color:#B8362E;font-weight:800}.u{color:#5A6B7C}
-.score3{display:flex;gap:8px}.score3 div{flex:1;text-align:center;background:#F3F6F9;border-radius:8px;padding:6px}.score3 b{display:block;font-size:20px}.score3 span,.muted{color:#5A6B7C;font-size:12px}.stars i{color:#E0A100;font-style:normal}.rv{border-left:2px solid #C8D4DF;padding-left:8px;margin:6px 0;font-size:13px}
-.bar{display:flex;justify-content:space-between;align-items:center}button{background:#4C3FD1;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}@media print{button{display:none}}`;
-return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.company)} — growth report</title><style>${css}</style></head><body>
-<div class="bar"><div><div class="meta">${esc(prof.business_name||"Growth report")} · ${new Date(r.scanned_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</div><h1>${esc(p.company)}</h1><div class="meta">${esc([p.industry,p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(" · "))}</div></div><button onclick="print()">Save as PDF</button></div>
-<h2>Summary</h2><p>${esc(r.summary||"")}</p>
-<div class="grid"><div class="box"><h2 style="margin-top:0">What they have now</h2><ul>${(r.have||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-<div class="box"><h2 style="margin-top:0">What we propose</h2><ul>${(r.propose||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div>
-<h2>What we can enhance</h2><ul>${(r.enhance||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
-<div class="grid"><div class="box"><h2 style="margin-top:0">Website & SEO</h2>${S.site}</div><div class="box"><h2 style="margin-top:0">Mobile speed</h2>${S.speed}</div>
-<div class="box"><h2 style="margin-top:0">Ads & tracking</h2>${S.ads}</div><div class="box"><h2 style="margin-top:0">Social media</h2>${S.social}</div>
-<div class="box"><h2 style="margin-top:0">Google Maps & reviews</h2>${S.maps}${(ins.complaints||[]).length?`<p><b>Complaints:</b> ${esc(ins.complaints.join(", "))}</p>`:""}${(ins.praise||[]).length?`<p><b>Praise:</b> ${esc(ins.praise.join(", "))}</p>`:""}</div>
-<div class="box"><h2 style="margin-top:0">Keywords to target</h2><ul>${(r.keyword_ideas||[]).slice(0,10).map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div></div>
-<p class="muted" style="margin-top:24px">Based on public information: the clinic's website, Google PageSpeed and Google Maps. ${esc(r.generated_by||"")}.</p></body></html>`;
+const r = p.report, prof = profile || {}, w = r.website||{}, t = r.tracking||{}, so = r.social||{}, m = r.maps||{}, ps = r.pagespeed, ins = r.review_insights||{};
+const {cats, overall} = reportScores(p), g = grade(overall), dateS = new Date(r.scanned_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+const loc = [p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(", ");
+const yes = v => v===true ? '<span class="r2-y">✓</span>' : v===false ? '<span class="r2-n">✕</span>' : '<span class="r2-u">–</span>';
+const site = w.loaded;
+const checks = [
+["Secure website (HTTPS)", site?w.https:null], ["Search title with treatment & city", site?w.titleOk:null], ["Search description", site?!!w.metaDescription:null], ["Clear main headline", site?!!w.h1:null],
+["Mobile-friendly setup", site?w.viewport:null], ["Clinic details for Google (schema)", site?!!(w.schema&&w.schema.length):null], ["Sitemap for Google", site?w.sitemap:null], ["Arabic content", site?w.arabic:null],
+["Articles / blog", site?w.blog:null], ["Online booking", site?w.booking==="online":null], ["WhatsApp button", site||so.whatsapp?!!so.whatsapp:null], ["Live chat", site?w.chat:null],
+["Google Search Console", site?!!t.searchConsole:null], ["Google Analytics / Tag Manager", site?!!(t.ga4||t.gtm):null], ["Google Ads tracking", site?!!t.googleAds:null], ["Meta (Instagram/Facebook) pixel", site?!!t.metaPixel:null]];
+const SOC = [["instagram","Instagram"],["facebook","Facebook"],["tiktok","TikTok"],["snapchat","Snapchat"],["youtube","YouTube"],["linkedin","LinkedIn"],["whatsapp","WhatsApp"],["x","X"]];
+const quick = (r.enhance||[]).map(String), opps = (r.propose||[]).map(String);
+const phases = [["Weeks 1–2","Quick wins", quick.slice(0,3)], ["Month 1","Capture every patient", opps.slice(0,2)], ["Months 2–3","Grow demand", opps.slice(2,5).concat(quick.slice(3,5))]];
+const reviews = (m.reviews||[]).slice(0,3);
+const kws = (r.keywords||[]);
+const css = `.r2{font-family:"Figtree",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#0C1B2A;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.r2 *{box-sizing:border-box}.r2 h2{font-size:20px;margin:0 0 4px;letter-spacing:-.01em}.r2 .r2-sub{color:#5A6B7C;font-size:13.5px;margin:0 0 16px}
+.r2-cover{background:linear-gradient(135deg,#191446 0%,#3B2AA8 55%,#8A3FD1 100%);color:#fff;border-radius:18px;padding:26px 30px;display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:center;break-inside:avoid}
+.r2-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;letter-spacing:.02em;opacity:.95}.r2-brand i{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-style:normal}
+.r2-cover h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:40px;line-height:1.05;margin:18px 0 6px}.r2-cover .r2-loc{opacity:.8;font-size:14px}.r2-cover .r2-date{opacity:.65;font-size:12px;margin-top:14px}
+.r2-gauge{text-align:center}.r2-gauge .r2-grade{display:inline-block;margin-top:6px;padding:4px 12px;border-radius:999px;font-weight:700;font-size:12.5px;background:rgba(255,255,255,.16)}
+.r2-sec{margin-top:22px}.r2-sec>h2,.r2-sec>.r2-sub{break-after:avoid}.r2-sum{font-size:15.5px;line-height:1.6;background:#F6F5FF;border-left:4px solid #4C3FD1;border-radius:10px;padding:16px 18px}
+.r2-rings{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.r2-ring{border:1px solid #E3E8EF;border-radius:14px;padding:12px 6px;text-align:center}.r2-ring b{display:block;font-size:12.5px;margin-top:4px}.r2-ring span{font-size:11.5px;font-weight:700}
+.r2-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.r2-card{border:1px solid #E3E8EF;border-radius:14px;padding:16px;break-inside:avoid}
+.r2-card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:#4C3FD1}
+.r2-bar{margin-bottom:12px}.r2-bar-l{display:flex;justify-content:space-between;font-size:13px}.r2-track{position:relative;height:10px;background:#EEF1F6;border-radius:6px;margin-top:4px}.r2-track i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#4C3FD1,#8A3FD1);border-radius:6px}.r2-track em{position:absolute;top:-3px;width:2px;height:16px;background:#1C7F4E}.r2-bar-t{font-size:11px;color:#1C7F4E;text-align:right}
+.r2-ck{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;list-style:none;margin:0;padding:0;font-size:13px}.r2-ck li{display:flex;gap:8px;align-items:baseline;border-bottom:1px dashed #E3E8EF;padding:4px 0}
+.r2-y{color:#1C7F4E;font-weight:800}.r2-n{color:#B8362E;font-weight:800}.r2-u{color:#9AA7B4;font-weight:800}
+.r2-soc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.r2-soc div{border-radius:10px;padding:10px;text-align:center;font-size:12.5px;font-weight:700}.r2-soc .on{background:#E7F6EE;color:#1C7F4E}.r2-soc .off{background:#F4F6F9;color:#8A97A6}
+.r2-quote{border-radius:12px;background:#FAFAFC;border:1px solid #EEF1F6;padding:12px 14px;font-size:13px;margin-bottom:8px}.r2-quote .st{color:#E0A100;letter-spacing:2px}.r2-quote .wh{color:#8A97A6;font-size:11.5px}
+.r2-tags{display:flex;flex-wrap:wrap;gap:6px}.r2-tag{font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px}.r2-tag.g{background:#E7F6EE;color:#1C7F4E}.r2-tag.b{background:#FDECEA;color:#B8362E}.r2-tag.k{background:#F1EFFE;color:#4C3FD1}.r2-tag.m{background:#F4F6F9;color:#5A6B7C}
+.r2-opps{display:grid;grid-template-columns:1fr 1fr;gap:12px}.r2-opp{border-radius:14px;padding:14px;background:linear-gradient(180deg,#F6F5FF,#fff);border:1px solid #E6E3FB;break-inside:avoid}.r2-opp .n{width:26px;height:26px;border-radius:8px;background:#4C3FD1;color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px;margin-bottom:6px}.r2-opp b{display:block;font-size:14px}.r2-opp span{font-size:12.5px;color:#5A6B7C}
+.r2-road{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;position:relative}.r2-ph{border-radius:14px;border:1px solid #E3E8EF;padding:14px;break-inside:avoid}.r2-ph .w{font-size:11.5px;font-weight:800;color:#8A3FD1;text-transform:uppercase;letter-spacing:.06em}.r2-ph b{display:block;font-size:15px;margin:2px 0 8px}.r2-ph ul{margin:0;padding-left:16px;font-size:12.5px;display:flex;flex-direction:column;gap:4px}
+.r2-cta{margin-top:26px;border-radius:18px;background:#0C1B2A;color:#fff;padding:22px 26px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;break-inside:avoid}.r2-cta h3{margin:0;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:26px}.r2-cta p{margin:4px 0 0;opacity:.75;font-size:13px}.r2-cta .c{font-size:13.5px;text-align:right}
+.r2-foot{margin-top:14px;color:#8A97A6;font-size:11px}
+.r2-page{}
+@media (max-width:760px){.r2-cover,.r2-two,.r2-opps,.r2-road{grid-template-columns:1fr}.r2-rings{grid-template-columns:repeat(3,minmax(0,1fr))}.r2-ck{grid-template-columns:1fr}.r2-soc{grid-template-columns:repeat(2,minmax(0,1fr))}}`;
+const body = `<div class="r2">
+<section class="r2-cover"><div><div class="r2-brand"><i>✦</i>${esc(prof.business_name||"Growth report")}</div>
+<h1>Digital growth report<br>${esc(p.company)}</h1><div class="r2-loc">${esc([p.industry, loc].filter(Boolean).join(" · "))}</div><div class="r2-date">Prepared ${esc(dateS)}${prof.freelancer_name?` by ${esc(prof.freelancer_name)}`:""}</div></div>
+<div class="r2-gauge">${svgGauge(overall)}<div class="r2-grade">Online health: ${esc(g[0])}</div></div></section>
+
+<section class="r2-sec"><h2>At a glance</h2><p class="r2-sub">How patients find, judge and book ${esc(p.company)} online today.</p>
+<div class="r2-sum">${esc(r.summary||"")}</div></section>
+
+<section class="r2-sec"><h2>Scores by area</h2><p class="r2-sub">Each area scored 0–100 from public checks. The dashed green line on the chart is the level we aim for (85).</p>
+<div class="r2-rings">${cats.map(([l,v,c])=>`<div class="r2-ring">${svgRing(v,c,80)}<b>${esc(l)}</b><span style="color:${grade(v)[1]}">${esc(grade(v)[0])}</span></div>`).join("")}</div>
+<div class="r2-two" style="margin-top:16px"><div class="r2-card" style="text-align:center"><h3>Overall profile</h3>${svgRadar(cats)}</div>
+<div class="r2-card"><h3>Where you are vs. target</h3>
+${bar("Google rating", typeof m.rating==="number"?m.rating:null, 4.7, "★", 5)}
+${bar("Google reviews", typeof m.count==="number"?m.count:null, 300, "", 600)}
+${bar("Mobile speed", ps&&!ps.error?ps.performance:null, 70, "/100", 100)}
+${bar("Google SEO score", ps&&!ps.error?ps.seo:null, 90, "/100", 100)}
+${kws.length && site ? bar("Search phrases covered", kws.filter(k=>k.onSite).length, Math.ceil(kws.length*0.8), ` of ${kws.length}`, kws.length) : ""}
+${m.skipped||m.error?`<p style="font-size:11.5px;color:#8A97A6;margin:0">Google Maps figures not available for this report.</p>`:""}</div></div></section>
+
+<section class="r2-sec r2-page"><h2>What you have today</h2><p class="r2-sub">A check of the website, Google and social channels patients use to find a clinic.</p>
+<div class="r2-two"><div class="r2-card"><h3>Website, search & tracking</h3>${site?`<ul class="r2-ck">${checks.map(([l,v])=>`<li>${yes(v)} ${esc(l)}</li>`).join("")}</ul>`:`<p style="font-size:13px;color:#5A6B7C">${w.url?"The website could not be checked automatically, so these items are reviewed in person.":"No website was found for the clinic."}</p>`}</div>
+<div class="r2-card"><h3>Social & messaging</h3><div class="r2-soc">${SOC.map(([k,l])=>`<div class="${so[k]?"on":"off"}">${so[k]?"✓":"–"} ${l}</div>`).join("")}</div>
+${ps&&!ps.error?`<h3 style="margin-top:16px">Mobile experience</h3><div class="r2-rings" style="grid-template-columns:repeat(3,minmax(0,1fr))">${[["Speed",ps.performance,"#0E9F8E"],["SEO",ps.seo,"#4C3FD1"],["Accessibility",ps.accessibility,"#245E9E"]].map(([l,v,c])=>`<div class="r2-ring">${svgRing(v,c,74)}<b>${l}</b></div>`).join("")}</div><p style="font-size:11.5px;color:#8A97A6;margin:6px 0 0">Google PageSpeed (mobile): page shows main content in ${esc(ps.lcp||"–")}.</p>`:""}</div></div></section>
+
+${reviews.length||typeof m.rating==="number"?`<section class="r2-sec"><h2>What patients say</h2><p class="r2-sub">${typeof m.rating==="number"?`${m.rating.toFixed(1)}★ from ${(m.count||0).toLocaleString()} Google reviews.`:""} Recent reviews and the themes in them.</p>
+<div class="r2-two"><div>${reviews.map(v=>`<div class="r2-quote"><span class="st">${"★".repeat(v.rating||0)}${"☆".repeat(5-(v.rating||0))}</span> <span class="wh">${esc(v.when||"")}</span><br>“${esc((v.text||"").slice(0,260))}${(v.text||"").length>260?"…":""}”</div>`).join("")||'<p style="font-size:13px;color:#5A6B7C">No review text available.</p>'}</div>
+<div class="r2-card"><h3>Themes</h3><p style="font-size:12.5px;margin:0 0 6px;color:#5A6B7C">Patients praise</p><div class="r2-tags">${(ins.praise||[]).map(x=>`<span class="r2-tag g">${esc(x)}</span>`).join("")||'<span class="r2-tag m">Not enough reviews yet</span>'}</div>
+<p style="font-size:12.5px;margin:12px 0 6px;color:#5A6B7C">Worth fixing</p><div class="r2-tags">${(ins.complaints||[]).map(x=>`<span class="r2-tag b">${esc(x)}</span>`).join("")||'<span class="r2-tag m">No recurring issues found</span>'}</div></div></div></section>`:""}
+
+<section class="r2-sec"><h2>Search phrases patients use</h2><p class="r2-sub">High-intent searches in ${esc(p.city||"your city")}. Green ones are already mentioned on your website; the rest are open opportunities.</p>
+<div class="r2-tags">${kws.map(k=>`<span class="r2-tag ${site&&k.onSite?"g":"k"}">${site&&k.onSite?"✓ ":""}${esc(k.keyword)}</span>`).join("")}</div></section>
+
+<section class="r2-sec r2-page"><h2>Biggest opportunities</h2><p class="r2-sub">What would bring the most new and returning patients, in order.</p>
+<div class="r2-opps">${opps.slice(0,6).map((t,i)=>{ const [a,b] = splitItem(t); return `<div class="r2-opp"><div class="n">${i+1}</div><b>${esc(a)}</b>${b?`<span>${esc(b)}</span>`:""}</div>`; }).join("")}</div></section>
+
+<section class="r2-sec"><h2>Quick wins on what you already have</h2><p class="r2-sub">Improvements that make your current website, Google profile and ads work harder.</p>
+<div class="r2-card"><ul class="r2-ck" style="grid-template-columns:1fr">${quick.slice(0,8).map(x=>`<li><span class="r2-y">→</span> ${esc(x)}</li>`).join("")||"<li>No major issues found.</li>"}</ul></div></section>
+
+<section class="r2-sec"><h2>90-day plan</h2><p class="r2-sub">A practical order to roll this out.</p>
+<div class="r2-road">${phases.map(([wk,ttl,items])=>`<div class="r2-ph"><div class="w">${wk}</div><b>${ttl}</b><ul>${items.map(x=>`<li>${esc(splitItem(String(x))[0])}</li>`).join("")||"<li>Review results and adjust</li>"}</ul></div>`).join("")}</div></section>
+
+<section class="r2-cta"><div><h3>Let's turn this into booked patients.</h3><p>A 20-minute call to walk through this report and agree the first steps.</p></div>
+<div class="c">${esc(prof.freelancer_name||"")}${prof.business_name?` · ${esc(prof.business_name)}`:""}<br>${esc(prof.freelancer_phone||"")}${prof.freelancer_email?`<br>${esc(prof.freelancer_email)}`:""}</div></section>
+<p class="r2-foot">Based on public information collected on ${esc(dateS)}: the clinic's website, Google PageSpeed and Google Maps. Scores are indicative and meant to guide priorities. Private data such as ad spend and Search Console figures are not included.</p>
+</div>`;
+return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.company)} — digital growth report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>body{margin:24px auto;max-width:920px;padding:0 20px;background:#fff}@page{size:A4;margin:12mm}.pbtn{position:fixed;right:18px;top:18px;background:#4C3FD1;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit}@media print{.pbtn{display:none}body{margin:0;max-width:none;padding:0}}</style></head>
+<body><button class="pbtn" onclick="print()">Save as PDF</button><style>${css}</style>${body}</body></html>`;
 }
 let rptLead = null;
 function downloadReport(p){
 if (!p.report){ toast("Run a full scan first."); return; }
 rptLead = p;
 const html = reportHtml(p), body = html.slice(html.indexOf("<body>")+6, html.lastIndexOf("</body>"));
-$("rptBody").innerHTML = body.replace(/<button onclick="print\(\)">Save as PDF<\/button>/, "");
+$("rptBody").innerHTML = body.replace(/<button class="pbtn"[^>]*>Save as PDF<\/button>/, "");
 $("rptView").hidden = false; $("rptView").scrollTop = 0; document.body.classList.add("rpt-open");
 document.title = `${p.company} - growth report`;
 }
