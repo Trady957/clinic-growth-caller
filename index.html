@@ -475,7 +475,7 @@ const r = p.report||{}, w = r.website||{}, t = r.tracking||{}, so = r.social||{}
 const pct = (arr) => arr.length ? Math.round(arr.filter(Boolean).length/arr.length*100) : null;
 const site = w.loaded ? pct([w.https, w.titleOk, !!w.metaDescription, !!w.h1, w.viewport, !!(w.schema&&w.schema.length), w.sitemap, w.robots, w.arabic, w.blog, !w.noindex]) : (w.url ? null : 0);
 const speed = ps && !ps.error && typeof ps.performance==="number" ? ps.performance : null;
-const rep = typeof m.rating==="number" ? Math.round(Math.min(100, (m.rating/5)*70 + Math.min((m.count||0)/300,1)*30)) : null;
+const rep = typeof m.rating==="number" ? Math.round(Math.min(100, (m.rating/5)*70 + Math.min((m.count||0)/300,1)*30)) : (m.count===0 && m.url ? 0 : null);
 const social = (w.loaded || r.social_checked || Object.values(so).some(Boolean)) ? pct([so.instagram, so.facebook, so.tiktok, so.snapchat, so.youtube, so.whatsapp]) : null;
 const ads = w.loaded ? pct([t.googleAds, t.ga4||t.gtm, t.searchConsole, t.metaPixel]) : null;
 const access = w.loaded ? pct([w.booking==="online", !!so.whatsapp, !!w.chat]) : (!w.url ? pct([false, !!so.whatsapp, false]) : null);
@@ -484,7 +484,7 @@ const known = cats.filter(c=>c[1]!==null);
 const overall = known.length ? Math.round(known.reduce((x,c)=>x+c[1],0)/known.length) : null;
 return {cats, overall};
 }
-function grade(v){ return v===null ? ["Not measured","#8A97A6"] : v>=80 ? ["Strong","#1C7F4E"] : v>=60 ? ["Good, with gaps","#5E8C1C"] : v>=40 ? ["Needs work","#C27A0E"] : ["Urgent","#B8362E"]; }
+function grade(v){ return v===null ? ["Not measured","#8A97A6"] : v>=80 ? ["Strong","#1C7F4E"] : v>=60 ? ["Good, with gaps","#5E8C1C"] : v>=40 ? ["Needs work","#C27A0E"] : ["Big room to grow","#B8362E"]; }
 function svgRing(v, color, size){ size = size||92; const r = size/2-8, c = 2*Math.PI*r, val = v===null?0:v;
 return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#EEF1F6" stroke-width="9"/>
 <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(c*val/100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/>
@@ -517,6 +517,9 @@ const LEVERS = [
 ];
 function revenueModel(p){
 const pr = profile || {}, cur = pr.currency || "AED";
+const C = p.report && p.report.revenue;
+if (C && Array.isArray(C.items)){ const items = C.items.map(i=>({...i, revLo:i.lo*C.value, revHi:i.hi*C.value})); const tLo = items.reduce((a,i)=>a+i.lo,0), tHi = items.reduce((a,i)=>a+i.hi,0);
+return {cur, value:C.value, missed:C.missed||0, items, tLo, tHi, revLo:tLo*C.value, revHi:tHi*C.value, note:C.note||""}; }
 const value = Number(String(p.campaign==="aesthetic" ? pr.rev_aesthetic : p.campaign==="medical" ? pr.rev_medical : pr.rev_dental).replace(/[^\d.]/g,"")) || (p.campaign==="aesthetic"?2000:p.campaign==="medical"?700:1500);
 const missed = Number(String(pr.missed_calls_week||"10").replace(/[^\d.]/g,"")) || 10;
 const items = ((p.report && p.report.propose) || []).slice(0,6).map(String).map(t=>{
@@ -618,7 +621,7 @@ ${RM.items.length?`<section class="r2-sec"><h2>From opportunity to revenue</h2><
 <div class="r2-num"><div class="bk">+${i.lo}–${i.hi} bookings a month</div><div class="rv">${money(i.revLo,RM.cur)}–${money(i.revHi,RM.cur).replace(RM.cur+" ","")}</div><div class="bk">a month</div><div class="rb"><i style="width:${(i.revHi/maxRev*100).toFixed(0)}%"></i></div></div></div>`).join("")}</div>
 <div class="r2-total"><div><span>Extra bookings</span><b>${RM.tLo}–${RM.tHi}</b><small>a month, all opportunities together</small></div><div><span>Extra revenue</span><b>${money(RM.revLo,RM.cur)}–${money(RM.revHi,RM.cur).replace(RM.cur+" ","")}</b><small>a month</small></div><div><span>Over 12 months</span><b>${money(RM.revLo*12,RM.cur)}–${money(RM.revHi*12,RM.cur).replace(RM.cur+" ","")}</b><small>if results hold steady</small></div></div>
 ${(ins.praise||[]).length?`<div class="r2-str"><b>Your strengths become your growth engine.</b> Patients already praise ${esc(ins.praise.slice(0,3).join(", ").toLowerCase())}. Every channel above puts that in front of new patients, so the people who book are likely to have the same great experience, return, and leave the next 5★ review.</div>`:""}
-<p class="r2-asm">Illustrative estimate, not a guarantee. Based on: average value of a new ${p.campaign==="aesthetic"?"aesthetic":p.campaign==="medical"?"medical":"dental"} patient of ${money(RM.value,RM.cur)} in their first year; about ${RM.missed} missed calls a week, with 3 in 10 of those callers likely to book if answered; conservative (low) and expected (high) uptake for each channel. Channels overlap, so ranges are kept deliberately modest. Ads results depend on budget. We'll replace these with your real numbers (call volume, treatment mix, average spend) in our first meeting.</p></section>`:""}
+<p class="r2-asm">${RM.note ? `Illustrative estimate, not a guarantee. ${esc(RM.note)}` : `Illustrative estimate, not a guarantee. Based on: average value of a new ${p.campaign==="aesthetic"?"aesthetic":p.campaign==="medical"?"medical":"dental"} patient of ${money(RM.value,RM.cur)} in their first year; about ${RM.missed} missed calls a week, with 3 in 10 of those callers likely to book if answered; conservative (low) and expected (high) uptake for each channel. Channels overlap, so ranges are kept deliberately modest. Ads results depend on budget. We'll replace these with your real numbers (call volume, treatment mix, average spend) in our first meeting.`}</p></section>`:""}
 <section class="r2-sec"><h2>Quick wins on what you already have</h2><p class="r2-sub">Improvements that make your current website, Google profile and ads work harder.</p>
 <div class="r2-card"><ul class="r2-ck" style="grid-template-columns:1fr">${quick.slice(0,8).map(x=>`<li><span class="r2-y">→</span> ${esc(x)}</li>`).join("")||"<li>No major issues found.</li>"}</ul></div></section>
 
@@ -629,10 +632,18 @@ ${(ins.praise||[]).length?`<div class="r2-str"><b>Your strengths become your gro
 <div class="c">${esc(prof.freelancer_name||"")}${prof.business_name?` · ${esc(prof.business_name)}`:""}<br>${esc(prof.freelancer_phone||"")}${prof.freelancer_email?`<br>${esc(prof.freelancer_email)}`:""}</div></section>
 <p class="r2-foot">Based on public information collected on ${esc(dateS)}: the clinic's website, Google PageSpeed and Google Maps. Scores are indicative and meant to guide priorities. Private data such as ad spend and Search Console figures are not included.</p>
 </div>`;
-return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.company)} — digital growth report</title>
+const clinic = ["dental","aesthetic","medical"].includes(p.campaign) || /clinic|dental|medical|dent/i.test(p.industry||"");
+const V = clinic ? (x=>x) : (x=>x
+ .replace(/Let's turn this into booked patients\./g,"Let's turn this into more orders.")
+ .replace(/more booked patients/g,"more orders").replace(/\bnew and returning patients\b/g,"new and returning customers").replace(/\bPatient access\b/g,"Customer access")
+ .replace(/\bpatients\b/g,"customers").replace(/\bPatients\b/g,"Customers").replace(/\bpatient\b/g,"customer")
+ .replace(/\bExtra bookings\b/g,"Extra orders").replace(/\bbookings\b/g,"orders").replace(/\bbooking\b/g,"ordering").replace(/\bOnline booking\b/g,"Online ordering")
+ .replace(/\bbooked\b/g,"ordered").replace(/\bbook\b/g,"order").replace(/Clinic details for Google/g,"Business details for Google")
+ .replace(/for the clinic\b/g,"for the business").replace(/a clinic\b/g,"a business").replace(/the clinic's\b/g,"the business's").replace(/your clinic\b/g,"your business"));
+return V(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.company)} — digital growth report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800&family=Instrument+Serif&display=swap" rel="stylesheet">
 <style>body{margin:24px auto;max-width:920px;padding:0 20px;background:#fff}@page{size:A4;margin:12mm}.pbtn{position:fixed;right:18px;top:18px;background:#4C3FD1;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit}@media print{.pbtn{display:none}body{margin:0;max-width:none;padding:0}}</style></head>
-<body><button class="pbtn" onclick="print()">Save as PDF</button><style>${css}</style>${body}</body></html>`;
+<body><button class="pbtn" onclick="print()">Save as PDF</button><style>${css}</style>${body}</body></html>`);
 }
 let rptLead = null;
 function downloadReport(p){
