@@ -1,0 +1,939 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"></head><body>
+<title>Clinic Growth Caller</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{--bg:#F1F0F7;--bg-a:#DCD8FB;--bg-b:#F4DDF0;--bg-c:#FBE6CF;--wave:#4C3FD1;--surface:rgba(255,255,255,.80);--solid:#FFFFFF;--sunk:#F3F6F9;--ink:#0C1B2A;--muted:#5A6B7C;--line:#DCE4EC;--line2:#C8D4DF;--brand:#4C3FD1;--brand-2:#8A3FD1;--brand-soft:#E8E5FC;--on-brand:#FFFFFF;--live:#D9472F;--live-soft:#FCE6E1;--ok:#1C7F4E;--ok-soft:#DFF3E8;--warn:#9A6212;--warn-soft:#FBEED6;--bad:#B8362E;--bad-soft:#FBE3E1;--info:#245E9E;--info-soft:#E1ECF8;--agent:#ECEAFD;--patient:#FFFFFF;--shadow:0 1px 2px rgba(12,27,42,.05),0 12px 32px -20px rgba(12,27,42,.35);--f-ui:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;--f-display:"Instrument Serif",Georgia,"Times New Roman",serif;--f-ar:"IBM Plex Sans Arabic","Figtree",Tahoma,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;--r:16px;}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B0A16;--bg-a:#1E1850;--bg-b:#3A1A45;--bg-c:#3A2618;--wave:#9D93FF;--surface:rgba(19,18,31,.80);--solid:#13121F;--sunk:#1A1830;--ink:#E5EDF4;--muted:#93A5B6;--line:#2A2840;--line2:#3A3858;--brand:#9D93FF;--brand-2:#D19BFF;--brand-soft:#231E4A;--on-brand:#0E0B26;--live:#FF7A62;--live-soft:#3A1A14;--ok:#5BC98E;--ok-soft:#12301F;--warn:#E8B256;--warn-soft:#33260F;--bad:#F08A80;--bad-soft:#3A1A18;--info:#8DB8EE;--info-soft:#132A44;--agent:#1F1B40;--patient:#191829;--shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -22px rgba(0,0,0,.8);color-scheme:dark}}:root[data-theme="dark"]{--bg:#0B0A16;--bg-a:#1E1850;--bg-b:#3A1A45;--bg-c:#3A2618;--wave:#9D93FF;--surface:rgba(19,18,31,.80);--solid:#13121F;--sunk:#1A1830;--ink:#E5EDF4;--muted:#93A5B6;--line:#2A2840;--line2:#3A3858;--brand:#9D93FF;--brand-2:#D19BFF;--brand-soft:#231E4A;--on-brand:#0E0B26;--live:#FF7A62;--live-soft:#3A1A14;--ok:#5BC98E;--ok-soft:#12301F;--warn:#E8B256;--warn-soft:#33260F;--bad:#F08A80;--bad-soft:#3A1A18;--info:#8DB8EE;--info-soft:#132A44;--agent:#1F1B40;--patient:#191829;--shadow:0 1px 2px rgba(0,0,0,.3),0 16px 36px -22px rgba(0,0,0,.8);color-scheme:dark}*{box-sizing:border-box}html,body{background:var(--bg)}body{color:var(--ink);font-family:var(--f-ui);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased}h1,h2,h3{margin:0;text-wrap:balance}p{margin:0}button,input,select{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:8px}.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}.ar{font-family:var(--f-ar)}.muted{color:var(--muted)}.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}#bgfx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}.page{position:relative;z-index:1}body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:31;background:var(--solid)}.appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--solid) 82%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line)}.appbar .wrap{display:flex;align-items:center;gap:14px;padding-block:10px;min-height:64px}.brandmk{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;flex:none}.brandmk svg{width:40px;height:40px;flex:none}.brandmk b{display:block;font-size:16.5px;font-weight:800;letter-spacing:-.01em;line-height:1.1}.brandmk span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.16em;color:var(--brand);text-transform:uppercase}.vsep{width:1px;height:28px;background:var(--line);flex:none}.product{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;white-space:nowrap}.product i{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:var(--on-brand);font-style:normal}.product i svg{width:13px;height:13px}.product small{font-size:12px;font-weight:600;color:var(--muted)}.nav{display:flex;gap:2px;margin-left:8px;overflow-x:auto;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav a{color:var(--muted);text-decoration:none;font-weight:600;font-size:13.5px;padding:8px 11px;border-radius:9px;white-space:nowrap}.nav a:hover{background:var(--sunk);color:var(--ink)}.bar-r{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap}.pill .d{width:7px;height:7px;border-radius:50%;background:currentColor}.p-ok{background:var(--ok-soft);color:var(--ok)}.p-warn{background:var(--warn-soft);color:var(--warn)}.p-bad{background:var(--bad-soft);color:var(--bad)}.p-info{background:var(--info-soft);color:var(--info)}.p-mute{background:var(--sunk);color:var(--muted)}.p-brand{background:var(--brand-soft);color:var(--brand)}.user{width:34px;height:34px;border-radius:50%;background:var(--sunk);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:12px;color:var(--muted)}@media (max-width:1100px){.nav{display:none}}@media (max-width:640px){.vsep,.product small,.user{display:none}.brandmk span{display:none}.appbar .wrap{gap:10px}}@media (max-width:520px){.product{display:none}.bar-r .pill{font-size:11px;padding:4px 8px}}.hero{padding-block:34px 18px}.hero-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:center}@media (max-width:980px){.hero-grid{grid-template-columns:minmax(0,1fr)}}.hero h1{font-family:var(--f-display);font-weight:400;font-size:clamp(38px,5vw,62px);line-height:1.02;letter-spacing:-.01em;margin-top:10px;max-width:15ch}.hero h1 em{color:var(--brand)}.hero .lede{color:var(--muted);font-size:16px;max-width:56ch;margin-top:14px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.chips span{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(8px)}.chips svg{width:14px;height:14px;color:var(--brand)}.glass{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(14px) saturate(1.15);-webkit-backdrop-filter:blur(14px) saturate(1.15);min-width:0}.ctrl{padding:18px;display:flex;flex-direction:column;gap:14px}.ctrl-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.ctrl-h h2{font-size:15px;font-weight:700}.clock{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.clock .t{font-family:var(--f-mono);font-size:34px;font-weight:500;letter-spacing:-.02em;line-height:1}.clock input[type=range]{flex:1;min-width:160px;accent-color:var(--brand)}.mkts{display:flex;flex-wrap:wrap;gap:6px}.ctrl-f{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:14px}.ctrl-f small{color:var(--muted);font-size:12.5px;margin-left:auto}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:11px;border:1px solid var(--line2);background:var(--solid);color:var(--ink);font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;text-decoration:none;transition:filter .15s,transform .1s,border-color .15s}.btn:hover{border-color:var(--brand)}.btn:active{transform:translateY(1px)}.btn svg{width:16px;height:16px;flex:none}.btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand-2));border-color:transparent;color:var(--on-brand)}.btn-primary:hover{filter:brightness(1.07)}.btn-ghost{background:transparent}.btn-sm{min-height:32px;padding:0 11px;font-size:12.5px;border-radius:9px}.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}.btn-end{background:var(--live);border-color:var(--live);color:#fff;border-radius:999px;width:46px;height:46px;min-height:0;padding:0}.btn-end svg{width:20px;height:20px}.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:22px}@media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:520px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}.kpi{padding:14px 16px;display:flex;flex-direction:column;gap:6px}.kpi .h{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted)}.kpi .h i{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:var(--sunk);color:var(--c,var(--brand));font-style:normal}.kpi .h i svg{width:14px;height:14px}.kpi b{font-family:var(--f-mono);font-size:28px;font-weight:500;line-height:1;letter-spacing:-.02em}section.blk{padding-block:18px}.sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.sec-h h2{font-size:20px;font-weight:800;letter-spacing:-.015em}.sec-h p{color:var(--muted);font-size:13.5px}.camps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}@media (max-width:1100px){.camps{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:640px){.camps{grid-template-columns:minmax(0,1fr)}}.camp{text-align:left;padding:14px 15px;display:flex;flex-direction:column;gap:6px;cursor:pointer;border-radius:var(--r);position:relative;overflow:hidden}.camp::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:transparent}.camp[aria-pressed="true"]{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand),var(--shadow)}.camp[aria-pressed="true"]::after{background:linear-gradient(90deg,var(--brand),var(--brand-2))}.camp .row{display:flex;justify-content:space-between;align-items:center;gap:8px}.camp b{font-size:14.5px}.camp p{font-size:12.5px;color:var(--muted)}.camp .meter{height:5px;border-radius:3px;background:var(--sunk);overflow:hidden}.camp .meter i{display:block;height:100%;background:var(--brand);border-radius:3px}.camp .mono{font-size:12px;color:var(--muted)}.work{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;margin-top:14px;align-items:start}@media (max-width:1020px){.work{grid-template-columns:minmax(0,1fr)}}.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line)}.card-h h3{font-size:15.5px;font-weight:800}.card-h small{color:var(--muted);font-size:12.5px;display:block}.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}th{text-align:left;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:color-mix(in srgb,var(--sunk) 60%,transparent)}td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}tbody tr:last-child td{border-bottom:0}tbody tr{cursor:pointer;transition:background .12s}tbody tr:hover td{background:color-mix(in srgb,var(--brand-soft) 45%,transparent)}tr.sel td{background:var(--brand-soft)}.who{display:flex;gap:10px;align-items:flex-start}.av{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;font-size:12px;color:#fff;background:var(--c)}.who b{display:block;font-size:14px}.who small{display:block;color:var(--muted);font-size:12px}.reasons{display:flex;flex-wrap:wrap;gap:4px}.cellsub{display:block;color:var(--muted);font-size:12px;margin-top:3px}.call{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);display:flex;flex-direction:column;max-height:calc(100vh - 96px);overflow:hidden}@media (max-width:1020px){.call{position:static;max-height:none}}.callee{padding:18px 16px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--brand-soft) 70%,transparent),transparent)}.callee .big{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:800;color:#fff;background:var(--c,var(--brand));position:relative}.callee .big.ring::before,.callee .big.ring::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--brand);opacity:.0;animation:ring 1.8s ease-out infinite}.callee .big.ring::after{animation-delay:.9s}@keyframes ring{0%{transform:scale(.9);opacity:.6}100%{transform:scale(1.35);opacity:0}}.callee h3{font-size:17px;font-weight:800}.callee .meta{font-size:12.5px;color:var(--muted)}.wave{width:100%;height:38px;display:block}.gate{width:100%;text-align:left;display:flex;flex-direction:column;gap:4px;font-size:12.5px;margin-top:4px}.gate li{display:flex;gap:8px;align-items:baseline}.gate ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px}@media (max-width:520px){.gate ul{grid-template-columns:minmax(0,1fr)}}.tick{font-weight:800;width:14px;flex:none}.tick.y{color:var(--ok)}.tick.n{color:var(--bad)}.transcript{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:240px;background:color-mix(in srgb,var(--sunk) 55%,transparent)}.bubble{max-width:86%;padding:9px 12px;border-radius:14px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--line)}.bubble.agent{background:var(--agent);align-self:flex-start;border-bottom-left-radius:4px}.bubble.patient{background:var(--patient);align-self:flex-end;border-bottom-right-radius:4px}.bubble .who{display:block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}.sysnote{align-self:center;font-size:12px;color:var(--muted);text-align:center;max-width:92%}.action{align-self:flex-start;font-family:var(--f-mono);font-size:11.5px;color:var(--brand);background:var(--solid);border:1px dashed var(--brand);border-radius:9px;padding:5px 9px;max-width:92%;overflow-wrap:anywhere}.action.bad{color:var(--bad);border-color:var(--bad)}.empty{margin:auto;text-align:center;color:var(--muted);max-width:34ch;font-size:13.5px;display:flex;flex-direction:column;gap:10px;align-items:center}.empty svg{width:40px;height:40px;color:var(--brand);opacity:.7}.composer{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:9px;background:var(--surface)}.quick{display:flex;gap:6px;flex-wrap:wrap}.quick button{font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--line2);background:var(--solid);cursor:pointer;font-weight:600}.quick button:hover{border-color:var(--brand);color:var(--brand)}.quick button:disabled{opacity:.45;cursor:not-allowed}.send{display:flex;gap:8px}.send input{flex:1;min-width:0;min-height:42px;border:1px solid var(--line2);border-radius:11px;padding:0 12px;background:var(--solid)}.send input:focus{outline:none;border-color:var(--brand)}.ctrls{display:flex;gap:10px;align-items:center;justify-content:space-between}label.tog{display:inline-flex;gap:7px;align-items:center;font-size:12.5px;color:var(--muted);cursor:pointer}label.tog input{accent-color:var(--brand)}.status-line{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--live)}.live-dot{width:8px;height:8px;border-radius:50%;background:var(--live);animation:blink 1.2s infinite}@keyframes blink{50%{opacity:.25}}.res{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}@media (max-width:1100px){.res{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.res .chart{grid-column:1/-1}}@media (max-width:700px){.res{grid-template-columns:minmax(0,1fr)}}.bars{display:flex;flex-direction:column;gap:10px;padding:16px}.barrow{display:grid;grid-template-columns:120px minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:13px}.barrow .track{height:10px;border-radius:5px;background:var(--sunk);overflow:hidden}.barrow .track i{display:block;height:100%;border-radius:5px;background:var(--c);transition:width .5s}.barrow b{font-family:var(--f-mono);font-weight:500;text-align:right}.detail{padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:13.5px}.detail .t{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto}.detail .t div{border-left:2px solid var(--line2);padding-left:10px}.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media (max-width:980px){.rules{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:600px){.rules{grid-template-columns:minmax(0,1fr)}}.rule{padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:13px}.rule .row{display:flex;justify-content:space-between;align-items:center;gap:8px}.rule ul{margin:0;padding-left:18px;color:var(--muted);display:flex;flex-direction:column;gap:3px}.openers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}@media (max-width:760px){.openers{grid-template-columns:minmax(0,1fr)}}.opener{padding:14px 16px;display:flex;flex-direction:column;gap:8px}.opener blockquote{margin:0;font-size:14px;line-height:1.55}footer{padding-block:26px 40px;color:var(--muted);font-size:12.5px}footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:18px}footer .f-l{display:flex;align-items:center;gap:10px}footer svg{width:26px;height:26px}.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:40;max-width:calc(100% - 32px);box-shadow:var(--shadow)}.leadbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.field{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted);min-width:0}.field input,.field select,.field textarea{font-weight:500;font-size:13.5px;color:var(--ink);min-height:38px;border:1px solid var(--line2);border-radius:10px;padding:7px 10px;background:var(--solid);width:100%}.field textarea{min-height:64px;resize:vertical;font-family:var(--f-ui)}.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand)}.form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:16px}.form .wide{grid-column:span 2}.form .full{grid-column:1/-1}@media (max-width:860px){.form{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:520px){.form{grid-template-columns:minmax(0,1fr)}.form .wide{grid-column:auto}}.chk{display:inline-flex;gap:7px;align-items:center;font-size:13px;font-weight:600;color:var(--ink)}.chk input{accent-color:var(--brand)}.form-f{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.form-f small{color:var(--muted);font-size:12px;margin-left:auto}.score{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;font-weight:500}.score i{display:block;width:44px;height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;position:relative}.score i b{position:absolute;inset:0 auto 0 0;background:var(--c,var(--brand));border-radius:3px}.tabs{display:flex;gap:4px;padding:4px;border-radius:12px;background:var(--sunk);width:max-content;max-width:100%;overflow-x:auto}.tabs button{border:0;background:transparent;padding:7px 12px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;color:var(--muted);white-space:nowrap}.tabs button[aria-selected="true"]{background:var(--solid);color:var(--ink);box-shadow:var(--shadow)}.agentcard{padding:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:12px}.agentcard .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:var(--on-brand);flex:none}.agentcard .ic svg{width:22px;height:22px}.agentcard div{flex:1;min-width:220px}.agentcard p{color:var(--muted);font-size:13px}.dbnote{font-size:12px;color:var(--muted)}.hvrow{display:flex;flex-wrap:wrap;gap:4px}.hv{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:700;border-radius:7px;padding:2px 7px;border:1px solid transparent;white-space:nowrap;font-family:var(--f-ui)}button.hv{cursor:pointer}button.hv:hover{border-color:var(--brand)}.hv-y{background:var(--ok-soft);color:var(--ok)}.hv-n{background:var(--bad-soft);color:var(--bad)}.hv-u{background:var(--sunk);color:var(--muted)}.st{display:flex;flex-direction:column;gap:5px;min-width:240px;max-width:420px}#queue .who{min-width:190px}#queue .who>div{min-width:0}.st-l{font-size:12.5px;line-height:1.35}.st-l b{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}tr.stx-row td{background:color-mix(in srgb,var(--brand-soft) 55%,transparent);cursor:default;padding:12px 14px 14px}tr.stx-row:hover td{background:color-mix(in srgb,var(--brand-soft) 55%,transparent)}.stx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:680px}@media (max-width:560px){.stx{grid-template-columns:minmax(0,1fr)}}.stx-c{background:var(--solid);border:1px solid var(--line);border-radius:12px;padding:11px 12px;display:flex;flex-direction:column;gap:5px;min-width:0}.stx-ul{margin:4px 0 0;padding-left:17px;font-size:13px;display:flex;flex-direction:column;gap:3px}.stx-wide{grid-column:1/-1}.nd-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.nd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:4px}@media (max-width:560px){.nd-grid{grid-template-columns:minmax(0,1fr)}}.nd-grid h4{font-size:12.5px;font-weight:800;margin:0 0 4px;color:var(--brand)}.nd-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}.nd-ul li{font-size:12.5px;line-height:1.35;border-left:2px solid var(--line2);padding-left:8px}.nd-h{display:flex;justify-content:space-between;gap:6px;align-items:center}.nd-h b{font-size:13px}.nd-h .pill{font-size:10.5px;padding:2px 7px;flex:none}.opps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}.opps .eyebrow{margin-right:4px}@media (max-width:640px){#dbPill{display:none}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}#clock,#nowBtn,#resetBtn,.composer{display:none!important}#auth{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(10px)}#auth[hidden]{display:none}#auth .box{width:min(420px,100%);padding:26px;display:flex;flex-direction:column;gap:12px}#auth h2{font-family:var(--f-display);font-weight:400;font-size:34px;line-height:1.05}#auth p{color:var(--muted);font-size:14px}@media (max-width:640px){#whoami{display:none}}</style>
+<canvas id="bgfx" aria-hidden="true"></canvas>
+<div id="auth" hidden><form class="glass box" id="authForm"><div class="eyebrow">Clinic Growth Caller</div><h2>Sign in</h2><p>Enter your email and we'll send you a one-time sign-in link. Only the owner's email can use this console.</p>
+<label class="field">Email<input id="authEmail" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+<button class="btn btn-primary" id="authBtn" type="submit">Send sign-in link</button><p id="authMsg" role="status"></p></form></div>
+<div class="page">
+<header class="appbar"><div class="wrap">
+  <a class="brandmk" href="#top" aria-label="Clinic Growth Caller">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6A5BF0"/><stop offset="1" stop-color="#8A3FD1"/></linearGradient></defs>
+      <rect x="1" y="1" width="46" height="46" rx="14" fill="url(#lg1)"/>
+      <path d="M15 31V17h10.5a5 5 0 0 1 0 10H15" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M27 31l6-6m0 0l-3.2-.2M33 25l.2 3.2" fill="none" stroke="#FFD9A8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div><b id="brandName">Clinic Growth</b><span>Clinic Caller</span></div>
+  </a>
+  <span class="vsep" aria-hidden="true"></span>
+  <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>GCC clinics</small></div>
+  <nav class="nav" aria-label="Sections"><a href="#calls">Calls</a><a href="#meetings">Meetings</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a></nav>
+  <div class="bar-r"><span class="muted" id="whoami" style="font-size:12px"></span><button type="button" class="btn btn-sm btn-ghost" id="signOutBtn">Sign out</button><span class="pill p-ok" id="winPill"><span class="d"></span>Calling open</span><span class="pill p-mute" id="dbPill" title="Where your leads are saved"><span class="d"></span>Sample data</span></div>
+</div></header>
+<main id="top">
+<section class="hero"><div class="wrap">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow" id="heroEyebrow">Freelance · Dubai</div>
+      <h1>Every clinic called, qualified and <em>booked in.</em></h1>
+      <p class="lede" id="heroLede">Your AI caller phones dental, aesthetic and medical clinics across the GCC, gets past reception to the owner or manager, finds out if they need marketing or AI agents, and books confirmed demo meetings in each clinic's own time zone, with the calendar invite and WhatsApp confirmation ready to send.</p>
+      <div class="chips">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>UAE calling rules built in</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Confirmed meetings</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14M5 12h9M5 16h6"/></svg>English and Arabic</span>
+      </div>
+    </div>
+    <div class="glass ctrl" aria-label="Calling day">
+      <div class="ctrl-h"><h2>Calling day (Dubai time)</h2><span class="pill p-ok"><span class="d"></span>Live calls</span></div>
+      <div class="clock"><span class="t" id="clockTxt">--:--</span><input type="range" id="clock" min="420" max="1320" step="15" aria-label="Time of day"><button type="button" class="btn btn-sm" id="nowBtn">Now</button></div>
+      <div><div class="eyebrow" style="margin-bottom:6px">Calling window by market</div><div class="mkts" id="windowPills"></div></div>
+      <div class="ctrl-f">
+        <button type="button" class="btn btn-primary" id="simBtn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>Dial ready leads</button>
+        <button type="button" class="btn btn-ghost" id="resetBtn">Clear today's log</button>
+        <small class="mono" id="callerId">Caller ID</small>
+      </div>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+</div></section>
+<section class="blk" id="calls"><div class="wrap">
+  <div class="sec-h"><div><h2>Calls</h2><p>Pick a clinic type. Every number is checked against each country's calling rules before your caller dials.</p></div></div>
+  <div class="camps" id="campaigns"></div>
+  <div class="work">
+    <div class="glass">
+      <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button></div>
+      <div class="opps" id="opps"></div>
+      <div class="tbl"><table><thead><tr><th>Clinic</th><th>Status · what they have, what to pitch and sell, what to do</th><th>Rule check</th><th></th></tr></thead><tbody id="queue"></tbody></table></div>
+    </div>
+    <aside class="glass call" aria-label="Live test call">
+      <div class="callee" id="callee"></div>
+      <div class="transcript" id="transcript" aria-live="polite"></div>
+      <div class="composer">
+        <div class="quick" id="quick"></div>
+        <form class="send" id="sendForm"><label for="msg" style="position:absolute;left:-9999px">Reply as the clinic</label><input type="text" id="msg" dir="auto" placeholder="Reply as reception or the doctor, English or Arabic" autocomplete="off" disabled><button class="btn btn-primary" id="sendBtn" type="submit" disabled>Say</button></form>
+        <div class="ctrls"><label class="tog"><input type="checkbox" id="voiceTog" checked> Speak the caller's lines</label><button class="btn btn-end" id="hangBtn" type="button" disabled aria-label="End call"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 9c-3.6 0-7 1-9.4 2.9-.6.5-.8 1.3-.4 2l1.4 2.4c.4.7 1.3 1 2 .7l2.9-1.2c.6-.3 1-.9.9-1.6l-.2-1.6c1.8-.6 3.8-.6 5.6 0l-.2 1.6c-.1.7.3 1.3.9 1.6l2.9 1.2c.7.3 1.6 0 2-.7l1.4-2.4c.4-.7.2-1.5-.4-2C19 10 15.6 9 12 9z"/></svg></button></div>
+      </div>
+    </aside>
+  </div>
+</div></section>
+<section class="blk" id="meetings"><div class="wrap">
+  <div class="sec-h"><div><h2>Meetings</h2><p>Confirmed demos from calls, and ones you schedule yourself. Send the calendar invite and WhatsApp confirmation from here.</p></div>
+    <div class="leadbar"><select id="mtgFilter" class="btn btn-sm" aria-label="Show"><option value="upcoming">Upcoming</option><option value="">All</option><option value="proposed">Awaiting confirmation</option><option value="done">Held</option><option value="no_show">No-show</option><option value="cancelled">Cancelled</option></select><button type="button" class="btn btn-sm btn-primary" id="newMtgBtn">Schedule a meeting</button></div></div>
+  <form class="glass" id="mtgForm" hidden style="margin-bottom:12px">
+    <input type="hidden" name="leadId">
+    <div class="form">
+      <label class="field">Clinic<input name="clinic" required></label>
+      <label class="field">Attendee (name, role)<input name="attendee" required placeholder="Dr. Sara Ahmed, Owner"></label>
+      <label class="field">Country (time zone)<select name="market"></select></label>
+      <label class="field">Date and time (clinic's local time)<input name="when" type="datetime-local" required></label>
+      <label class="field">Invite email<input name="email" type="email" placeholder="dr.sara@clinic.com"></label>
+      <label class="field">WhatsApp<input name="whatsapp" placeholder="+966 50 123 4567"></label>
+      <label class="field">Format<select name="format"><option value="online">Online demo</option><option value="in_person">Visit at the clinic</option></select></label>
+      <div class="form-f"><label class="chk"><input type="checkbox" name="confirmed" checked> They confirmed this time</label><button class="btn btn-primary" type="submit">Save meeting</button><button class="btn btn-ghost" type="button" id="mtgCancel">Cancel</button><small>Times are stored once and shown in the clinic's time zone.</small></div>
+    </div>
+  </form>
+  <div class="glass">
+    <div class="card-h"><div><h3>Demo meetings</h3><small id="mtgSum"></small></div></div>
+    <div class="tbl"><table><thead><tr><th>Clinic</th><th>When (clinic time)</th><th>Status</th><th style="text-align:right">Send</th></tr></thead><tbody id="mtgs"></tbody></table></div>
+  </div>
+</div></section>
+<section class="blk" id="leads"><div class="wrap">
+  <div class="sec-h"><div><h2>Clinics</h2><p>Add clinics one by one, paste a list from a spreadsheet or Google Maps export, and export your pipeline.</p></div>
+    <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="all">All leads</button><button role="tab" aria-selected="false" data-tab="add">Add a lead</button><button role="tab" aria-selected="false" data-tab="import">Paste a list</button></div></div>
+  <div class="glass" id="tab-all">
+    <div class="card-h"><div><h3>Pipeline</h3><small id="pipeSum"></small></div><div class="leadbar"><select id="pipeFilter" class="btn btn-sm" aria-label="Filter"><option value="">All statuses</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option><option value="new">Not called</option><option value="booked">Meeting confirmed</option><option value="referral">Got decision-maker</option><option value="dnc">Do not call</option></select><button type="button" class="btn btn-sm" id="exportBtn">Export CSV</button></div></div>
+    <div class="tbl"><table><thead><tr><th>Clinic</th><th>Campaign</th><th>Status</th><th>Score</th><th>Next step</th><th></th></tr></thead><tbody id="pipe"></tbody></table></div>
+  </div>
+  <form class="glass" id="tab-add" hidden>
+    <div class="form">
+      <label class="field">Clinic name<input name="company" required placeholder="Pearl Smile Dental Clinic"></label>
+      <label class="field">Contact (or "Clinic manager")<input name="name" required placeholder="Dr. Sara Ahmed"></label>
+      <label class="field">Role<input name="role" placeholder="Owner / Medical director"></label>
+      <label class="field">Clinic type<input name="industry" placeholder="Dental clinic"></label>
+      <label class="field">City<input name="city" placeholder="Riyadh"></label>
+      <label class="field">Phone<input name="phone" required placeholder="+966 11 123 4567"></label>
+      <label class="field">Email<input name="email" type="email" placeholder="info@clinic.com"></label>
+      <label class="field">Market<select name="market"></select></label>
+      <label class="field">Language<select name="lang"><option value="en">English</option><option value="ar">Arabic</option></select></label>
+      <label class="field">Campaign<select name="campaign"></select></label>
+      <label class="field">Source<input name="source" placeholder="Google Maps, Instagram, referral"></label>
+      <label class="field full">Why them (context for the caller, never read out)<textarea name="context" placeholder="4.6★ from 300 reviews; several mention nobody answering the phone. No online booking."></textarea></label>
+      <div class="form-f"><label class="chk"><input type="checkbox" name="consent"> They agreed to be contacted (demo request or existing contact)</label><label class="chk"><input type="checkbox" name="dncr"> Number is on the UAE Do Not Call Register</label>
+        <button class="btn btn-primary" type="submit">Add clinic</button><small>Saved to your clinic list.</small></div>
+    </div>
+  </form>
+  <div class="glass" id="tab-import" hidden>
+    <div class="form">
+      <label class="field full">Paste rows from Google Sheets or Excel (with a header row)<textarea id="csvIn" style="min-height:150px;font-family:var(--f-mono);font-size:12.5px" placeholder="company,name,role,industry,city,phone,email,market,lang,campaign,context,source,consent,dncr&#10;Pearl Smile Dental Clinic,Clinic manager,Clinic manager,Dental clinic,Riyadh,+966115550000,,SA,ar,dental,Reviews mention unanswered calls,Google Maps,no,no"></textarea></label>
+      <div class="form-f"><button class="btn btn-primary" type="button" id="importBtn">Import clinics</button><small>Columns can be in any order. market: AE, SA, QA, KW, BH, OM. campaign: dental, aesthetic, medical, inbound, proposal. consent and dncr: yes or no.</small></div>
+    </div>
+  </div>
+</div></section>
+<section class="blk" id="results"><div class="wrap">
+  <div class="sec-h"><div><h2>Results</h2><p>Simulated dials and your test calls. Select a call to read the transcript and the qualification.</p></div></div>
+  <div class="res">
+    <div class="glass chart"><div class="card-h"><h3>Outcomes</h3></div><div class="bars" id="bars"></div></div>
+    <div class="glass"><div class="card-h"><h3>Call log</h3></div><div class="tbl"><table><thead><tr><th>Time</th><th>Lead</th><th>Outcome</th><th>Length</th></tr></thead><tbody id="log"></tbody></table></div></div>
+    <div class="glass"><div class="card-h"><h3>Call detail</h3></div><div class="detail" id="detail"><p class="muted">Select a call in the log to read its transcript and what your caller did.</p></div></div>
+  </div>
+</div></section>
+<section class="blk" id="pitch"><div class="wrap">
+  <div class="sec-h"><div><h2>Your pitch</h2><p>What your caller says about you and your services. Changes apply to the next call.</p></div></div>
+  <form class="glass" id="profileForm">
+    <div class="form">
+      <label class="field">Business name<input name="business_name"></label>
+      <label class="field">Your name<input name="freelancer_name"></label>
+      <label class="field">Caller's name<input name="agent_name"></label>
+      <label class="field wide">Tagline<input name="freelancer_title"></label>
+      <label class="field full">Services<input name="freelancer_service"></label>
+      <label class="field wide">Value in one line<input name="freelancer_value"></label>
+      <label class="field wide">One proof point<input name="freelancer_proof"></label>
+      <label class="field wide">Pricing (only if asked)<input name="freelancer_pricing"></label>
+      <label class="field">Your phone / WhatsApp<input name="freelancer_phone"></label>
+      <label class="field">Your email<input name="freelancer_email"></label>
+      <label class="field">Your mobile (for test calls)<input name="test_phone" placeholder="+971 50 123 4567"></label>
+      <label class="field">Your hand-off hours (Dubai)<input name="handoff_hours" placeholder="Mon–Fri 10:00–17:00"></label>
+      <label class="field">Meeting length (minutes)<input name="meeting_length" inputmode="numeric" placeholder="20"></label>
+      <div class="form-f"><button class="btn btn-primary" type="submit">Save pitch</button><small id="profileNote"></small></div>
+    </div>
+  </form>
+  <div class="glass agentcard">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+    <div><b>Live voice agent · Clinic Growth Caller – GCC</b><p>The same script runs as a real-voice ElevenLabs agent. It gets past reception, qualifies the clinic, and only books a meeting after reading back the day, time zone, attendee and invite email. Each call returns the meeting details, decision-maker and next step.</p></div>
+    <a class="btn" href="https://elevenlabs.io/app/agents/agents/agent_3401m6p7pqnjepwv9rgy15kfq48c" target="_blank" rel="noopener">Open in ElevenLabs</a>
+  </div>
+</div></section>
+<section class="blk" id="compliance"><div class="wrap">
+  <div class="sec-h"><div><h2>Compliance</h2><p>The rule table checked before every dial. Confirm with your own advisor before calling at scale.</p></div></div>
+  <div class="rules" id="rules"></div>
+  <div class="openers">
+    <div class="glass opener"><div class="eyebrow">Opening line · dental clinic (reception)</div><blockquote id="openEn"></blockquote></div>
+    <div class="glass opener"><div class="eyebrow">Opening line · Arabic</div><blockquote class="ar" dir="rtl" id="openAr"></blockquote></div>
+    <div class="glass opener"><div class="eyebrow">Opening line · demo request</div><blockquote id="openIn"></blockquote></div>
+    <div class="glass opener"><div class="eyebrow">Opening line · proposal follow-up</div><blockquote id="openFu"></blockquote></div>
+  </div>
+</div></section>
+</main>
+<footer><div class="wrap">
+  <div class="f-l"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="14" fill="url(#lg1)"/><path d="M15 31V17h10.5a5 5 0 0 1 0 10H15" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="footName">Clinic Growth Caller</span></div>
+  <span>Live. Calls run through ElevenLabs on your Twilio number; results arrive automatically after each call.</span>
+</div></footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script>
+const MARKETS = {
+AE:{name:"UAE",offset:4,start:9,end:18,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
+notes:["Calls only 09:00–18:00 local, working days","Identity, AI assistant and recording announced first","No DNCR numbers without consent","Unanswered: max 1 a day, 2 a week","Declined: not called again for that campaign","Call from a number registered to your licence"],source:"Cabinet Resolutions 56 & 57 of 2024",verified:true},
+SA:{name:"Saudi Arabia",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
+notes:["Promotional calls need documented consent","Unsubscribe honoured within 24 hours","Window set conservatively to 09:00–18:00"],source:"CST rules; confirm window locally",verified:false},
+QA:{name:"Qatar",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
+KW:{name:"Kuwait",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
+BH:{name:"Bahrain",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
+OM:{name:"Oman",offset:4,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false}
+};
+const TZNAME = {AE:"UAE time",SA:"Saudi time",QA:"Qatar time",KW:"Kuwait time",BH:"Bahrain time",OM:"Oman time"};
+const CAMPAIGNS = {
+dental:{name:"Dental clinics",kind:"cold",desc:"Dental clinics and centres across the GCC."},
+aesthetic:{name:"Aesthetic & derma",kind:"cold",desc:"Cosmetic, dermatology and laser clinics."},
+medical:{name:"Medical centres",kind:"cold",desc:"Polyclinics, family and specialist clinics."},
+inbound:{name:"Demo requests",kind:"warm",desc:"Clinics that asked about marketing or AI agents."},
+proposal:{name:"Proposal follow-up",kind:"warm",desc:"Proposal sent, no decision yet."}
+};
+const KIND_PILL = {warm:["Existing contact","p-info"],cold:["Prospecting","p-warn"]};
+const STATUS = {new:["Not called","p-mute"],referral:["Got decision-maker","p-info"],hot:["Hot","p-bad"],warm:["Warm","p-warn"],cold:["Cold","p-info"],booked:["Meeting confirmed","p-ok"],callback:["Call back","p-info"],dnc:["Do not call","p-bad"]};
+const MSTATUS = {proposed:["Awaiting confirmation","p-warn"],confirmed:["Confirmed","p-ok"],done:["Held","p-info"],no_show:["No-show","p-bad"],cancelled:["Cancelled","p-mute"]};
+const DEFAULT_PROFILE = {
+freelancer_name:"Maha", agent_name:"Noor", business_name:"Mizan AI Agents", freelancer_title:"marketing and AI agents for clinics",
+freelancer_service:"marketing (social media, ads, Google reviews, websites) and AI agents (24/7 AI receptionist on calls and WhatsApp, patient recall and aftercare calls)",
+freelancer_value:"help dental and medical clinics across the GCC answer every patient call and message and book more appointments",
+freelancer_proof:"we can show a live demo of an AI assistant that phones dental patients for recalls and next-day aftercare check-ins in Arabic and English",
+freelancer_pricing:"marketing retainers from around AED 3,500 a month; an AI receptionist from around AED 1,500 a month after setup",
+freelancer_phone:"+971 50 000 0000", freelancer_email:"hello@example.com", handoff_hours:"Mon–Fri 10:00–17:00", meeting_length:"20", test_phone:""
+};
+const SAMPLE_LEADS = [];
+const AV_COLORS = ["#4C3FD1","#8A3FD1","#C2672E","#0A7E8C","#2E8B57","#B2445E","#3E6FB0","#8C6A12"];
+const hashN = s => [...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
+const avColor = id => AV_COLORS[hashN(id)%AV_COLORS.length];
+const initials = n => String(n||"?").split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const DAY = 864e5;
+let profile = {...DEFAULT_PROFILE};
+let state = {leads:[], log:[], meetings:[]}, simTime, activeCamp = "dental", selectedId = null, call = null, selectedLog = null, simRunning = false;
+let sample = null, db = null, downloads = null, live = false; // live = leads come from the saved list
+function dubaiMidnight(ms){ const d = new Date(ms + 4*36e5); d.setUTCHours(0,0,0,0); return d.getTime() - 4*36e5; }
+function localHourMin(ms, offset){ const d = new Date(ms + offset*36e5); return {h:d.getUTCHours(), m:d.getUTCMinutes(), dow:d.getUTCDay()}; }
+const fmtHM = (h,m)=> String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
+function normLead(l){ return {status:"new",score:null,next:"",declined:[],attempts:[],consent:false,dncr:false,lang:"en",market:"AE",campaign:"dental",...l, declined:[...(l.declined||[])], attempts:[...(l.attempts||[])]}; }
+function checkLead(p, campKey, now){
+const mk = MARKETS[p.market]||MARKETS.AE, camp = CAMPAIGNS[campKey]||CAMPAIGNS.dental, checks = [];
+const add = (ok, okText, failText) => checks.push({ok, text: ok ? okText : failText});
+add(!p.optedOut && p.status!=="dnc", "Has not opted out", "Asked not to be called");
+add(!(mk.dncr && p.dncr && !p.consent), p.dncr ? "On DNCR, consent on file" : "Not on Do Not Call Register", "On Do Not Call Register");
+add(!p.declined.includes(campKey), "Has not declined", "Declined this before");
+add(p.status!=="booked", "No meeting booked yet", "Meeting already booked");
+const t = localHourMin(now, mk.offset), mins = t.h*60+t.m;
+add(!mk.weekend.includes(t.dow), "Working day", "Weekend in "+mk.name);
+add(mins >= mk.start*60 && mins < mk.end*60, `${fmtHM(t.h,t.m)} local, inside hours`, `${fmtHM(t.h,t.m)} local, outside hours`);
+const att = p.attempts||[], unanswered = att.filter(a=>!a.answered), startToday = now - (mins*6e4);
+const today = unanswered.filter(a=>a.at >= startToday && a.at <= now).length;
+const week = unanswered.filter(a=>a.at > now - 7*DAY && a.at <= now).length;
+add(today < mk.maxUnansweredPerDay, "No unanswered call today", "Already tried today");
+add(!att.some(a=>a.answered && a.at >= startToday && a.at <= now), "Not reached yet today", "Already spoke today");
+add(week < mk.maxUnansweredPerWeek, `Unanswered this week: ${week} of ${mk.maxUnansweredPerWeek}`, `Weekly limit reached (${week} of ${mk.maxUnansweredPerWeek})`);
+return {ok: checks.every(c=>c.ok), checks, fails: checks.filter(c=>!c.ok), kind:camp.kind};
+}
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(t){ const el=$("toast"); el.textContent=t; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,3000); }
+const ICON = {
+phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
+ear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg>',
+cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',
+fire:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 21c-4 0-7-2.7-7-6.5 0-3.2 2.2-5.2 3.5-7 .4 1.8 1.3 3 2.5 3.5C11 7 12.5 4.5 15 3c-.3 3 1 4.6 2.4 6.3C18.6 10.8 19 12.4 19 14.5 19 18.3 16 21 12 21z"/></svg>',
+send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg>',
+shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'
+};
+const OUTCOME = {booked:["Meeting confirmed","p-ok","#1C7F4E"],info_sent:["Info sent","p-info","#245E9E"],transferred:["Put through to you","p-brand","#4C3FD1"],callback:["Call back later","p-info","#5B8FD0"],declined:["Not interested","p-mute","#8A99A8"],opt_out:["Opted out","p-bad","#B8362E"],no_answer:["No answer","p-warn","#C28A1E"],referral:["Got decision-maker","p-info","#3E6FB0"],ended:["Ended","p-mute","#B5C0CB"]};
+function handoffWindow(){
+const m = String(profile.handoff_hours||"").match(/(\d{1,2})(?::(\d{2}))?\s*[–-]\s*(\d{1,2})(?::(\d{2}))?/);
+return m ? {s:+m[1]*60+(+m[2]||0), e:+m[3]*60+(+m[4]||0)} : {s:600,e:1020};
+}
+function transferOpen(){ const t = localHourMin(simTime,4), w = handoffWindow(), mins=t.h*60+t.m; return t.dow!==0 && t.dow!==6 && mins>=w.s && mins<w.e; }
+function renderClock(){
+const t = localHourMin(simTime, 4);
+$("clockTxt").textContent = fmtHM(t.h,t.m);
+$("clock").value = t.h*60+t.m;
+const mk=MARKETS.AE, open = !mk.weekend.includes(t.dow) && t.h>=9 && t.h<18, wp=$("winPill");
+wp.className = "pill "+(open?"p-ok":"p-warn"); wp.innerHTML = `<span class="d"></span>${open?"Calling open until 6 pm":"Calling closed now"}`;
+const seen = new Set(["AE",...state.leads.map(p=>p.market)].filter(k=>MARKETS[k]));
+$("windowPills").innerHTML = [...seen].map(k=>{
+const m = MARKETS[k], lt = localHourMin(simTime, m.offset), mins = lt.h*60+lt.m, o = !m.weekend.includes(lt.dow) && mins>=m.start*60 && mins<m.end*60;
+return `<span class="pill ${o?"p-ok":"p-bad"}"><span class="d"></span>${m.name} ${fmtHM(lt.h,lt.m)}</span>`;
+}).join("");
+}
+function renderCampaigns(){
+$("campaigns").innerHTML = Object.entries(CAMPAIGNS).map(([k,c])=>{
+const list = state.leads.filter(p=>p.campaign===k), ready = list.filter(p=>checkLead(p,k,simTime).ok).length, kp=KIND_PILL[c.kind];
+return `<button type="button" class="glass camp" data-camp="${k}" aria-pressed="${k===activeCamp}">
+<span class="row"><b>${c.name}</b><span class="pill ${kp[1]}">${kp[0]}</span></span>
+<p>${c.desc}</p><span class="meter"><i style="width:${list.length?Math.round(ready/list.length*100):0}%"></i></span><span class="mono">${ready} of ${list.length} ready now</span></button>`;
+}).join("");
+}
+function scoreHtml(s){ if (s==null) return `<span class="muted">—</span>`; const c = s>=70?"var(--bad)":s>=40?"var(--warn)":"var(--info)"; return `<span class="score"><i><b style="width:${s}%;--c:${c};background:${c}"></b></i>${s}</span>`; }
+const HAVE_KEYS = [
+["website","Website"],["booking","Online booking"],["whatsapp","WhatsApp"],["chat","Website chat"],
+["instagram","Instagram"],["tiktok","TikTok"],["snapchat","Snapchat"],["arabic","Arabic site"],["googleAds","Google Ads"],["blog","Blog / SEO"]
+];
+function haveMap(p){
+const a = p.audit || {}, m = {};
+for (const [k] of HAVE_KEYS) m[k] = (k in a) ? a[k] : null;
+if (m.website===null) m.website = p.website && !/instagram\.com|facebook\.com/i.test(p.website) ? true : (p.audit ? false : null);
+if (m.instagram===null && /instagram\.com/i.test(p.website||"")) m.instagram = true;
+if (typeof a.booking==="string") m.booking = a.booking==="online";
+if (m.website===false){ for (const k of ["booking","chat","arabic","blog"]) if (m[k]===null) m[k] = false; }
+return m;
+}
+function positioning(p){
+const h = haveMap(p), a = p.audit || {}, aes = p.campaign==="aesthetic", dental = p.campaign==="dental"||/dent/i.test(p.industry||"");
+const gulfSnap = ["SA","KW","QA"].includes(p.market);
+const gaps = [], offers = [];
+const no = k => h[k]===false;
+if (no("website")) { gaps.push("No website, so patients can't find or book them online"); offers.push("Website with online booking + Google profile"); }
+if (h.website && no("booking")) { gaps.push(a.booking==="form" ? "Only a request form, no real online booking" : "Booking by phone only"); }
+if (no("whatsapp")) gaps.push("No WhatsApp button for patients");
+if (h.website && no("chat")) gaps.push("No chat on the website after hours");
+if (no("instagram") || (aes && no("tiktok"))) { gaps.push(aes ? "Weak Instagram/TikTok presence for an aesthetic clinic" : "No Instagram presence"); offers.push(aes ? "Instagram & TikTok content + before/after ads" : "Social media content & ads"); }
+if (gulfSnap && no("snapchat")) { gaps.push("Not on Snapchat, a big channel in "+(MARKETS[p.market]||{}).name); offers.push("Snapchat ads"); }
+if (h.website && no("arabic")) { gaps.push("Website has no Arabic version"); offers.push("Arabic landing page"); }
+const contactGap = no("booking") || no("whatsapp") || no("chat");
+if (contactGap) offers.unshift("AI receptionist: answers calls & WhatsApp 24/7 in Arabic and English and books appointments");
+if (dental) offers.push("AI recall calls: 6-month check-ups, unfinished treatment, next-day aftercare");
+if (aes) offers.push("AI follow-ups for consultations and package renewals");
+offers.push("Automatic Google review requests after visits");
+const uniq = [...new Set(offers)];
+let pitch, angle;
+if (contactGap && (no("booking") || no("whatsapp"))) { pitch = "AI receptionist"; angle = "Never miss a patient call or WhatsApp again, even after hours."; }
+else if (no("website")) { pitch = "Website + online booking"; angle = "Patients search online first; make it easy for them to book you."; }
+else if (no("instagram") || (aes && no("tiktok")) || (gulfSnap && no("snapchat"))) { pitch = aes ? "Social media & ads" : "Social media & ads"; angle = aes ? "Turn Instagram and TikTok followers into booked consultations." : "Get found by new patients where they scroll every day."; }
+else if (p.audit) { pitch = dental ? "AI recall & aftercare calls" : "AI follow-up calls"; angle = "They're set up well online, so grow from existing patients: recalls, unfinished treatment, reviews."; }
+else { pitch = "Discover on the call"; angle = "Not checked yet: ask how patients book and what happens to after-hours calls."; }
+const checked = !!p.audit;
+const next = nextStep(p, checked, pitch);
+return {h, gaps, offers:uniq, pitch, angle, next, checked};
+}
+function nextStep(p, checked, pitch){
+const s = p.status||"new";
+if (s==="dnc" || p.optedOut) return "Do not call. Remove from all campaigns.";
+if (s==="booked") return `Prepare the demo around "${pitch}" using their own website; reminder the day before.`;
+if (s==="referral") return p.next || "Call the decision-maker reception named.";
+if (s==="callback") return p.next || "Call back at the agreed time.";
+if (s==="hot") return "Book a confirmed demo meeting.";
+if (s==="warm") return p.next || "Send the WhatsApp demo video, follow up in a week.";
+if (s==="cold") return "Park for 3 months, then try a different angle.";
+if (!checked) return `Scan the clinic (website, Google rating, Google Ads), then call leading with what's missing.`;
+return `Call: ask for the owner or manager, open with "${pitch}".`;
+}
+function haveChips(p, editable){
+const h = haveMap(p);
+return HAVE_KEYS.map(([k,label])=>{ const v = h[k];
+const cls = v===true?"hv-y":v===false?"hv-n":"hv-u", mark = v===true?"✓":v===false?"✕":"?";
+return editable ? `<button type="button" class="hv ${cls}" data-hv="${k}" title="Click to change: has it / missing / not checked">${mark} ${label}</button>`
+: `<span class="hv ${cls}">${mark} ${label}</span>`; }).join("");
+}
+function statusCell(p){
+const s = positioning(p);
+return `<div class="st"><div class="hvrow">${haveChips(p,false)}</div>
+<div class="st-l"><b>Pitch</b> ${esc(s.pitch)}</div>
+<div class="st-l"><b>Sell</b> ${esc(needsShort(p))}</div>
+<div class="st-l muted"><b>Next</b> ${esc(s.next)}</div></div>`;
+}
+function statusDetail(p){
+const s = positioning(p), a = p.audit||{};
+const canCheck = p.website && !/instagram\.com|facebook\.com/i.test(p.website);
+return `<div class="stx">
+<div class="stx-c"><div class="eyebrow">What they have now</div>
+<div class="hvrow">${haveChips(p,true)}</div>
+<p class="muted" style="font-size:12px;margin-top:6px">${a.checkedAt ? `${a.source==="manual"?"Edited by you":"Scanned"} ${new Date(a.checkedAt).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}${a.services?` · ${esc(a.services)}`:""}${a.note?` · ${esc(a.note)}`:""}` : "Not scanned yet. Click a chip to set it, or scan the clinic."}</p>
+<div class="leadbar" style="margin-top:8px"><button type="button" class="btn btn-sm" data-audit="${esc(p.id)}" title="Website, Google Maps rating and Google Ads">${a.checkedAt&&a.source!=="manual"?"Re-scan":"Scan clinic"}</button>${canCheck?`<a class="btn btn-sm btn-ghost" href="${esc(p.website)}" target="_blank" rel="noopener">Open site</a>`:`<span class="muted" style="font-size:12px">${p.website?"Only a social profile listed.":(haveMap(p).website?"Website noted, no link saved.":"No website listed.")}</span>`}</div>
+${p.context?`<p class="muted" style="font-size:12px;margin-top:8px">${esc(p.context)}</p>`:""}
+</div>
+<div class="stx-c"><div class="eyebrow">What's missing</div>
+${s.gaps.length?`<ul class="stx-ul">${s.gaps.map(g=>`<li>${esc(g)}</li>`).join("")}</ul>`:`<p class="muted" style="font-size:13px">${s.checked?"No obvious gaps online. Lead with growth from existing patients.":"Unknown until checked or asked on the call."}</p>`}
+</div>
+<div class="stx-c"><div class="eyebrow">Recommended position</div>
+<p style="font-weight:800;font-size:14.5px">${esc(s.pitch)}</p><p class="muted" style="font-size:13px;margin-top:2px">${esc(s.angle)}</p>
+<ul class="stx-ul">${s.offers.slice(0,4).map(o=>`<li>${esc(o)}</li>`).join("")}</ul>
+</div>
+<div class="stx-c"><div class="eyebrow">What needs to be done</div>
+<p style="font-size:13.5px">${esc(s.next)}</p>
+</div>${needsCard(p)}</div>`;
+}
+function positioningForPrompt(p){
+const s = positioning(p), h = s.h;
+const has = HAVE_KEYS.filter(([k])=>h[k]===true).map(([,l])=>l), missing = HAVE_KEYS.filter(([k])=>h[k]===false).map(([,l])=>l);
+return `What they have now: ${has.length?has.join(", "):"unknown"}. Missing: ${missing.length?missing.join(", "):"unknown"}.
+Lead with: ${s.pitch} — ${s.angle} Gaps you may mention gently (never as criticism, as an observation): ${s.gaps.slice(0,3).join("; ")||"none known, ask how they book patients today"}.`;
+}
+let mcp = null, auditTab = null, auditRun = null;
+const txt = r => { const v = r && (r.payload ?? (r.content||[]).map(c=>c.text||"").join("\n")); return typeof v==="string" ? v : JSON.stringify(v||""); };
+
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+
+
+
+
+
+
+const PRI = {high:["High","p-bad"], med:["Medium","p-warn"], add:["Add-on","p-mute"], ask:["Ask on call","p-info"]};
+function needsFor(p){
+const h = haveMap(p), a = p.audit || {}, aes = p.campaign==="aesthetic", dental = p.campaign==="dental"||/dent/i.test(p.industry||"");
+const city = p.city || (MARKETS[p.market]||{}).name || "their city";
+const term = dental ? `"dentist near me", "dental implants ${city}"` : aes ? `"botox ${city}", "laser hair removal ${city}"` : `"clinic near me", "${(p.industry||"doctor").toLowerCase()} ${city}"`;
+const rating = typeof a.gRating==="number" ? a.gRating : null, reviews = typeof a.gReviews==="number" ? a.gReviews : null;
+const M = [], A = [];
+const add = (list, name, pri, why) => list.push({name, pri, why});
+const snapMk = ["SA","KW","QA"].includes(p.market);
+if (a.googleAds===false) add(M, "Google Search Ads", h.website ? "high" : "med", `Not running Google ads. Patients search ${term} and land on competitors.${h.website?"":" Needs a landing page first."}`);
+else if (a.googleAds===true) add(M, "Google Ads optimisation & call tracking", "med", `Already advertising${a.adsCount?` (${a.adsCount} ads seen)`:""}: offer an audit, call tracking and lower cost per booking.`);
+else add(M, "Google Search Ads", "ask", `Not checked yet. Ask if they run Google ads for ${term}.`);
+if (rating===null && reviews===null) add(M, "Google Business Profile & local SEO", "ask", "Rating not checked yet. Maps ranking drives most new-patient calls.");
+else if ((rating!==null && rating<4.4) || (reviews!==null && reviews<100)) add(M, "Google Business Profile & reviews growth", "high", `${rating!==null?`${rating}★`:""}${reviews!==null?` from ${reviews} reviews`:""}: below what top clinics in ${city} show.`);
+else add(M, "Local SEO upkeep (Maps posts, photos, replies)", "add", `${rating}★ from ${reviews} reviews: protect the ranking.`);
+if (h.website===false) add(M, "Website with online booking", "high", "No website: patients who search can't find or book them.");
+else if (h.booking===false) add(M, "Booking-focused landing pages", "med", a.booking==="form" ? "Only a request form; a real booking page converts more ad clicks." : "Phone-only booking loses visitors who won't call.");
+if (h.website && h.arabic===false) add(M, "Arabic website / landing page", p.market==="AE"?"med":"high", "No Arabic version for Arabic-speaking patients.");
+if (h.website && a.blog===false) add(M, "SEO content in Arabic & English", "med", `No blog or treatment articles to rank for ${term}.`);
+if (h.instagram===false) add(M, "Instagram content & management", aes?"high":"med", "No Instagram presence found.");
+else if (h.instagram===true) add(M, "Meta (Instagram/Facebook) ads", aes?"high":"med", aes ? "Has Instagram: turn followers into booked consultations with offer ads." : "Has Instagram: promote high-value treatments to locals.");
+else add(M, "Social media content & ads", "ask", "Social presence not checked yet.");
+if ((aes || dental) && h.tiktok===false) add(M, "TikTok content & ads", aes?"high":"add", "Not on TikTok, where cosmetic treatments get discovered.");
+if (snapMk && h.snapchat===false) add(M, "Snapchat ads", "med", `Snapchat is a top channel in ${(MARKETS[p.market]||{}).name}; not used yet.`);
+if (h.whatsapp===true) add(M, "WhatsApp broadcast campaigns", "add", "Has WhatsApp: send offers and check-up reminders to past patients.");
+add(M, "Monthly reporting & conversion tracking", "add", "Shows bookings per channel so spend goes where it works.");
+if (h.booking===false || h.booking===null) add(A, "AI voice receptionist (24/7)", h.booking===false?"high":"ask", h.booking===false ? "Booking is by phone: answers every call, after hours too, in Arabic and English, and books." : "Ask what happens to calls after hours or when reception is busy.");
+else add(A, "AI voice receptionist (overflow & after hours)", "med", "Has online booking, but phone calls still go unanswered at peak times.");
+if (h.whatsapp===false) add(A, "WhatsApp AI booking agent + WhatsApp Business setup", "high", "No WhatsApp: the channel most GCC patients use to book.");
+else if (h.whatsapp===true) add(A, "WhatsApp AI booking agent", h.chat?"med":"high", "Has WhatsApp, replied by hand: AI answers instantly and books 24/7.");
+else add(A, "WhatsApp AI booking agent", "ask", "WhatsApp not checked yet.");
+if (h.website && h.chat===false) add(A, "Website AI chat assistant", "med", "No chat on the site: visitors leave without booking.");
+if (dental) add(A, "AI recall & reactivation calls", "high", "6-month check-ups and unfinished treatment plans: revenue from patients they already have.");
+else add(A, "AI patient reactivation calls", "med", "Brings back patients who haven't visited in a year.");
+if (dental || aes) add(A, "AI aftercare check-in calls", "med", "Next-day calls after procedures; flags problems to the doctor.");
+add(A, "AI appointment reminders & no-show reduction", "med", "Confirms appointments by call and WhatsApp the day before.");
+if ((rating!==null && rating<4.6) || (reviews!==null && reviews<200)) add(A, "AI review-request agent", "high", "Asks happy patients for a Google review right after their visit.");
+else add(A, "AI review-request agent", "add", "Keeps fresh reviews coming in.");
+if (aes && h.instagram!==false) add(A, "Instagram DM AI agent", "high", "Answers DMs and price questions instantly, books consultations.");
+if (a.googleAds===true || M.some(x=>/Ads/.test(x.name) && x.pri!=="add")) add(A, "AI lead follow-up for ad enquiries", "med", "Calls or WhatsApps every ad lead within a minute.");
+const order = {high:0, med:1, ask:2, add:3};
+M.sort((x,y)=>order[x.pri]-order[y.pri]); A.sort((x,y)=>order[x.pri]-order[y.pri]);
+return {marketing:M, ai:A};
+}
+function needsList(items){
+return `<ul class="nd-ul">${items.map(i=>`<li><div class="nd-h"><b>${esc(i.name)}</b><span class="pill ${PRI[i.pri][1]}">${PRI[i.pri][0]}</span></div><span class="muted">${esc(i.why)}</span></li>`).join("")}</ul>`;
+}
+function needsCard(p){
+const n = needsFor(p), a = p.audit || {};
+const ev = [];
+if (typeof a.gRating==="number") ev.push(`Google ${a.gRating}★${typeof a.gReviews==="number"?` · ${a.gReviews} reviews`:""}`);
+if (a.googleAds===true) ev.push(`Running Google ads${a.adsCount?` (${a.adsCount})`:""}`); else if (a.googleAds===false) ev.push("No Google ads found");
+return `<div class="stx-c stx-wide"><div class="nd-top"><div class="eyebrow">What we can sell them</div>${ev.length?`<span class="muted" style="font-size:12px">${esc(ev.join(" · "))}</span>`:""}</div>
+<div class="nd-grid"><div><h4>Marketing services</h4>${needsList(n.marketing)}</div><div><h4>AI agents</h4>${needsList(n.ai)}</div></div></div>`;
+}
+function needsShort(p){
+const n = needsFor(p), top = [...n.marketing, ...n.ai].filter(i=>i.pri==="high");
+return top.length ? top.slice(0,3).map(i=>i.name.replace(/ \(.*\)| \+ .*/,"")).join(" · ") + (top.length>3?` +${top.length-3}`:"") : "Ask on the call";
+}
+function renderOpps(){
+const list = state.leads.filter(p=>p.campaign===activeCamp && p.status!=="dnc" && !p.optedOut);
+const cnt = {};
+for (const p of list){ const n = needsFor(p); for (const i of [...n.marketing, ...n.ai]) if (i.pri==="high"){ const k = i.name.replace(/ \(.*\)| \+ .*/,""); cnt[k]=(cnt[k]||0)+1; } }
+const top = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,6);
+$("opps").innerHTML = top.length ? `<span class="eyebrow">Top needs in this campaign</span>${top.map(([k,v])=>`<span class="pill p-brand">${esc(k)} · ${v}</span>`).join("")}` : `<span class="muted" style="font-size:12.5px">Check websites to see what these clinics need most.</span>`;
+}
+function renderQueue(){
+const list = state.leads.filter(p=>p.campaign===activeCamp);
+let ready = 0;
+$("queue").innerHTML = list.length ? list.map(p=>{
+const g = checkLead(p, activeCamp, simTime); if (g.ok) ready++;
+const status = g.ok ? `<span class="pill p-ok"><span class="d"></span>Cleared to call</span>` :
+`<div class="reasons">${g.fails.map(f=>`<span class="pill ${/outside|tried|Weekly|spoke|Weekend|booked/i.test(f.text)?"p-warn":"p-bad"}">${esc(f.text)}</span>`).join("")}</div>`;
+return `<tr data-id="${esc(p.id)}" class="${p.id===selectedId?"sel":""}">
+<td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.company)}</b><small>${esc(isPerson(p)?p.name+(p.role?", "+p.role:""):(p.role||"Clinic manager"))}</small><small class="mono">${esc(p.phone)} · ${p.lang==="ar"?"Arabic":"English"} · ${esc(p.city?p.city+", ":"")}${(MARKETS[p.market]||MARKETS.AE).name}</small></div></div></td>
+<td>${statusCell(p)}</td>
+<td>${status}<span class="cellsub"><span class="pill ${STATUS[p.status||"new"][1]}">${STATUS[p.status||"new"][0]}</span></span></td>
+<td style="text-align:right"><button type="button" class="btn btn-sm ${g.ok?"btn-primary":""}" data-call="${esc(p.id)}" ${call||!g.ok?"disabled":""}>${ICON.phone}Call</button></td></tr>
+${p.id===selectedId?`<tr class="stx-row"><td colspan="4">${statusDetail(p)}</td></tr>`:""}`;
+}).join("") : `<tr><td colspan="4" class="muted" style="cursor:default">No clinics in this campaign yet. Add some under Clinics.</td></tr>`;
+$("queueSum").textContent = `${list.length} clinics · ${ready} cleared · ${list.length-ready} held back by the rules · ${list.filter(p=>p.audit).length} scanned`; if(!auditRun) $("auditAllBtn").disabled = !list.some(p=>!p.audit); renderOpps();
+}
+
+function renderKpis(){
+const L = state.log, n = o => L.filter(l=>l.outcome===o).length;
+const blocked = state.leads.filter(p=>!checkLead(p,p.campaign,simTime).ok).length;
+const hot = state.leads.filter(p=>p.status==="hot").length, now = Date.now();
+const upcoming = state.meetings.filter(m=>m.status==="confirmed" && (!m.at || m.at>now)).length;
+const k = [["Calls made",L.length,ICON.phone,"var(--brand)"],["Reached",L.filter(l=>l.outcome!=="no_answer").length,ICON.ear,"var(--brand-2)"],["Confirmed meetings",upcoming,ICON.cal,"var(--ok)"],["Hot clinics",hot,ICON.fire,"var(--bad)"],["Decision-makers found",state.leads.filter(p=>p.status==="referral").length,ICON.send,"var(--info)"],["Held back by rules",blocked,ICON.shield,"var(--warn)"]];
+$("kpis").innerHTML = k.map(([a,b,ic,c])=>`<div class="glass kpi"><span class="h"><i style="--c:${c}">${ic}</i>${a}</span><b>${b}</b></div>`).join("");
+}
+function renderBars(){
+const L=state.log, keys=["booked","referral","info_sent","transferred","callback","no_answer","declined","opt_out"], max=Math.max(1,...keys.map(k=>L.filter(l=>l.outcome===k).length));
+$("bars").innerHTML = keys.map(k=>{const v=L.filter(l=>l.outcome===k).length;return `<div class="barrow"><span>${OUTCOME[k][0]}</span><span class="track"><i style="width:${v/max*100}%;--c:${OUTCOME[k][2]}"></i></span><b>${v}</b></div>`;}).join("") + (L.length?"":`<p class="muted" style="font-size:12.5px">No calls yet.</p>`);
+}
+
+function renderLog(){
+if (!state.log.length){ $("log").innerHTML = `<tr><td colspan="4" class="muted" style="cursor:default">No calls yet.</td></tr>`; return; }
+$("log").innerHTML = [...state.log].sort((a,b)=>(a.at||0)-(b.at||0)).reverse().map(l=>{
+const [lab,cls]=OUTCOME[l.outcome]||OUTCOME.ended;
+return `<tr data-log="${esc(l.id)}" class="${selectedLog===l.id?"sel":""}"><td class="mono">${esc(l.time)}</td><td><b>${esc(leadName(l.pid))}</b>${l.test?` <span class="pill p-brand">test</span>`:""}<span class="cellsub">${(CAMPAIGNS[l.camp]||CAMPAIGNS.dental).name}</span></td><td><span class="pill ${cls}">${lab}</span>${l.detail?`<span class="cellsub">${esc(l.detail)}</span>`:""}</td><td class="mono">${esc(l.len)}</td></tr>`;
+}).join("");
+}
+
+function renderPipe(){
+const f = $("pipeFilter").value;
+const rows = state.leads.filter(p=>!f || (f==="dnc" ? (p.status==="dnc"||p.optedOut) : (p.status||"new")===f));
+$("pipeSum").textContent = `${state.leads.length} leads · ${state.leads.filter(p=>p.status==="booked").length} meetings booked · ${state.leads.filter(p=>p.status==="hot").length} hot`;
+$("pipe").innerHTML = rows.length ? rows.map(p=>`<tr data-pipe="${esc(p.id)}"><td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.name)}</b><small>${esc(p.company)}</small><small class="mono">${esc(p.phone)}${p.email?" · "+esc(p.email):""}</small></div></div></td>
+<td>${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}<span class="cellsub">${esc(p.source||"")}</span></td>
+<td><select data-status="${esc(p.id)}" class="btn btn-sm" aria-label="Status for ${esc(p.name)}">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${(p.status||"new")===k?"selected":""}>${v[0]}</option>`).join("")}</select></td>
+<td>${scoreHtml(p.score)}</td><td>${esc(p.next||"")}</td>
+<td style="text-align:right;white-space:nowrap"><button type="button" class="btn btn-sm" data-sched="${esc(p.id)}">Schedule</button> <button type="button" class="btn btn-sm btn-ghost" data-del="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">Remove</button></td></tr>`).join("")
+: `<tr><td colspan="6" class="muted" style="cursor:default">No leads match.</td></tr>`;
+}
+function renderRules(){
+$("rules").innerHTML = Object.values(MARKETS).map(m=>`<div class="glass rule"><div class="row"><b>${m.name}</b><span class="pill ${m.verified?"p-ok":"p-mute"}">${m.verified?"Verified":"Conservative"}</span></div><span class="mono muted">${m.start}:00–${m.end}:00 local</span><ul>${m.notes.map(n=>`<li>${n}</li>`).join("")}</ul><span class="muted" style="font-size:12px">Basis: ${m.source}</span></div>`).join("");
+}
+function renderProfile(){
+const f = $("profileForm"); for (const k in DEFAULT_PROFILE){ if (f.elements[k] && document.activeElement!==f.elements[k]) f.elements[k].value = profile[k]||""; }
+$("brandName").textContent = profile.business_name || profile.freelancer_name || "Clinic Growth";
+$("agentNameBar").textContent = profile.agent_name || "Noor";
+$("footName").textContent = `${profile.business_name||""} · Clinic prospecting by ${profile.agent_name||"Noor"}`;
+$("heroEyebrow").textContent = `${profile.business_name||""} · ${profile.freelancer_title||""} · GCC`;
+$("callerId").textContent = "Caller ID " + (profile.freelancer_phone||"");
+$("openEn").textContent = openingLine({name:"Clinic manager",lang:"en",campaign:"dental",company:"Marina Bright Dental",market:"AE"});
+$("openAr").textContent = openingLine({name:"Dr. Faisal",nameAr:"د. فيصل",lang:"ar",campaign:"dental",company:"عيادة لؤلؤة الابتسامة",market:"SA"});
+$("openIn").textContent = openingLine({name:"Dr. Lina Haddad",lang:"en",campaign:"inbound",company:"Smile Studio",market:"AE"});
+$("openFu").textContent = openingLine({name:"Dr. Khalid",lang:"en",campaign:"proposal",company:"Jeddah Dental Care",market:"SA"});
+}
+
+
+function timeOfDay(p){ const mk = MARKETS[p.market]||MARKETS.AE, h = localHourMin(simTime, mk.offset).h; return h<12?"morning":"afternoon"; }
+function isPerson(p){ return p.name && !/^(reception|clinic manager|front desk)$/i.test(p.name.trim()); }
+function openingLine(p){
+const P = profile, ag = P.agent_name||"Noor", fn = P.freelancer_name||"our team", biz = P.business_name||"our team", co = p.company||"your clinic";
+const who = isPerson(p) ? p.name : "the clinic manager";
+if (p.lang==="ar"){
+const whoAr = isPerson(p) ? (p.nameAr||p.name) : "مدير العيادة";
+if (p.campaign==="inbound") return `${timeOfDay(p)==="morning"?"صباح الخير":"مساء الخير"} ${whoAr}، معك ${ag}، مساعدة افتراضية بالذكاء الاصطناعي أتصل نيابة عن ${fn} من ${biz}. المكالمة مسجلة. تواصلتم معنا بخصوص خدماتنا للعيادة، وحبيت أفهم احتياجكم ونرتب لكم موعد عرض قصير. هل الوقت مناسب؟`;
+if (p.campaign==="proposal") return `${timeOfDay(p)==="morning"?"صباح الخير":"مساء الخير"} ${whoAr}، معك ${ag}، مساعدة افتراضية بالذكاء الاصطناعي أتصل نيابة عن ${fn} من ${biz}. المكالمة مسجلة. أتابع معكم بخصوص العرض اللي أرسلناه لـ ${co}، إذا عندكم أي أسئلة. عندك دقيقة؟`;
+return `${timeOfDay(p)==="morning"?"صباح الخير":"مساء الخير"}، معك ${ag}، مساعدة افتراضية بالذكاء الاصطناعي أتصل نيابة عن ${fn} من ${biz}. المكالمة مسجلة. نساعد العيادات مثل ${co} ترد على كل اتصالات ورسائل المرضى وتزيد الحجوزات. ممكن أكلم ${whoAr}، أو المسؤول عن التسويق في العيادة؟`;
+}
+const hi = `Hi, good ${timeOfDay(p)}. This is ${ag}, an AI assistant calling on behalf of ${fn} from ${biz}. This call is recorded.`;
+if (p.campaign==="inbound") return `${hi} You got in touch with us about ${co}, so I'm calling to understand what you need and set up a short demo with ${fn}. Is now a good time?`;
+if (p.campaign==="proposal") return `${hi} I'm just following up on the proposal ${fn} sent for ${co}, to see if you had any questions. Have you got a minute?`;
+return `${hi} We help clinics like ${co} answer every patient call and WhatsApp and book more appointments. Could I speak with ${who}, or whoever looks after marketing at the clinic?`;
+}
+function localMidnight(ms, off){ const d = new Date(ms + off*36e5); d.setUTCHours(0,0,0,0); return d.getTime() - off*36e5; }
+function fmtLocal(ms, market){ const mk = MARKETS[market]||MARKETS.AE, d = new Date(ms + mk.offset*36e5);
+const wd = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getUTCDay()], mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()];
+return `${wd} ${d.getUTCDate()} ${mo}, ${fmtHM(d.getUTCHours(), d.getUTCMinutes())} ${TZNAME[market]||"UAE time"}`; }
+function slotsFrom(now, market){
+const mk = MARKETS[market]||MARKETS.AE, out=[], times=[[10,0],[11,30],[13,0],[16,0]]; let d = localMidnight(now, mk.offset)+DAY, i=0;
+while (out.length<5 && i<14){ const dow = new Date(d+mk.offset*36e5).getUTCDay();
+if (!mk.weekend.includes(dow)){ const t = times[(out.length+i)%times.length], at = d + t[0]*36e5 + t[1]*6e4; out.push({at, label:fmtLocal(at, market)}); }
+d+=DAY; i++; }
+return out;
+}
+
+
+
+
+
+let speakingUntil = 0;
+
+let waveRaf = 0;
+
+
+
+
+
+
+
+async function saveLead(p){
+if (live && db){ try{ const {id, ...rest} = p; await db.collection("leads").doc(id).set(JSON.parse(JSON.stringify(rest))); }catch(e){ toast(e?.code==="not_granted"||e?.code==="permission_denied" ? "You can view this lead list but not change it." : "Couldn't save that change. Try again."); } }
+}
+
+async function saveMeeting(m){
+if (live && db){ try{ const {id, ...rest} = m; await db.collection("meetings").doc(id).set(JSON.parse(JSON.stringify(rest))); return true; }catch(e){ toast("Couldn't save the meeting. Try again."); return false; } }
+const i = state.meetings.findIndex(x=>x.id===m.id); if (i>=0) state.meetings[i]=m; else state.meetings.push(m); renderAll(); return true;
+}
+
+const pad2 = n => String(n).padStart(2,"0");
+const icsDate = ms => { const d = new Date(ms); return `${d.getUTCFullYear()}${pad2(d.getUTCMonth()+1)}${pad2(d.getUTCDate())}T${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}00Z`; };
+function meetingTitle(m){ return `${profile.business_name||"Demo"} × ${m.clinic}: ${profile.meeting_length||20}-min demo`; }
+function meetingDetails(m){ return `Demo of marketing and AI agents for ${m.clinic} with ${profile.freelancer_name||""} (${profile.business_name||""}).\nAttendee: ${m.attendee||""}\nFormat: ${m.format==="in_person"?"Visit at the clinic":"Online (link in this invite)"}\nQuestions: WhatsApp ${profile.freelancer_phone||""}`; }
+function gcalLink(m){ if (!m.at) return ""; const end = m.at + (+profile.meeting_length||20)*6e4;
+const q = new URLSearchParams({action:"TEMPLATE", text:meetingTitle(m), dates:`${icsDate(m.at)}/${icsDate(end)}`, details:meetingDetails(m), ctz:"Asia/Dubai"}); if (m.email) q.set("add", m.email);
+return "https://calendar.google.com/calendar/render?"+q.toString(); }
+function waLink(m){ const num = String(m.whatsapp||"").replace(/[^\d]/g,""); if (!num) return "";
+const ar = (state.leads.find(x=>x.id===m.leadId)||{}).lang==="ar";
+const txt = ar ? `مرحباً ${m.attendee||""}، معك ${profile.freelancer_name||""} من ${profile.business_name||""}. أؤكد موعدنا ${m.label} لعرض خدمات التسويق والذكاء الاصطناعي لـ ${m.clinic}. أرسلت الدعوة${m.email?" على "+m.email:""}. نتطلع للقائكم!`
+: `Hi ${m.attendee||""}, it's ${profile.freelancer_name||""} from ${profile.business_name||""}. Confirming our ${profile.meeting_length||20}-minute demo for ${m.clinic} on ${m.label}. The calendar invite is on its way${m.email?" to "+m.email:""}. Looking forward to it!`;
+return `https://wa.me/${num}?text=${encodeURIComponent(txt)}`; }
+function icsText(m){ const end = m.at + (+profile.meeting_length||20)*6e4, uid = (m.id||"m")+"@lead-caller";
+const escI = s => String(s||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\;");
+return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Lead Caller//EN","METHOD:REQUEST","BEGIN:VEVENT",`UID:${uid}`,`DTSTAMP:${icsDate(Date.now())}`,`DTSTART:${icsDate(m.at)}`,`DTEND:${icsDate(end)}`,`SUMMARY:${escI(meetingTitle(m))}`,`DESCRIPTION:${escI(meetingDetails(m))}`,
+...(m.email?[`ATTENDEE;CN=${escI(m.attendee||m.email)};RSVP=TRUE:mailto:${m.email}`]:[]),"BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:Demo tomorrow","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n"); }
+async function downloadIcs(m){ if (!m.at){ toast("Set a date and time first."); return; }
+if (downloads){ try{ await downloads.save({filename:`demo-${String(m.clinic).replace(/[^a-z0-9]+/gi,"-").toLowerCase()}.ics`, data:icsText(m)}); return; }catch(e){ if (e?.code==="declined"||e?.code==="cancelled") return; } }
+const a = document.createElement("a"); a.href = "data:text/calendar;charset=utf-8,"+encodeURIComponent(icsText(m)); a.download = "demo.ics"; document.body.append(a); a.click(); a.remove(); }
+function renderMeetings(){
+const f = $("mtgFilter").value, now = Date.now();
+let rows = [...state.meetings].sort((a,b)=>(a.at||9e15)-(b.at||9e15));
+if (f==="upcoming") rows = rows.filter(m=>["proposed","confirmed"].includes(m.status) && (!m.at || m.at > now - 36e5));
+else if (f) rows = rows.filter(m=>m.status===f);
+const conf = state.meetings.filter(m=>m.status==="confirmed" && m.at && m.at>now).length, pend = state.meetings.filter(m=>m.status==="proposed").length;
+$("mtgSum").textContent = `${conf} confirmed and upcoming · ${pend} awaiting confirmation · ${state.meetings.length} total`;
+$("mtgs").innerHTML = rows.length ? rows.map(m=>{ const g=gcalLink(m), w=waLink(m), st=MSTATUS[m.status]||MSTATUS.proposed;
+return `<tr data-mid="${esc(m.id)}"><td><b>${esc(m.clinic)}</b><span class="cellsub">${esc(m.attendee||"")}${m.email?" · "+esc(m.email):""}${m.whatsapp?" · "+esc(m.whatsapp):""}</span></td>
+<td class="mono">${esc(m.label||"Time not set")}<span class="cellsub">${m.format==="in_person"?"Visit":"Online"}${m.source==="call"?" · booked by caller":""}</span></td>
+<td><span class="pill ${st[1]}">${st[0]}</span></td>
+<td><div class="leadbar" style="justify-content:flex-end">
+${m.status==="proposed"?`<button type="button" class="btn btn-sm btn-primary" data-mact="confirmed">Mark confirmed</button>`:""}
+${g?`<a class="btn btn-sm" href="${esc(g)}" target="_blank" rel="noopener">Google Calendar</a>`:""}
+${m.at?`<button type="button" class="btn btn-sm" data-mact="ics">.ics invite</button>`:""}
+${w?`<a class="btn btn-sm" href="${esc(w)}" target="_blank" rel="noopener">WhatsApp</a>`:""}
+${["proposed","confirmed"].includes(m.status)?`<select class="btn btn-sm" data-mset aria-label="Update meeting"><option value="">Update…</option><option value="done">Held</option><option value="no_show">No-show</option><option value="cancelled">Cancelled</option></select>`:""}
+</div></td></tr>`; }).join("")
+: `<tr><td colspan="4" class="muted" style="cursor:default">No meetings here yet. Confirmed bookings from calls and ones you schedule land here.</td></tr>`;
+}
+function openSchedule(leadId){
+const p = state.leads.find(x=>x.id===leadId), f = $("mtgForm");
+f.hidden = false; f.elements.leadId.value = leadId||""; f.elements.clinic.value = p?.company||""; f.elements.attendee.value = p && isPerson(p) ? `${p.name}${p.role?", "+p.role:""}` : "";
+f.elements.email.value = p?.email||""; f.elements.whatsapp.value = ""; f.elements.market.value = p?.market||"AE";
+const sl = slotsFrom(Date.now(), p?.market||"AE")[0], mk = MARKETS[p?.market||"AE"], d = new Date(sl.at + mk.offset*36e5);
+f.elements.when.value = `${d.getUTCFullYear()}-${pad2(d.getUTCMonth()+1)}-${pad2(d.getUTCDate())}T${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
+f.scrollIntoView({behavior:"smooth", block:"center"}); f.elements.attendee.focus({preventScroll:true});
+}
+
+async function runSim(){
+if (simRunning || call) return;
+if (live){ const p = state.leads.find(x=>checkLead(x,x.campaign,simTime).ok); if (!p){ toast("No clinic is cleared to call right now. Try another time of day."); return; } activeCamp=p.campaign; selectedId=p.id; renderAll(); startCall(p); return; }
+const ready = state.leads.filter(p=>checkLead(p,p.campaign,simTime).ok);
+if (!ready.length){ toast("No clinic is cleared to call right now. Try another time of day."); return; }
+simRunning = true; $("simBtn").disabled = true;
+let i = state.log.length;
+for (const p of ready){
+await new Promise(r=>setTimeout(r,650));
+if (!checkLead(p,p.campaign,simTime).ok) continue;
+const o = SCRIPT[i++ % SCRIPT.length], slots = slotsFrom(simTime, p.market), t = localHourMin(simTime,4);
+const q = o==="booked"?{score:85,tier:"hot",need:"clear",timeline:"now",decision:"yes"}:o==="info_sent"?{score:55,tier:"warm",need:"some",timeline:"1_3_months",decision:"shared"}:o==="declined"?{score:15,tier:"cold",need:"none",timeline:"later",decision:"yes"}:null;
+const tr = o==="no_answer" ? [] : [{who:profile.agent_name||"Noor",text:openingLine(p)}, ...simScript(o, p, slots)];
+p.attempts.push({at:simTime, answered:o!=="no_answer"});
+if (q){ p.score=q.score; p.status=q.tier; }
+if (o==="booked"){ p.status="booked"; p.next=`Demo ${slots[0].label}`; state.meetings.push({id:"m"+Date.now()+i, leadId:p.id, clinic:p.company, market:p.market, at:slots[0].at, label:slots[0].label, attendee:isPerson(p)?p.name:"Clinic manager", email:p.email||"", whatsapp:p.phone, format:"online", status:"confirmed", source:"call", createdAt:Date.now()}); }
+if (o==="referral"){ p.status="referral"; p.next="Call Dr. Mariam (owner) direct, mornings before 11"; }
+if (o==="info_sent") p.next="Send demo video on WhatsApp, follow up next week";
+if (o==="callback"){ p.status="callback"; p.next="Call back tomorrow 11:00 local"; }
+if (o==="declined") p.declined.push(p.campaign);
+if (o==="opt_out"){ p.optedOut = true; p.status="dnc"; }
+state.log.push({id:"l"+Date.now()+i, pid:p.id, camp:p.campaign, outcome:o, at:Date.now(), detail:o==="booked"?`Confirmed ${slots[0].label}`:o==="referral"?"Dr. Mariam, owner":o==="callback"?"Call back: tomorrow 11:00":o==="info_sent"?"WhatsApp · follow up next week":"", time:fmtHM(t.h,t.m), len:o==="no_answer"?"00:00":fmtHM(1,10+((i*17)%50)), transcript:tr, qual:q});
+simTime += 3*6e4; renderAll();
+}
+simRunning = false; $("simBtn").disabled = false;
+toast(`Dialled ${ready.length} cleared clinics. Held-back numbers were skipped.`);
+}
+
+function newId(){ return "L"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+const yes = v => /^(y|yes|true|1|نعم)$/i.test(String(v||"").trim());
+function cleanLead(o){
+const camp = CAMPAIGNS[String(o.campaign||"").trim().toLowerCase()] ? String(o.campaign).trim().toLowerCase() : "dental";
+const mk = MARKETS[String(o.market||"").trim().toUpperCase()] ? String(o.market).trim().toUpperCase() : "AE";
+return normLead({id:newId(), name:String(o.name||"").trim(), company:String(o.company||o.clinic||"").trim(), city:String(o.city||"").trim(), role:String(o.role||"").trim(), industry:String(o.industry||"").trim(),
+phone:String(o.phone||"").trim(), email:String(o.email||"").trim(), market:mk, lang:/^ar/i.test(o.lang||"")?"ar":"en", campaign:camp,
+hook:String(o.hook||"").trim(), context:String(o.context||"").trim(), source:String(o.source||"").trim(),
+consent: typeof o.consent==="boolean"?o.consent:yes(o.consent), dncr: typeof o.dncr==="boolean"?o.dncr:yes(o.dncr), createdAt:Date.now()});
+}
+function parseCSV(text){
+const rows=[]; let row=[], cur="", q=false; const sep = (text.split("\n")[0].match(/\t/g)||[]).length > (text.split("\n")[0].match(/,/g)||[]).length ? "\t" : ",";
+for (let i=0;i<text.length;i++){ const ch=text[i];
+if (q){ if (ch==='"'){ if (text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+else if (ch==='"') q=true; else if (ch===sep){ row.push(cur); cur=""; } else if (ch==="\n"){ row.push(cur); rows.push(row); row=[]; cur=""; } else if (ch!=="\r") cur+=ch; }
+if (cur||row.length){ row.push(cur); rows.push(row); }
+return rows.filter(r=>r.some(c=>c.trim()));
+}
+async function addLeads(list){
+const good = list.filter(l=>l.name && l.phone);
+for (const l of good){ if (live) await saveLead(l); else state.leads.push(l); }
+if (!live) renderAll();
+return good.length;
+}
+const csvCell = v => { const s = String(v??""); return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
+async function exportCSV(){
+const cols = ["name","company","city","role","industry","phone","email","market","lang","campaign","status","score","next","source","consent","dncr","hook","context"];
+const csv = [[...cols,"has_now","missing","recommended_pitch","what_to_do","marketing_to_sell","ai_agents_to_sell","google_rating","google_reviews","google_ads"].join(","), ...state.leads.map(p=>{ const z = positioning(p), H = z.h;
+return [...cols.map(c=>csvCell(c==="consent"||c==="dncr"?(p[c]?"yes":"no"):p[c])), csvCell(HAVE_KEYS.filter(([k])=>H[k]===true).map(([,l])=>l).join("; ")), csvCell(z.gaps.join("; ")), csvCell(z.pitch), csvCell(z.next), csvCell(needsFor(p).marketing.filter(i=>i.pri!=="add").map(i=>i.name+" ("+PRI[i.pri][0]+")").join("; ")), csvCell(needsFor(p).ai.filter(i=>i.pri!=="add").map(i=>i.name+" ("+PRI[i.pri][0]+")").join("; ")), csvCell(p.audit?.gRating??""), csvCell(p.audit?.gReviews??""), csvCell(p.audit?.googleAds===true?"yes":p.audit?.googleAds===false?"no":"")].join(","); })].join("\n");
+if (downloads){ try{ await downloads.save({filename:"leads.csv", data:csv}); return; }catch(e){ if (e?.code==="declined"||e?.code==="cancelled") return; } }
+try{ await navigator.clipboard.writeText(csv); toast("Lead list copied as CSV. Paste it into Sheets or Excel."); }catch(e){ toast("Couldn't export here. Open this page on claude.ai to download."); }
+}
+(function bg(){
+const cv = $("bgfx"), ctx = cv.getContext("2d"), reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let W=0,H=0,cols={};
+const readCols = ()=>{ const cs=getComputedStyle(document.documentElement); cols={a:cs.getPropertyValue("--bg-a").trim(),b:cs.getPropertyValue("--bg-b").trim(),c:cs.getPropertyValue("--bg-c").trim(),w:cs.getPropertyValue("--wave").trim(),bg:cs.getPropertyValue("--bg").trim()}; };
+const size = ()=>{ const d=Math.min(2,devicePixelRatio||1); W=innerWidth; H=innerHeight; cv.width=W*d; cv.height=H*d; ctx.setTransform(d,0,0,d,0,0); };
+const blob=(x,y,r,c,a)=>{ const g=ctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,c); g.addColorStop(1,"transparent"); ctx.globalAlpha=a; ctx.fillStyle=g; ctx.fillRect(x-r,y-r,r*2,r*2); };
+function frame(now){
+const t = reduce ? 0 : now/1000;
+ctx.globalAlpha=1; ctx.fillStyle=cols.bg; ctx.fillRect(0,0,W,H);
+blob(W*(.18+.06*Math.sin(t*.13)), H*(.22+.05*Math.cos(t*.11)), Math.max(W,H)*.55, cols.a, .85);
+blob(W*(.82+.05*Math.cos(t*.09)), H*(.18+.06*Math.sin(t*.12)), Math.max(W,H)*.5, cols.b, .8);
+blob(W*(.6+.08*Math.sin(t*.07)), H*(.95+.04*Math.cos(t*.1)), Math.max(W,H)*.45, cols.c, .6);
+ctx.lineWidth=1.2; ctx.strokeStyle=cols.w;
+for (let k=0;k<5;k++){
+const base = H*(.58+k*.075), amp = 14+k*6, f = .0042-k*.0004, sp = .35+k*.08;
+ctx.globalAlpha = .10 - k*.012; ctx.beginPath();
+for (let x=0;x<=W;x+=8){ const y = base + Math.sin(x*f + t*sp + k)*amp + Math.sin(x*f*2.3 - t*sp*.7)*amp*.35; x?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+ctx.stroke();
+}
+ctx.globalAlpha=1;
+if (!reduce && !document.hidden) requestAnimationFrame(frame);
+}
+readCols(); size(); requestAnimationFrame(frame);
+addEventListener("resize", ()=>{ size(); if (reduce) requestAnimationFrame(frame); });
+document.addEventListener("visibilitychange", ()=>{ if (!document.hidden && !reduce) requestAnimationFrame(frame); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", ()=>{ readCols(); if (reduce) requestAnimationFrame(frame); });
+new MutationObserver(()=>{ readCols(); if (reduce) requestAnimationFrame(frame); }).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+})();
+$("clock").addEventListener("input", e=>{ const v=+e.target.value; simTime = dubaiMidnight(simTime) + Math.floor(v/60)*36e5 + (v%60)*6e4; renderAll(); if(!call) renderCallee(); });
+$("nowBtn").onclick = ()=>{ simTime = Date.now(); renderAll(); };
+$("campaigns").addEventListener("click", e=>{ const b=e.target.closest("[data-camp]"); if(!b) return; activeCamp=b.dataset.camp; const first=state.leads.find(p=>p.campaign===activeCamp); if(!call) selectedId=first?first.id:null; renderCampaigns(); renderQueue(); if(!call) renderCallee(); });
+$("queue").addEventListener("click", async e=>{
+const hv = e.target.closest("[data-hv]"), au = e.target.closest("[data-audit]");
+if (hv || au){ const p = state.leads.find(x=>x.id===selectedId); if (!p) return;
+if (au){ au.disabled = true; au.textContent = "Scanning…"; const ok = await auditLead(p); if (ok) toast(`${p.company}: scanned.`); renderQueue(); return; }
+const k = hv.dataset.hv, cur = haveMap(p)[k], nv = cur===null ? true : cur===true ? false : null;
+const a = {...(p.audit||{})}; if (nv===null) delete a[k]; else a[k] = nv; if (k==="booking" && nv!==null) a.booking = nv ? "online" : "phone_only";
+a.checkedAt = Date.now(); a.source = "manual"; p.audit = a; await saveLead(p); renderQueue(); return; }
+const cb = e.target.closest("[data-call]"); const tr = e.target.closest("tr[data-id]"); if(!tr || call) return;
+selectedId = tr.dataset.id; renderQueue(); renderCallee();
+if (cb){ const p = state.leads.find(x=>x.id===selectedId); if (p && checkLead(p,p.campaign,simTime).ok) startCall(p); }
+});
+$("log").addEventListener("click", e=>{ const tr=e.target.closest("tr[data-log]"); if(!tr) return; selectedLog=tr.dataset.log; renderLog(); renderDetail(); });
+$("sendForm").addEventListener("submit", e=>{ e.preventDefault(); prospectSays($("msg").value); });
+$("quick").addEventListener("click", e=>{ const b=e.target.closest("button"); if(b) prospectSays(b.textContent); });
+$("hangBtn").onclick = ()=>{ if(call){ try{speechSynthesis.cancel()}catch(e){} note("Hung up"); endCall("ended","Ended before an outcome",{}); } };
+$("simBtn").onclick = runSim;
+$("resetBtn").onclick = ()=>{ if (call||live) return; state = {leads:SAMPLE_LEADS.map(normLead), log:[], meetings:[]}; selectedLog=null; $("detail").innerHTML='<p class="muted">Select a call in the log to read its transcript and what your caller did.</p>'; $("transcript").innerHTML=""; renderAll(); toast("Sample data reset"); };
+document.querySelector(".tabs").addEventListener("click", e=>{ const b=e.target.closest("[data-tab]"); if(!b) return;
+document.querySelectorAll(".tabs [data-tab]").forEach(x=>x.setAttribute("aria-selected", String(x===b)));
+["all","add","import"].forEach(k=>$("tab-"+k).hidden = k!==b.dataset.tab); });
+$("tab-add").addEventListener("submit", async e=>{ e.preventDefault(); const f=e.target, o={}; new FormData(f).forEach((v,k)=>o[k]=v); o.consent=f.elements.consent.checked; o.dncr=f.elements.dncr.checked;
+const n = await addLeads([cleanLead(o)]); if (n){ toast(`${o.name} added to ${CAMPAIGNS[o.campaign]?.name||"your leads"}.`); f.reset(); fillSelects(); } });
+$("importBtn").onclick = async ()=>{ const rows = parseCSV($("csvIn").value.trim()); if (rows.length<2){ toast("Paste a header row and at least one lead."); return; }
+const hdr = rows[0].map(h=>h.trim().toLowerCase().replace(/[^a-z]/g,"")); const alias = {contact:"name",fullname:"name",mobile:"phone",phonenumber:"phone",business:"company",companyname:"company",title:"role",country:"market",language:"lang",notes:"context",why:"context"};
+const list = rows.slice(1).map(r=>{ const o={}; hdr.forEach((h,i)=>{ o[alias[h]||h] = r[i]; }); return cleanLead(o); });
+const n = await addLeads(list); toast(n ? `Imported ${n} lead${n>1?"s":""}${list.length-n?`, skipped ${list.length-n} without a name or phone`:""}.` : "No rows had both a name and a phone number."); if (n) $("csvIn").value=""; };
+$("pipe").addEventListener("click", e=>{ const b=e.target.closest("[data-sched]"); if(b) openSchedule(b.dataset.sched); });
+$("newMtgBtn").onclick = ()=>openSchedule(null);
+$("mtgFilter").onchange = renderMeetings;
+$("mtgCancel").onclick = ()=>{ $("mtgForm").hidden = true; };
+$("mtgForm").addEventListener("submit", async e=>{ e.preventDefault(); const f=e.target, mk = MARKETS[f.elements.market.value]||MARKETS.AE;
+const v = f.elements.when.value; if (!v){ toast("Pick a date and time."); return; }
+const [dd,tt] = v.split("T"), [Y,M,D] = dd.split("-").map(Number), [h,mi] = tt.split(":").map(Number), at = Date.UTC(Y,M-1,D,h,mi) - mk.offset*36e5;
+const m = {id:"m"+Date.now().toString(36)+Math.random().toString(36).slice(2,5), leadId:f.elements.leadId.value||"", clinic:f.elements.clinic.value.trim()||"Clinic", market:f.elements.market.value, at, label:fmtLocal(at, f.elements.market.value), attendee:f.elements.attendee.value.trim(), email:f.elements.email.value.trim(), whatsapp:f.elements.whatsapp.value.trim(), format:f.elements.format.value, status:f.elements.confirmed.checked?"confirmed":"proposed", source:"manual", createdAt:Date.now()};
+if (await saveMeeting(m)){ const p = state.leads.find(x=>x.id===m.leadId); if (p && m.status==="confirmed"){ p.status="booked"; p.next=`Demo ${m.label} with ${m.attendee}`; await saveLead(p); if(!live) renderAll(); }
+f.hidden = true; toast(`Meeting ${m.status==="confirmed"?"confirmed":"saved"}: ${m.clinic}, ${m.label}. Send the invite from the Meetings list.`); } });
+$("mtgs").addEventListener("click", async e=>{ const b=e.target.closest("[data-mact]"); if(!b) return; const m = state.meetings.find(x=>x.id===b.closest("[data-mid]").dataset.mid); if(!m) return;
+if (b.dataset.mact==="ics") return downloadIcs(m);
+if (b.dataset.mact==="confirmed"){ await saveMeeting({...m, status:"confirmed"}); const p = state.leads.find(x=>x.id===m.leadId); if (p){ p.status="booked"; p.next=`Demo ${m.label}`; await saveLead(p); if(!live) renderAll(); } } });
+$("mtgs").addEventListener("change", async e=>{ const s=e.target.closest("[data-mset]"); if(!s||!s.value) return; const m = state.meetings.find(x=>x.id===s.closest("[data-mid]").dataset.mid); if(!m) return; await saveMeeting({...m, status:s.value}); });
+$("auditAllBtn").onclick = auditAll;
+$("exportBtn").onclick = exportCSV;
+$("pipeFilter").onchange = renderPipe;
+$("pipe").addEventListener("change", async e=>{ const s=e.target.closest("[data-status]"); if(!s) return; const p=state.leads.find(x=>x.id===s.dataset.status); if(!p) return;
+p.status = s.value; if (s.value==="dnc") p.optedOut = true; await saveLead(p); if(!live) renderAll(); });
+$("pipe").addEventListener("click", async e=>{ const b=e.target.closest("[data-del]"); if(!b) return; const p=state.leads.find(x=>x.id===b.dataset.del); if(!p) return;
+if (!confirm(`Remove ${p.name} from your leads?`)) return;
+if (live && db){ try{ await db.collection("leads").doc(p.id).delete(); }catch(err){ toast("Couldn't remove that lead."); } } else { state.leads = state.leads.filter(x=>x!==p); renderAll(); } });
+$("profileForm").addEventListener("submit", async e=>{ e.preventDefault(); const f=e.target; for (const k in DEFAULT_PROFILE) profile[k] = f.elements[k].value.trim();
+if (live && db){ try{ await db.doc("settings/profile").set({...profile}); $("profileNote").textContent="Saved."; }catch(err){ $("profileNote").textContent="Couldn't save. Changes apply to this visit only."; } }
+else { try{ localStorage.setItem("flc_profile", JSON.stringify(profile)); }catch(err){} $("profileNote").textContent="Saved for this browser."; }
+renderProfile(); renderTranscriptEmpty(); });
+function fillSelects(){ const f=$("tab-add");
+f.elements.market.innerHTML = Object.entries(MARKETS).map(([k,m])=>`<option value="${k}">${m.name}</option>`).join("");
+$("mtgForm").elements.market.innerHTML = f.elements.market.innerHTML;
+f.elements.campaign.innerHTML = Object.entries(CAMPAIGNS).map(([k,c])=>`<option value="${k}" ${k===activeCamp?"selected":""}>${c.name}</option>`).join(""); }
+if ("speechSynthesis" in window){ try{ speechSynthesis.getVoices(); }catch(e){} } else { $("voiceTog").checked=false; $("voiceTog").disabled=true; }
+function goLive(){
+live = true; state = {leads:[], log:[], meetings:[]}; selectedId = null;
+$("dbPill").className="pill p-ok"; $("dbPill").innerHTML='<span class="d"></span>Saved lead list';
+$("resetBtn").hidden = true; $("simBtn").lastChild.textContent = "Test-call next ready lead";
+let gotL=false, gotC=false;
+const timer = setTimeout(()=>{ if (!gotL) toast("Your lead list is taking a while to load."); }, 10000);
+db.collection("leads").onSnapshot(snap=>{ gotL=true; clearTimeout(timer);
+state.leads = snap.docs.map(d=>normLead({...d.data(), id:d.id})).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+if (!selectedId || !state.leads.some(p=>p.id===selectedId)){ const f = state.leads.find(p=>p.campaign===activeCamp) || state.leads[0]; selectedId = f?f.id:null; if (f) activeCamp=f.campaign; }
+renderAll(); if (!call) renderCallee(); }, err=>{ clearTimeout(timer); toast("Couldn't load your lead list."); });
+db.collection("calls").onSnapshot(snap=>{ gotC=true; state.log = snap.docs.map(d=>({...d.data(), id:d.id})); renderAll(); if (selectedLog) renderDetail(); }, ()=>{});
+db.collection("meetings").onSnapshot(snap=>{ state.meetings = snap.docs.map(d=>({...d.data(), id:d.id})); renderAll(); }, ()=>{});
+db.doc("settings/profile").onSnapshot(d=>{ const v = d && d.data && d.data(); if (v){ profile = {...DEFAULT_PROFILE, ...v}; renderProfile(); } }, ()=>{});
+}
+const SB_URL = "https://ajwhjvoigyejcgrqjrto.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqd2hqdm9pZ3llamNncnFqcnRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MzYxNjEsImV4cCI6MjEwOTUxMjE2MX0.9Ub-kakWDI_y0uJ7EMpS9ZrXzSVz364xw-r-JZt3AiM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+const LEAD_COLS = ["name","company","city","role","industry","phone","email","website","market","lang","campaign","context","source","consent","dncr","status","score","next","declined","audit"];
+const ms = v => v ? Date.parse(v) : null;
+function leadToRow(id, d){ const r = {id}; for (const k of LEAD_COLS) if (k in d) r[k] = d[k]; if ("nameAr" in d) r.name_ar = d.nameAr || null; if ("optedOut" in d) r.opted_out = !!d.optedOut; if (r.score!==undefined && r.score!==null) r.score = Math.round(r.score); return r; }
+function rowToLead(r){ const o = {...r}; o.nameAr = r.name_ar || ""; o.optedOut = !!r.opted_out; o.createdAt = ms(r.created_at); delete o.name_ar; delete o.opted_out; delete o.created_at; delete o.updated_at; return o; }
+function meetingToRow(id, d){ return {id, lead_id:d.leadId||null, clinic:d.clinic||"Clinic", market:d.market||"AE", at:d.at?new Date(d.at).toISOString():null, label:d.label||null, attendee:d.attendee||null, email:d.email||null, whatsapp:d.whatsapp||null, format:d.format||"online", status:d.status||"confirmed", source:d.source||"manual"}; }
+function rowToMeeting(r){ return {leadId:r.lead_id, clinic:r.clinic, market:r.market, at:ms(r.at), label:r.label || (r.at?fmtLocal(ms(r.at), r.market):""), attendee:r.attendee, email:r.email, whatsapp:r.whatsapp, format:r.format, status:r.status, source:r.source, createdAt:ms(r.created_at)}; }
+const LIVE_OUTCOME = r => r.status==="initiated"||r.status==="in_progress" ? "calling" : r.status==="failed" ? "failed" : (r.outcome || "ended");
+function rowToCall(r){
+const at = ms(r.created_at), t = localHourMin(at, 4), s = r.duration_s||0, lead = state.leads.find(x=>x.id===r.lead_id);
+return {pid:r.lead_id, camp:lead?.campaign||"dental", outcome:LIVE_OUTCOME(r), detail:r.detail||"", at, time:fmtHM(t.h,t.m), len:fmtHM(Math.floor(s/60), s%60),
+transcript:r.transcript||[], test:!!r.test, answered:r.answered, analysis:r.analysis||null, status:r.status, conversationId:r.conversation_id};
+}
+const TABLES = {leads:{t:"leads", from:rowToLead, to:leadToRow, order:"created_at"}, calls:{t:"calls", from:rowToCall, to:null, order:"created_at"}, meetings:{t:"meetings", from:rowToMeeting, to:meetingToRow, order:"created_at"}};
+function makeDb(){
+const channels = [];
+return {
+collection(name){
+const T = TABLES[name];
+return {
+doc(id){ return {
+async set(data){ if (!T?.to) return; const { error } = await sb.from(T.t).upsert(T.to(id, data)); if (error) throw {code:"permission_denied", message:error.message}; },
+async delete(){ const { error } = await sb.from(T.t).delete().eq("id", id); if (error) throw {code:"permission_denied", message:error.message}; },
+}; },
+onSnapshot(cb, onErr){
+let timer = null;
+const load = async () => {
+const { data, error } = await sb.from(T.t).select("*").order(T.order, {ascending:true}).limit(5000);
+if (error){ onErr && onErr(error); return; }
+cb({docs: data.map(r => ({id:r.id, data:()=>T.from(r)}))});
+};
+load();
+const ch = sb.channel("rt-"+name).on("postgres_changes", {event:"*", schema:"public", table:T.t}, () => { clearTimeout(timer); timer = setTimeout(load, 400); }).subscribe();
+channels.push(ch);
+return () => sb.removeChannel(ch);
+},
+};
+},
+doc(path){
+const id = path.split("/")[1];
+return {
+async set(data){ const { error } = await sb.from("settings").upsert({id, data, updated_at:new Date().toISOString()}); if (error) throw {code:"permission_denied"}; },
+onSnapshot(cb){ (async()=>{ const { data } = await sb.from("settings").select("data").eq("id", id).maybeSingle(); cb({data:()=>data?.data||null}); })(); return ()=>{}; },
+};
+},
+};
+}
+const downloadsShim = { async save({filename, data}){ const blob = new Blob([data], {type: /\.ics$/.test(filename) ? "text/calendar" : "text/csv"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.append(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500); } };
+Object.assign(OUTCOME, {calling:["Calling now","p-brand","#4C3FD1"], failed:["Call failed","p-bad","#B8362E"], voicemail:["Voicemail","p-warn","#C28A1E"], hot:["Hot, not booked","p-bad","#D9472F"], referral:["Got decision-maker","p-info","#3E6FB0"]});
+function syncLive(){
+simTime = Date.now();
+for (const p of state.leads) p.attempts = state.log.filter(l=>l.pid===p.id && !l.test && l.outcome!=="failed").map(l=>({at:l.at, answered: l.answered===true || (l.answered==null && !["no_answer","calling"].includes(l.outcome))}));
+}
+function renderAll(){ syncLive(); renderClock(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderTranscriptEmpty(); }
+let callBusy = false;
+function lastCallFor(id){ return state.log.filter(l=>l.pid===id).sort((a,b)=>b.at-a.at)[0] || null; }
+function callPayload(p){
+const n = needsFor(p), top = [...n.marketing, ...n.ai].filter(i=>i.pri==="high").map(i=>i.name).slice(0,4).join("; ");
+return positioningForPrompt(p) + (top ? ` Services that fit (suggest at most two): ${top}.` : "");
+}
+async function fnError(error){
+try{ const j = await error.context.json(); return j; }catch(e){ return {message: error.message}; }
+}
+async function startCall(p, testNumber){
+if (callBusy) return;
+const g = checkLead(p, p.campaign, Date.now());
+if (!testNumber && !g.ok){ toast("The calling rules block this clinic right now."); return; }
+const msg = testNumber ? `Test call: ${profile.agent_name||"Noor"} will call YOUR phone (${testNumber}) using ${p.company}'s details. The clinic is not called.`
+: `Call ${p.company} now on ${p.phone}?\n\n${profile.agent_name||"Noor"} will introduce herself as an AI assistant and say the call is recorded.`;
+if (!confirm(msg)) return;
+callBusy = true; renderCallee();
+const { data, error } = await sb.functions.invoke("start-call", {body:{lead_id:p.id, positioning:callPayload(p), ...(testNumber?{test_to_number:testNumber}:{})}});
+callBusy = false;
+if (error){
+const j = await fnError(error);
+if (j.error==="blocked_by_rules") toast("Blocked: " + (j.reasons||[]).join(", "));
+else if (j.error==="not_configured") toast("Calling isn't connected yet: add the ElevenLabs key and phone number in Supabase secrets.");
+else toast("Couldn't start the call: " + (j.message || j.error || "unknown error"));
+} else toast(testNumber ? "Test call started. Your phone will ring." : `Calling ${p.company}…`);
+renderAll();
+}
+function renderCallee(){
+const p = state.leads.find(x=>x.id===selectedId);
+if (!p){ $("callee").innerHTML = `<div class="big" style="--c:var(--line2)">${ICON.phone.replace('<svg','<svg width="26" height="26"')}</div><h3>Live call</h3><span class="meta">Select a clinic in the queue.</span>`; return; }
+const g = checkLead(p, p.campaign, Date.now()), last = lastCallFor(p.id), onCall = last && last.outcome==="calling" && Date.now()-last.at < 20*60000;
+const testNum = String(profile.test_phone||"").replace(/[^\d+]/g,"");
+$("callee").innerHTML = `<div class="big ${onCall?"ring":""}" style="--c:${avColor(p.id)}">${initials(p.name)}</div>
+<h3>${esc(p.company)}</h3><span class="meta mono">${esc(p.phone)} · ${esc(p.city||"")} · ${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}</span>
+${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.agent_name||"Noor")} is on the call · results appear here when it ends</span>`:
+`<span class="pill ${g.ok?"p-ok":"p-bad"}"><span class="d"></span>${g.ok?"Cleared to call now":"Blocked by the calling rules"}</span>
+<div class="gate"><ul>${g.checks.map(c=>`<li><span class="tick ${c.ok?"y":"n"}">${c.ok?"✓":"✕"}</span><span>${esc(c.text)}</span></li>`).join("")}</ul></div>
+<div class="leadbar" style="justify-content:center;margin-top:6px">
+<button type="button" class="btn btn-primary" id="liveCallBtn" ${g.ok&&!callBusy?"":"disabled"}>${ICON.phone}${callBusy?"Starting…":"Call now"}</button>
+<button type="button" class="btn" id="testCallBtn" ${testNum&&!callBusy?"":"disabled"} title="${testNum?"Calls your own phone with this clinic's script":"Add your mobile under Your pitch first"}">Test call to my phone</button>
+</div>`}`;
+const b = $("liveCallBtn"); if (b) b.onclick = ()=>startCall(p);
+const t = $("testCallBtn"); if (t) t.onclick = ()=>startCall(p, testNum);
+}
+function renderTranscriptEmpty(){
+const p = state.leads.find(x=>x.id===selectedId), el = $("transcript");
+const calls = p ? state.log.filter(l=>l.pid===p.id).sort((a,b)=>b.at-a.at) : [];
+if (!p || !calls.length){ el.innerHTML = `<div class="empty">${ICON.ear.replace('<svg','<svg width="40" height="40"')}<span>${p?`No calls to ${esc(p.company)} yet.`:"Select a clinic."} Transcripts, the summary and the outcome show here after each call.</span></div>`; return; }
+const c = calls[0], o = OUTCOME[c.outcome]||OUTCOME.ended, a = c.analysis?.data || {};
+const facts = [["Decision-maker",a.decision_maker_name],["Pain point",a.pain_point],["Interest",a.interest_area],["Timeline",a.timeline],["Meeting",a.meeting_time],["Invite email",a.invite_email],["WhatsApp",a.preferred_contact],["Next step",a.next_step]].filter(([,v])=>v);
+el.innerHTML = `<div class="sysnote">${esc(new Date(c.at).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Dubai"}))} · <span class="pill ${o[1]}">${o[0]}</span>${c.test?` <span class="pill p-brand">test</span>`:""}${c.len!=="00:00"?` · ${esc(c.len)}`:""}</div>
+${c.outcome==="calling"?`<div class="sysnote">Call in progress. This updates by itself when it ends.</div>`:""}
+${c.analysis?.summary?`<div class="action">${esc(c.analysis.summary)}</div>`:""}
+${facts.length?`<div class="action">${facts.map(([k,v])=>`${esc(k)}: ${esc(v)}`).join("<br>")}</div>`:""}
+${(c.transcript||[]).map(t=>`<div class="bubble ${t.who==="Agent"?"agent":"patient"}" dir="auto"><span class="who">${esc(t.who==="Agent"?(profile.agent_name||"Noor"):"Clinic")}</span>${esc(t.text)}</div>`).join("")}
+${c.outcome==="failed"&&c.detail?`<div class="action bad">${esc(c.detail)}</div>`:""}`;
+}
+function renderDetail(){
+const l = state.log.find(x=>x.id===selectedLog); if (!l) return;
+const a = l.analysis?.data || {}, o = OUTCOME[l.outcome]||OUTCOME.ended;
+$("detail").innerHTML = `<div><b>${esc(leadName(l.pid))}</b> <span class="muted">· ${esc(l.time)} · ${esc(l.len)}</span></div>
+<div><span class="pill ${o[1]}">${o[0]}</span> ${l.detail?`<span class="muted">${esc(l.detail)}</span>`:""}</div>
+${l.analysis?.summary?`<p class="muted" style="font-size:12.5px">${esc(l.analysis.summary)}</p>`:""}
+${Object.keys(a).length?`<div class="muted" style="font-size:12.5px">${Object.entries(a).filter(([,v])=>v!==null&&v!=="").map(([k,v])=>`${esc(k.replace(/_/g," "))}: <b style="color:var(--ink)">${esc(v)}</b>`).join(" · ")}</div>`:""}
+${(l.transcript||[]).length?`<div class="t">${l.transcript.map(t=>`<div dir="auto"><span class="eyebrow">${esc(t.who)}</span><br>${esc(t.text)}</div>`).join("")}</div>`:`<p class="muted">No conversation recorded.</p>`}`;
+}
+function leadName(id){ const p = state.leads.find(x=>x.id===id); return p ? p.company : "Removed clinic"; }
+async function auditLead(p, quiet){
+const { data, error } = await sb.functions.invoke("scan-clinic", {body:{lead_id:p.id}});
+if (error){ if (!quiet){ const j = await fnError(error); toast(`Couldn't scan ${p.company}: ${j.message||j.error||"error"}`); } return false; }
+p.audit = data.audit; renderAll(); return true;
+}
+async function auditAll(){
+if (auditRun){ auditRun.stop = true; return; }
+const list = state.leads.filter(p=>p.campaign===activeCamp && !p.audit && p.status!=="dnc" && !p.optedOut);
+if (!list.length){ toast("Every clinic in this campaign is already scanned."); return; }
+auditRun = {stop:false}; let done = 0;
+for (const p of list){ if (auditRun.stop) break; $("auditAllBtn").textContent = `Stop scanning (${done}/${list.length})`; if (await auditLead(p, true)) done++; }
+auditRun = null; $("auditAllBtn").textContent = "Scan clinics"; toast(`Scanned ${done} of ${list.length} clinics.`); renderAll();
+}
+function showAuth(msg){ $("auth").hidden = false; $("authMsg").textContent = msg || ""; document.querySelector(".page").setAttribute("aria-hidden","true"); }
+function hideAuth(){ $("auth").hidden = true; document.querySelector(".page").removeAttribute("aria-hidden"); }
+$("authForm").addEventListener("submit", async e=>{
+e.preventDefault(); const email = $("authEmail").value.trim(); if (!email) return;
+$("authBtn").disabled = true; $("authMsg").textContent = "Sending…";
+const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin + location.pathname } });
+$("authBtn").disabled = false;
+$("authMsg").textContent = error ? `Couldn't send the link: ${error.message}` : `Check ${email} for a sign-in link, then open it on this device.`;
+});
+$("signOutBtn").onclick = async ()=>{ await sb.auth.signOut(); location.reload(); };
+let started = false;
+async function boot(session){
+if (!session){ showAuth(); return; }
+const { data: own } = await sb.from("app_owners").select("email").maybeSingle();
+if (!own){ showAuth(`${session.user.email} isn't allowed to use this console.`); await sb.auth.signOut(); return; }
+hideAuth(); $("whoami").textContent = session.user.email;
+if (started) return; started = true;
+db = makeDb(); downloads = downloadsShim; sample = null; mcp = null;
+goLive();
+$("dbPill").className = "pill p-ok"; $("dbPill").innerHTML = '<span class="d"></span>Live';
+$("simBtn").lastChild.textContent = "Call next cleared clinic";
+setInterval(()=>{ simTime = Date.now(); renderClock(); }, 30000);
+}
+simTime = Date.now();
+fillSelects(); renderRules(); renderProfile();
+sb.auth.getSession().then(({data})=>boot(data.session));
+sb.auth.onAuthStateChange((_e, session)=>{ if (session) boot(session); });
+</script>
+</body></html>
