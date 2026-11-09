@@ -13,6 +13,17 @@
 .sync{padding:16px;display:flex;flex-direction:column;gap:12px;font-size:13.5px}.sync .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.sync .row span{color:var(--muted)}.sync .btns{display:flex;gap:8px;flex-wrap:wrap}.qbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--sunk)}.qbar i{display:block;height:100%}
 .qflag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px;white-space:nowrap}.qf-ok{background:var(--ok-soft);color:var(--ok)}.qf-warn{background:var(--warn-soft);color:var(--warn)}.qf-bad{background:var(--bad-soft);color:var(--bad)}
 [hidden]{display:none!important}
+.ops-conn{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}@media (max-width:980px){.ops-conn{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.ops-conn{grid-template-columns:minmax(0,1fr)}}
+.ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}@media (max-width:980px){.ops-grid{grid-template-columns:minmax(0,1fr)}}
+.ops-card{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}.ops-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.ops-h h3{font-size:16px;font-weight:800;margin-top:4px}
+.conn{padding:14px;display:flex;flex-direction:column;gap:6px;font-size:13px}.conn b{font-size:14px}.conn .muted{font-size:12.5px}
+.ops-meter-l{display:flex;justify-content:space-between;font-size:13px}.ops-meter-l b{font-family:var(--f-mono);font-weight:500}.ops-track{height:10px;border-radius:6px;background:var(--sunk);overflow:hidden;margin-top:5px}.ops-track i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2));border-radius:6px}
+.ops-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ops-stats3{grid-template-columns:repeat(3,minmax(0,1fr))}@media (max-width:560px){.ops-stats3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ops-stats div{background:var(--sunk);border-radius:10px;padding:10px 12px}.ops-stats span{display:block;font-size:12px;color:var(--muted)}.ops-stats b{display:block;font-family:var(--f-mono);font-weight:500;font-size:20px}.ops-stats small{font-size:11.5px;color:var(--muted)}
+.ops-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}@media (max-width:700px){.ops-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ops-search{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.dup{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;margin-top:8px}.dup-row{display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap}.dup-row b{min-width:0}.dup-row .mono{font-size:12px;color:var(--muted)}
+.res-tbl table{min-width:760px}.res-tbl td,.res-tbl th{padding:8px 10px;font-size:13px}.res-tbl tbody tr{cursor:default}
 #rptView{position:fixed;inset:0;z-index:120;background:#fff;color:#0C1B2A;overflow:auto;padding:0 16px 40px}#rptView .rv-bar{position:sticky;top:0;background:#fff;display:flex;gap:8px;justify-content:flex-end;padding:12px 0;border-bottom:1px solid #DCE4EC;max-width:900px;margin:0 auto}
 #rptBody{max-width:920px;margin:16px auto 0}
 @media print{body.rpt-open>*:not(#rptView){display:none!important}html,body.rpt-open{background:#fff!important}body.rpt-open #rptView{position:static;overflow:visible;padding:0}#rptView .rv-bar{display:none!important}@page{margin:14mm}}
@@ -54,7 +65,7 @@
   </a>
   <span class="vsep" aria-hidden="true"></span>
   <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>GCC clinics</small></div>
-  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#calls">Calls</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a></nav>
+  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#calls">Calls</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
   <div class="bar-r"><span class="muted" id="whoami" style="font-size:12px"></span><button type="button" class="btn btn-sm btn-ghost" id="signOutBtn">Sign out</button><span class="pill p-ok" id="winPill"><span class="d"></span>Calling open</span><span class="pill p-mute" id="dbPill" title="Where your leads are saved"><span class="d"></span>Sample data</span></div>
 </div></header>
 <div class="testbar" id="testBar" hidden><div class="wrap"><span>Test mode: sign-in is off. Only your Netlify login protects this page.</span><button type="button" class="btn btn-sm" id="lockOpen">Lock it with a password</button></div></div>
@@ -143,7 +154,7 @@
   <div class="sec-h"><div><h2>Clinics</h2><p>Add clinics one by one, paste a list from a spreadsheet or Google Maps export, and export your pipeline.</p></div>
     <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="all">All leads</button><button role="tab" aria-selected="false" data-tab="add">Add a lead</button><button role="tab" aria-selected="false" data-tab="import">Paste a list</button></div></div>
   <div class="glass" id="tab-all">
-    <div class="card-h"><div><h3>Pipeline</h3><small id="pipeSum"></small></div><div class="leadbar"><select id="pipeFilter" class="btn btn-sm" aria-label="Filter"><option value="">All statuses</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option><option value="new">Not called</option><option value="booked">Meeting confirmed</option><option value="referral">Got decision-maker</option><option value="dnc">Do not call</option></select><button type="button" class="btn btn-sm" id="exportBtn">Export CSV</button></div></div>
+    <div class="card-h"><div><h3>Pipeline</h3><small id="pipeSum"></small></div><div class="leadbar"><select id="pipeFilter" class="btn btn-sm" aria-label="Filter"><option value="">All statuses</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option><option value="new">Not called</option><option value="booked">Meeting confirmed</option><option value="referral">Got decision-maker</option><option value="dnc">Do not call</option><option value="future">Saved for later</option></select><button type="button" class="btn btn-sm" id="exportBtn">Export CSV</button></div></div>
     <div class="tbl"><table><thead><tr><th>Clinic</th><th>Campaign</th><th>Status</th><th>Score</th><th>Next step</th><th></th></tr></thead><tbody id="pipe"></tbody></table></div>
   </div>
   <form class="glass" id="tab-add" hidden>
@@ -221,6 +232,42 @@
     <div class="glass opener"><div class="eyebrow">Opening line · proposal follow-up</div><blockquote id="openFu"></blockquote></div>
   </div>
 </div></section>
+<section class="blk" id="ops"><div class="wrap">
+  <div class="sec-h"><div><h2>Data & calling</h2><p>Connections, daily calling volume, clean and verified data, and finding clinics that aren't in your list yet.</p></div><button type="button" class="btn btn-sm" id="opsRefresh">Refresh status</button></div>
+  <div class="ops-conn" id="opsConn"><div class="glass ops-card"><p class="muted">Checking connections…</p></div></div>
+  <div class="ops-grid">
+    <div class="glass ops-card" id="opsCalling">
+      <div class="ops-h"><div><div class="eyebrow">Daily calling</div><h3>Up to <span id="capLabel">299</span> calls a day</h3></div><span class="pill p-mute" id="autoPill"><span class="d"></span>Auto-dial off</span></div>
+      <div class="ops-meter"><div class="ops-meter-l"><span>Calls today</span><b id="callsToday">0 / 299</b></div><div class="ops-track"><i id="callsBar" style="width:0%"></i></div></div>
+      <div class="ops-stats"><div><span>Cleared right now</span><b id="clearedNow">–</b><small id="clearedBy"></small></div><div><span>Left today</span><b id="leftToday">–</b><small>before the daily cap</small></div></div>
+      <form class="ops-form" id="callingForm">
+        <label class="field">Daily cap<input id="capInput" type="number" min="1" max="2000" inputmode="numeric"></label>
+        <label class="field">Calls per batch<input id="perRunInput" type="number" min="1" max="299" inputmode="numeric"></label>
+        <label class="field">Calls at the same time<input id="concInput" type="number" min="1" max="50" inputmode="numeric"></label>
+        <label class="chk" style="align-self:end"><input type="checkbox" id="autoInput"> Auto-dial every hour</label>
+        <div class="form-f"><button class="btn btn-sm" type="submit">Save settings</button><button class="btn btn-sm btn-primary" type="button" id="batchNow">Start batch now</button><small id="batchMsg"></small></div>
+      </form>
+      <p class="dbnote">Batches go through ElevenLabs batch calling and only include clinics that pass every rule above at that moment: their country's calling hours, no weekends, no opt-outs or Do Not Call Register, not called today, under 2 unanswered calls this week. Auto-dial runs at 7 minutes past each hour.</p>
+    </div>
+    <div class="glass ops-card" id="opsData">
+      <div class="ops-h"><div><div class="eyebrow">Data accuracy</div><h3>Clean, verified accounts</h3></div></div>
+      <div class="ops-stats ops-stats3" id="verifyStats"></div>
+      <div class="leadbar"><button type="button" class="btn btn-sm btn-primary" id="verifyBtn">Verify next 40</button><button type="button" class="btn btn-sm" id="revalBtn">Revalidate all data</button><button type="button" class="btn btn-sm" id="dupBtn">Find duplicates</button></div>
+      <small class="dbnote" id="verifyMsg">Checks each number's format and type (mobile, landline or hotline), each email's format and mail server, and, with the Google Maps key, that the clinic is open and the number matches Google.</small>
+      <div id="dupList"></div>
+    </div>
+  </div>
+  <div class="glass ops-card" id="opsSearch" style="margin-top:14px">
+    <div class="ops-h"><div><div class="eyebrow">Find clinics not in your list</div><h3>Search Google Maps and save for later</h3></div><span class="pill p-mute" id="searchSrc"></span></div>
+    <form class="ops-search" id="searchForm">
+      <label class="field" style="flex:1;min-width:220px">Search<input id="searchQ" placeholder="dental clinic Al Barsha Dubai" autocomplete="off"></label>
+      <label class="field">Country<select id="searchMk"></select></label>
+      <button class="btn btn-primary" type="submit" style="align-self:end">Search</button>
+    </form>
+    <div id="searchOut"></div>
+    <div id="futureList" style="margin-top:14px"></div>
+  </div>
+</div></section>
 </main>
 <footer><div class="wrap">
   <div class="f-l"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="14" fill="url(#lg1)"/><path d="M15 31V17h10.5a5 5 0 0 1 0 10H15" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="footName">Clinic Growth Caller</span></div>
@@ -277,6 +324,8 @@ const mk = MARKETS[p.market]||MARKETS.AE, camp = CAMPAIGNS[campKey]||CAMPAIGNS.d
 const add = (ok, okText, failText) => checks.push({ok, text: ok ? okText : failText});
 add(!p.optedOut && p.status!=="dnc", "Has not opted out", "Asked not to be called");
 if (p.quality && p.quality.phone_valid===false) add(false, "", "Number failed the format check");
+if (p.list==="future") add(false, "", "Saved for later, not in the call queue");
+if (!/^\+\d{8,15}$/.test(String(p.phone||""))) add(false, "", "No phone number yet");
 if (p.quality && p.quality.stale) add(false, "", "No longer on the map, check it's open");
 add(!(mk.dncr && p.dncr && !p.consent), p.dncr ? "On DNCR, consent on file" : "Not on Do Not Call Register", "On Do Not Call Register");
 add(!p.declined.includes(campKey), "Has not declined", "Declined this before");
@@ -794,7 +843,7 @@ function qflag(p){ const q = p.quality; if (!q) return ""; if (q.phone_valid===f
 const c = q.confidence; return c==="high" ? `<span class="qflag qf-ok" title="Number checked for its country">Verified</span>` : `<span class="qflag qf-warn" title="${esc((q.issues||[]).join(" · "))}">Check data</span>`; }
 const CONF = {high:0, medium:1, low:2};
 function renderQueue(){
-const all = state.leads.filter(p=>p.campaign===activeCamp);
+const all = state.leads.filter(p=>p.campaign===activeCamp && p.list!=="future");
 const graded = all.map(p=>({p, g:checkLead(p, activeCamp, simTime)}));
 graded.sort((a,b)=> (b.g.ok-a.g.ok) || ((CONF[a.p.quality?.confidence]??1)-(CONF[b.p.quality?.confidence]??1)) || ((b.p.score||0)-(a.p.score||0)) || String(a.p.company).localeCompare(String(b.p.company)));
 const ready = graded.filter(x=>x.g.ok).length;
@@ -837,7 +886,7 @@ return `<tr data-log="${esc(l.id)}" class="${selectedLog===l.id?"sel":""}"><td c
 
 function renderPipe(){
 const f = $("pipeFilter").value;
-const rows = state.leads.filter(p=>!f || (f==="dnc" ? (p.status==="dnc"||p.optedOut) : (p.status||"new")===f));
+const rows = state.leads.filter(p=>!f || (f==="future" ? p.list==="future" : f==="dnc" ? (p.status==="dnc"||p.optedOut) : (p.status||"new")===f));
 $("pipeSum").textContent = `${state.leads.length} leads · ${state.leads.filter(p=>p.status==="booked").length} meetings booked · ${state.leads.filter(p=>p.status==="hot").length} hot`;
 $("pipe").innerHTML = rows.length ? rows.map(p=>`<tr data-pipe="${esc(p.id)}"><td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.name)}</b><small>${esc(p.company)}</small><small class="mono">${esc(p.phone)}${p.email?" · "+esc(p.email):""}</small></div></div></td>
 <td>${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}<span class="cellsub">${esc(p.source||"")}</span></td>
@@ -1271,7 +1320,90 @@ ${revOpen===p.id?`<tr class="stx-row"><td colspan="6"><div class="rv-list">${(m.
 : `<tr><td colspan="6" class="muted" style="cursor:default">${f==="none"?"Every account has been scanned.":"No Google Maps data yet. Add a Google Places API key in Supabase, then run full scans."}</td></tr>`;
 if (total > revLimit) $("revRows").insertAdjacentHTML("beforeend", `<tr class="more-row"><td colspan="6"><button type="button" class="btn btn-sm" data-revmore>Show 50 more of ${total-revLimit}</button></td></tr>`);
 }
-function renderAll(){ syncLive(); renderClock(); renderAccounts(); renderReviews(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderTranscriptEmpty(); }
+// ---- data & calling operations ----
+let opsStatus = null, batchPrev = null, searchResults = [];
+const OK = (on, t) => `<span class="pill ${on?"p-ok":"p-bad"}"><span class="d"></span>${t}</span>`;
+async function opsCall(fn, body){ const { data, error } = await sb.functions.invoke(fn, {body}); if (error){ const j = await fnError(error); throw new Error(j.message || j.error || "error"); } return data; }
+async function loadOps(){
+try { opsStatus = await opsCall("ops", {action:"status"}); } catch(e){ $("opsConn").innerHTML = `<div class="glass conn"><b>Couldn't check connections</b><span class="muted">${esc(e.message)}</span></div>`; return; }
+try { batchPrev = await opsCall("batch-call", {preview:true}); } catch(e){ batchPrev = null; }
+renderOps();
+}
+function renderOps(){
+const st = opsStatus; if (!st) return;
+const el = st.elevenlabs || {};
+const numTxt = (el.numbers||[]).length ? (el.numbers||[]).map(n=>`${n.number} (${n.provider})`).join(", ") : "No phone number in ElevenLabs yet";
+$("opsConn").innerHTML = `
+<div class="glass conn"><b>ElevenLabs</b>${OK(el.api_key && el.key_works!==false, el.api_key ? (el.key_works===false ? "Key rejected" : "API key connected") : "API key missing")}<span class="muted">${el.api_key ? (el.agent_found ? "Agent Noor found." : esc(el.error||"Agent not checked.")) : "Add ELEVENLABS_API_KEY in Supabase secrets."}</span></div>
+<div class="glass conn"><b>Calling number</b>${OK(el.phone_ok, el.phone_ok ? "Number ready" : el.phone_number_id ? "Number ID not found" : "Not set")}<span class="muted">${esc(el.api_key ? numTxt : "Import a Twilio or SIP number in ElevenLabs, then add its ID as ELEVENLABS_PHONE_NUMBER_ID.")}</span></div>
+<div class="glass conn"><b>Call results</b>${OK(el.webhook_secret, el.webhook_secret ? "Webhook connected" : "Webhook secret missing")}<span class="muted">${el.webhook_secret ? "Outcomes and meetings save automatically." : "Set the post-call webhook in ElevenLabs and add ELEVENLABS_WEBHOOK_SECRET."}</span></div>
+<div class="glass conn"><b>Google Maps</b>${OK(st.google_maps, st.google_maps ? "Connected" : "Key missing")}<span class="muted">${st.google_maps ? "Ratings, reviews, open/closed checks and search are live." : "Add GOOGLE_PLACES_API_KEY for reviews, verification and full search."}</span></div>`;
+const C = {daily_cap:299, auto:false, per_run:50, concurrency:5, ...(st.calling||{})};
+const today = (batchPrev && batchPrev.calls_today) ?? st.calls_today ?? 0;
+$("capLabel").textContent = C.daily_cap;
+$("callsToday").textContent = `${today} / ${C.daily_cap}`;
+$("callsBar").style.width = Math.min(100, today/Math.max(1,C.daily_cap)*100)+"%";
+$("clearedNow").textContent = batchPrev ? batchPrev.eligible_now : "–";
+$("clearedBy").textContent = batchPrev && batchPrev.eligible_by_market ? Object.entries(batchPrev.eligible_by_market).map(([k,v])=>`${k} ${v}`).join(" · ") || "none in calling hours" : "";
+$("leftToday").textContent = Math.max(0, C.daily_cap - today);
+const pill = $("autoPill"); pill.className = "pill " + (C.auto ? "p-ok" : "p-mute"); pill.innerHTML = `<span class="d"></span>Auto-dial ${C.auto?"on":"off"}`;
+if (document.activeElement?.closest("#callingForm") == null){ $("capInput").value = C.daily_cap; $("perRunInput").value = C.per_run; $("concInput").value = C.concurrency; $("autoInput").checked = !!C.auto; }
+const ready = el.api_key && el.phone_ok;
+$("batchNow").disabled = !ready || !(batchPrev && batchPrev.eligible_now);
+$("batchNow").textContent = batchPrev && batchPrev.eligible_now ? `Start batch now (${Math.min(batchPrev.eligible_now, C.per_run, Math.max(0,C.daily_cap-today))})` : "Start batch now";
+$("batchMsg").textContent = !ready ? "Connect ElevenLabs and a calling number first." : batchPrev && batchPrev.reason ? batchPrev.reason : "";
+$("searchSrc").textContent = st.google_maps ? "Source: Google Maps" : "Source: OpenStreetMap (free)";
+renderVerifyStats(); renderFuture();
+}
+function renderVerifyStats(){
+const L = state.leads, v = p => p.verify || {};
+const mob = L.filter(p=>(v(p).phone?.type||p.quality?.phone_type)==="mobile").length, land = L.filter(p=>(v(p).phone?.type||p.quality?.phone_type)==="landline").length, hot = L.filter(p=>(v(p).phone?.type||p.quality?.phone_type)==="hotline").length;
+const badPh = L.filter(p=>p.quality?.phone_valid===false || !/^\+\d{8,15}$/.test(String(p.phone||""))).length;
+const em = L.filter(p=>p.email).length, emOk = L.filter(p=>v(p).email?.status==="valid").length, emBad = L.filter(p=>["invalid","no_mail_server","disposable"].includes(v(p).email?.status)).length;
+const checked = L.filter(p=>p.verify).length, mapsOk = L.filter(p=>v(p).maps?.found && v(p).maps.phone_matches).length;
+$("verifyStats").innerHTML = [["Verified accounts", `${checked} / ${L.length}`, `${L.length-checked} still to check`],["Mobile numbers", mob, `${land} landlines · ${hot} hotlines`],["Bad or missing numbers", badPh, "held back from calling"],["Emails", `${emOk} / ${em}`, `${emBad} invalid or no mail server`],["Matched on Google Maps", mapsOk, opsStatus?.google_maps ? "number matches Google" : "needs the Google key"],["Saved for later", L.filter(p=>p.list==="future").length, "not in the call queue"]]
+.map(([a,b,c])=>`<div><span>${a}</span><b>${b}</b><small>${esc(c)}</small></div>`).join("");
+}
+function renderFuture(){
+const F = state.leads.filter(p=>p.list==="future");
+$("futureList").innerHTML = F.length ? `<div class="eyebrow" style="margin-bottom:6px">Saved for later (${F.length})</div><div class="tbl res-tbl"><table><thead><tr><th>Clinic</th><th>City</th><th>Phone</th><th>Source</th><th></th></tr></thead><tbody>${F.slice(0,100).map(p=>`<tr><td><b>${esc(p.company)}</b></td><td>${esc(p.city||"")}</td><td class="mono">${/^\+/.test(p.phone)?esc(p.phone):'<span class="muted">No number yet</span>'}</td><td class="muted">${esc(p.source||"")}</td><td style="text-align:right;white-space:nowrap"><button type="button" class="btn btn-sm" data-toqueue="${esc(p.id)}" ${/^\+/.test(p.phone)?"":"disabled"}>Move to call queue</button></td></tr>`).join("")}</tbody></table></div>` : "";
+}
+$("opsRefresh").onclick = loadOps;
+$("callingForm").addEventListener("submit", async e=>{ e.preventDefault();
+const data = {daily_cap: Math.max(1, Math.min(2000, +$("capInput").value||299)), per_run: Math.max(1, Math.min(299, +$("perRunInput").value||50)), concurrency: Math.max(1, Math.min(50, +$("concInput").value||5)), auto: $("autoInput").checked};
+const { error } = await sb.from("settings").upsert({id:"calling", data});
+if (error){ toast("Couldn't save: "+error.message); return; } toast(`Saved: up to ${data.daily_cap} calls a day${data.auto?", auto-dial on":""}.`); loadOps(); });
+$("batchNow").onclick = async ()=>{ const b = $("batchNow"); b.disabled = true; $("batchMsg").textContent = "Sending batch to ElevenLabs…";
+try { const r = await opsCall("batch-call", {}); $("batchMsg").textContent = r.submitted ? `Sent ${r.submitted} calls. ${r.remaining_today} left today.` : (r.reason||"Nothing to send."); toast(r.submitted ? `Batch started: ${r.submitted} calls` : (r.reason||"Nothing to send")); }
+catch(e){ $("batchMsg").textContent = e.message; } loadOps(); };
+async function runVerify(all){ const b = all ? $("revalBtn") : $("verifyBtn"); b.disabled = true; let total = 0;
+try { for (let i=0;i<(all?10:1);i++){ $("verifyMsg").textContent = `Checking… ${total} done`; const r = await opsCall("ops", {action:"verify", limit:40, all}); total += r.verified; if (!all || r.verified < 40) { $("verifyMsg").textContent = `Checked ${total} accounts. ${r.remaining} not yet verified.${r.google_maps?"":" Google Maps checks need the key."}`; break; } } }
+catch(e){ $("verifyMsg").textContent = "Couldn't verify: "+e.message; } b.disabled = false; }
+$("verifyBtn").onclick = ()=>runVerify(false);
+$("revalBtn").onclick = async ()=>{ await runVerify(true); try { await opsCall("pull-leads", {mode:"scan"}); } catch(e){} toast("Revalidated: numbers, emails and websites re-checked."); };
+$("dupBtn").onclick = async ()=>{ $("dupList").innerHTML = '<p class="muted" style="font-size:13px">Looking for duplicates…</p>';
+try { const r = await opsCall("ops", {action:"duplicates"}); const G = r.groups||[];
+$("dupList").innerHTML = G.length ? `<div class="eyebrow" style="margin-top:4px">${G.length} possible duplicate groups · review before merging (branches can share an email)</div>` + G.map((g,i)=>`<div class="dup" data-g="${i}">${g.map((l,j)=>`<label class="dup-row"><input type="radio" name="keep${i}" value="${esc(l.id)}" ${j===0?"checked":""}> <b>${esc(l.company)}</b> <span class="mono">${esc(l.phone)} · ${esc(l.city||"")} · ${esc(l.status||"new")}</span> <span class="pill p-mute">${esc((l.why||[]).join(", "))}</span></label>`).join("")}<div><button type="button" class="btn btn-sm" data-merge="${i}">Keep selected, remove the others</button></div></div>`).join("") : '<p class="muted" style="font-size:13px">No duplicates found.</p>';
+$("dupList").__groups = G; } catch(e){ $("dupList").innerHTML = `<p class="muted">${esc(e.message)}</p>`; } };
+$("dupList").addEventListener("click", async e=>{ const m = e.target.closest("[data-merge]"); if (!m) return; const i = +m.dataset.merge, G = $("dupList").__groups[i];
+const keep = document.querySelector(`input[name="keep${i}"]:checked`).value; m.disabled = true;
+try { const r = await opsCall("ops", {action:"merge", keep_id:keep, remove_ids:G.map(x=>x.id).filter(x=>x!==keep)}); toast(`Merged ${r.merged} duplicate${r.merged===1?"":"s"}.`); m.closest(".dup").remove(); } catch(err){ toast("Couldn't merge: "+err.message); m.disabled = false; } });
+$("searchForm").addEventListener("submit", async e=>{ e.preventDefault(); const q = $("searchQ").value.trim(); if (q.length<3){ toast("Type what to search for."); return; }
+$("searchOut").innerHTML = '<p class="muted" style="font-size:13px">Searching…</p>';
+try { const r = await opsCall("ops", {action:"search", query:q, market:$("searchMk").value}); searchResults = r.results||[];
+$("searchOut").innerHTML = (r.note?`<p class="dbnote">${esc(r.note)}</p>`:"") + (searchResults.length ? `<div class="tbl res-tbl"><table><thead><tr><th><input type="checkbox" id="selAll" aria-label="Select all new"></th><th>Clinic</th><th>Phone</th><th>Rating</th><th>Website</th><th>Status</th></tr></thead><tbody>${searchResults.map((x,i)=>`<tr><td><input type="checkbox" data-sel="${i}" ${x.in_list?"disabled":""} aria-label="Select ${esc(x.name)}"></td><td><b>${esc(x.name)}</b><small class="cellsub">${esc(x.address||"")}</small></td><td class="mono">${x.phone?esc(x.phone)+` <span class="muted">${esc(x.phone_type||"")}</span>`:'<span class="muted">none listed</span>'}</td><td>${x.rating!=null?`★ ${x.rating} <span class="muted">(${x.reviews||0})</span>`:"–"}</td><td>${x.website?`<a href="${esc(x.website)}" target="_blank" rel="noopener">site</a>`:"–"}</td><td>${x.in_list?'<span class="pill p-mute">Already in list</span>':x.status&&x.status!=="OPERATIONAL"?`<span class="pill p-bad">${esc(x.status.toLowerCase().replace(/_/g," "))}</span>`:'<span class="pill p-ok">New</span>'}</td></tr>`).join("")}</tbody></table></div>
+<div class="leadbar" style="margin-top:10px"><button type="button" class="btn btn-sm btn-primary" data-save="future">Save selected for later</button><button type="button" class="btn btn-sm" data-save="queue">Add selected to call queue</button><small class="muted" id="saveMsg">${r.source} · ${searchResults.filter(x=>!x.in_list).length} new of ${searchResults.length}</small></div>` : '<p class="muted" style="font-size:13px">No results. Try a different area or clinic type.</p>');
+r.source && ($("searchOut").dataset.source = r.source);
+} catch(err){ $("searchOut").innerHTML = `<p class="muted">${esc(err.message)}</p>`; } });
+$("searchOut").addEventListener("change", e=>{ if (e.target.id==="selAll") document.querySelectorAll("[data-sel]:not(:disabled)").forEach(c=>c.checked = e.target.checked); });
+$("searchOut").addEventListener("click", async e=>{ const b = e.target.closest("[data-save]"); if (!b) return;
+const items = [...document.querySelectorAll("[data-sel]:checked")].map(c=>searchResults[+c.dataset.sel]); if (!items.length){ toast("Tick the clinics to save first."); return; }
+b.disabled = true; try { const r = await opsCall("ops", {action:"save", items, list:b.dataset.save, market:$("searchMk").value, source:$("searchOut").dataset.source||"Search"});
+toast(`${r.added} saved${b.dataset.save==="queue"?" to the call queue":" for later"}${r.skipped?`, ${r.skipped} already in your list`:""}.`); document.querySelectorAll("[data-sel]:checked").forEach(c=>{ c.checked=false; c.disabled=true; }); }
+catch(err){ toast("Couldn't save: "+err.message); } b.disabled = false; });
+$("futureList").addEventListener("click", async e=>{ const b = e.target.closest("[data-toqueue]"); if (!b) return; const p = state.leads.find(x=>x.id===b.dataset.toqueue); if (!p) return;
+b.disabled = true; const { error } = await sb.from("leads").update({list:"queue"}).eq("id", p.id); if (error){ toast("Couldn't move: "+error.message); b.disabled=false; return; } p.list = "queue"; toast(`${p.company} moved to the call queue.`); renderAll(); });
+function renderAll(){ syncLive(); renderClock(); renderAccounts(); renderReviews(); renderOps(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderTranscriptEmpty(); }
 let callBusy = false;
 function lastCallFor(id){ return state.log.filter(l=>l.pid===id).sort((a,b)=>b.at-a.at)[0] || null; }
 function callPayload(p){
@@ -1397,7 +1529,7 @@ hideAuth(); $("whoami").textContent = session ? session.user.email : "Test mode"
 $("testBar").hidden = !testMode; $("signOutBtn").hidden = !session;
 if (started) return; started = true;
 db = makeDb(); downloads = downloadsShim; sample = null; mcp = null;
-goLive(); loadSync();
+goLive(); loadSync(); loadOps(); setInterval(loadOps, 5*60000);
 sb.channel("rt-sync").on("postgres_changes", {event:"*", schema:"public", table:"sync_runs"}, ()=>loadSync()).subscribe();
 $("dbPill").className = "pill p-ok"; $("dbPill").innerHTML = '<span class="d"></span>Live';
 $("simBtn").lastChild.textContent = "Call next cleared clinic";
@@ -1405,6 +1537,7 @@ setInterval(()=>{ simTime = Date.now(); renderClock(); }, 30000);
 }
 simTime = Date.now();
 fillSelects(); renderRules(); renderProfile();
+$("searchMk").innerHTML = Object.entries(MARKETS).map(([k,m])=>`<option value="${k}">${esc(m.name)}</option>`).join("");
 sb.auth.getSession().then(({data})=>boot(data.session));
 sb.auth.onAuthStateChange((_e, session)=>{ if (session) boot(session); });
 </script>
