@@ -1322,6 +1322,41 @@ if (total > revLimit) $("revRows").insertAdjacentHTML("beforeend", `<tr class="m
 }
 // ---- data & calling operations ----
 let opsStatus = null, batchPrev = null, searchResults = [];
+// Free search runs from the browser: OpenStreetMap's map servers refuse many cloud servers but accept normal visitors.
+const OSM_CC = {AE:"971",SA:"966",QA:"974",KW:"965",BH:"973",OM:"968"}, OSM_T0 = {AE:1,SA:1};
+const OSM_NSN = {AE:[/^(5[024568]\d{7}|[234679]\d{7}|800\d{2,9}|600\d{6})$/,/^5/,/^(800|600)/],SA:[/^(5\d{8}|1[1-7]\d{7}|920\d{6}|800\d{7})$/,/^5/,/^(920|800)/],QA:[/^([3567]\d{7}|4\d{7}|800\d{4})$/,/^[3567]/,/^800/],KW:[/^([569]\d{7}|2\d{7}|18\d{5,6})$/,/^[569]/,/^18/],BH:[/^([367]\d{7}|1[367]\d{6}|8000\d{4})$/,/^[36]/,/^8000/],OM:[/^([79]\d{7}|2[2-6]\d{6}|800\d{5})$/,/^[79]/,/^800/]};
+function osmPhone(raw, mk){ let s = String(raw||"").split(/[;,]/)[0].trim().replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[^\d+]/g,""); if (!s) return {};
+  if (s.startsWith("00")) s = "+"+s.slice(2); const cc = OSM_CC[mk]; let n;
+  if (s.startsWith("+")) { if (!s.startsWith("+"+cc)) return {}; n = s.slice(1+cc.length); } else if (s.startsWith(cc) && s.length>cc.length+6) n = s.slice(cc.length); else n = (OSM_T0[mk] && s.startsWith("0")) ? s.slice(1) : s;
+  if (n.startsWith("0")) n = n.slice(1); const P = OSM_NSN[mk]; if (!P[0].test(n)) return {};
+  return {phone:"+"+cc+n, type: P[2].test(n) ? "hotline" : P[1].test(n) ? "mobile" : "landline"}; }
+const nameKey = s=>String(s||"").toLowerCase().replace(/\b(clinic|clinics|center|centre|medical|dental|dentist|polyclinic|llc|the|and|branch|dr)\b|مركز|عيادة|طبي|للأسنان/g," ").replace(/[^a-z0-9؀-ۿ]+/g," ").trim();
+async function osmSearch(q, mk){
+  const country = (MARKETS[mk]||{}).name || mk;
+  const place = q.replace(/\b(dental|dentist|dentists|clinic|clinics|medical|centre|center|aesthetic|derma\w*|skin|cosmetic|doctor|doctors|polyclinic|in|near)\b/gi," ").replace(/\s+/g," ").trim() || country;
+  const ph = await fetch(`https://photon.komoot.io/api/?limit=5&q=${encodeURIComponent(place+" "+country)}`).then(r=>r.json());
+  const f = (ph.features||[]).find(x=>String(x.properties?.countrycode||"").toUpperCase()===mk);
+  if (!f) throw new Error(`Couldn't find "${place}" on the map. Try a city or area name.`);
+  const [lon,lat] = f.geometry.coordinates, ex = f.properties.extent;
+  let [s1,n1,w1,e1] = ex ? [ex[3],ex[1],ex[0],ex[2]] : [lat-.02,lat+.02,lon-.02,lon+.02];
+  if (n1-s1<.02){ s1-=.01; n1+=.01; w1-=.01; e1+=.01; }
+  if (n1-s1>.6){ const cy=(s1+n1)/2, cx=(w1+e1)/2; s1=cy-.15; n1=cy+.15; w1=cx-.15; e1=cx+.15; }
+  const bb = `${s1},${w1},${n1},${e1}`, dent = /dent/i.test(q), aes = /aesthetic|derma|skin|cosmetic|laser/i.test(q);
+  const sel = dent ? ['["amenity"="dentist"]','["healthcare"="dentist"]'] : aes ? ['["amenity"~"clinic|doctors"]["name"~"aesthetic|derma|skin|laser|cosmetic",i]','["healthcare:speciality"~"derm|plastic|cosmetic|aesthetic"]'] : ['["amenity"~"^(dentist|clinic|doctors)$"]','["healthcare"~"^(dentist|clinic|doctor)$"]'];
+  const oq = `[out:json][timeout:25];(${sel.map(x=>`nwr${x}(${bb});`).join("")});out center tags 80;`;
+  let els = null;
+  for (const u of ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://maps.mail.ru/osm/tools/overpass/api/interpreter","https://overpass.private.coffee/api/interpreter"]) {
+    try { const ctl = new AbortController(), t = setTimeout(()=>ctl.abort(), 30000);
+      const r = await fetch(u, {method:"POST", body:"data="+encodeURIComponent(oq), headers:{"Content-Type":"application/x-www-form-urlencoded"}, signal:ctl.signal}); clearTimeout(t);
+      if (!r.ok) continue; const d = await r.json(); if (!(d.elements||[]).length && d.remark) continue; els = d.elements||[]; break; } catch(e){ /* next mirror */ }
+  }
+  if (!els) throw new Error("The free map servers are busy right now. Try again in a minute, or add a Google Maps key for faster, complete results.");
+  const known = new Set(state.leads.map(l=>String(l.phone).replace(/\D/g,"").slice(-8))), knownN = new Set(state.leads.map(l=>nameKey(l.company)));
+  return els.filter(e=>e.tags?.name).map(e=>{ const t = e.tags, p = osmPhone(t.phone||t["contact:phone"]||t["contact:mobile"]||"", mk);
+    const x = {ref:`${e.type}/${e.id}`, name:t.name, address:[t["addr:street"], t["addr:suburb"]||t["addr:district"], t["addr:city"]||f.properties.name].filter(Boolean).join(", "), city:t["addr:city"]||f.properties.city||f.properties.name, phone:p.phone||null, phone_type:p.type||null, website:t.website||t["contact:website"]||null, rating:null, reviews:null, status:null, maps_url:`https://www.openstreetmap.org/${e.type}/${e.id}`, types:[t.amenity||t.healthcare||"clinic"]};
+    x.in_list = (x.phone && known.has(x.phone.replace(/\D/g,"").slice(-8))) || knownN.has(nameKey(x.name)); return x; })
+    .sort((a,b)=>(b.phone?1:0)-(a.phone?1:0));
+}
 const OK = (on, t) => `<span class="pill ${on?"p-ok":"p-bad"}"><span class="d"></span>${t}</span>`;
 async function opsCall(fn, body){ const { data, error } = await sb.functions.invoke(fn, {body}); if (error){ const j = await fnError(error); throw new Error(j.message || j.error || "error"); } return data; }
 async function loadOps(){
@@ -1390,7 +1425,10 @@ const keep = document.querySelector(`input[name="keep${i}"]:checked`).value; m.d
 try { const r = await opsCall("ops", {action:"merge", keep_id:keep, remove_ids:G.map(x=>x.id).filter(x=>x!==keep)}); toast(`Merged ${r.merged} duplicate${r.merged===1?"":"s"}.`); m.closest(".dup").remove(); } catch(err){ toast("Couldn't merge: "+err.message); m.disabled = false; } });
 $("searchForm").addEventListener("submit", async e=>{ e.preventDefault(); const q = $("searchQ").value.trim(); if (q.length<3){ toast("Type what to search for."); return; }
 $("searchOut").innerHTML = '<p class="muted" style="font-size:13px">Searching…</p>';
-try { const r = await opsCall("ops", {action:"search", query:q, market:$("searchMk").value}); searchResults = r.results||[];
+try { const mk = $("searchMk").value; let r;
+if (opsStatus && opsStatus.google_maps) r = await opsCall("ops", {action:"search", query:q, market:mk});
+else r = {source:"OpenStreetMap", results: await osmSearch(q, mk), note:"Free OpenStreetMap search: many clinics have no phone listed there. Add a Google Maps key for complete results with phones and ratings."};
+searchResults = r.results||[];
 $("searchOut").innerHTML = (r.note?`<p class="dbnote">${esc(r.note)}</p>`:"") + (searchResults.length ? `<div class="tbl res-tbl"><table><thead><tr><th><input type="checkbox" id="selAll" aria-label="Select all new"></th><th>Clinic</th><th>Phone</th><th>Rating</th><th>Website</th><th>Status</th></tr></thead><tbody>${searchResults.map((x,i)=>`<tr><td><input type="checkbox" data-sel="${i}" ${x.in_list?"disabled":""} aria-label="Select ${esc(x.name)}"></td><td><b>${esc(x.name)}</b><small class="cellsub">${esc(x.address||"")}</small></td><td class="mono">${x.phone?esc(x.phone)+` <span class="muted">${esc(x.phone_type||"")}</span>`:'<span class="muted">none listed</span>'}</td><td>${x.rating!=null?`★ ${x.rating} <span class="muted">(${x.reviews||0})</span>`:"–"}</td><td>${x.website?`<a href="${esc(x.website)}" target="_blank" rel="noopener">site</a>`:"–"}</td><td>${x.in_list?'<span class="pill p-mute">Already in list</span>':x.status&&x.status!=="OPERATIONAL"?`<span class="pill p-bad">${esc(x.status.toLowerCase().replace(/_/g," "))}</span>`:'<span class="pill p-ok">New</span>'}</td></tr>`).join("")}</tbody></table></div>
 <div class="leadbar" style="margin-top:10px"><button type="button" class="btn btn-sm btn-primary" data-save="future">Save selected for later</button><button type="button" class="btn btn-sm" data-save="queue">Add selected to call queue</button><small class="muted" id="saveMsg">${r.source} · ${searchResults.filter(x=>!x.in_list).length} new of ${searchResults.length}</small></div>` : '<p class="muted" style="font-size:13px">No results. Try a different area or clinic type.</p>');
 r.source && ($("searchOut").dataset.source = r.source);
