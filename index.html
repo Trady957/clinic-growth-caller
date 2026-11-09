@@ -1334,22 +1334,24 @@ const nameKey = s=>String(s||"").toLowerCase().replace(/\b(clinic|clinics|center
 async function osmSearch(q, mk){
   const country = (MARKETS[mk]||{}).name || mk;
   const place = q.replace(/\b(dental|dentist|dentists|clinic|clinics|medical|centre|center|aesthetic|derma\w*|skin|cosmetic|doctor|doctors|polyclinic|in|near)\b/gi," ").replace(/\s+/g," ").trim() || country;
-  const ph = await fetch(`https://photon.komoot.io/api/?limit=5&q=${encodeURIComponent(place+" "+country)}`).then(r=>r.json());
+  const C0 = {AE:[24.4,54.4],SA:[24.7,46.7],QA:[25.3,51.5],KW:[29.3,47.9],BH:[26.1,50.55],OM:[23.6,58.4]}[mk] || [24.4,54.4];
+  const ph = await fetch(`https://photon.komoot.io/api/?limit=10&layer=district&layer=locality&layer=city&layer=county&layer=state&lat=${C0[0]}&lon=${C0[1]}&q=${encodeURIComponent(place)}`).then(r=>r.json());
   const f = (ph.features||[]).find(x=>String(x.properties?.countrycode||"").toUpperCase()===mk);
-  if (!f) throw new Error(`Couldn't find "${place}" on the map. Try a city or area name.`);
-  const [lon,lat] = f.geometry.coordinates, ex = f.properties.extent;
-  let [s1,n1,w1,e1] = ex ? [ex[3],ex[1],ex[0],ex[2]] : [lat-.02,lat+.02,lon-.02,lon+.02];
+  if (!f) throw new Error(`Couldn't find "${place}" in ${country}. Try a city or area name.`);
+  const [lon,lat] = f.geometry.coordinates, ex = f.properties.extent, r0 = /city|state|county/.test(f.properties.type||"") ? .12 : .02;
+  let [s1,n1,w1,e1] = ex ? [ex[3],ex[1],ex[0],ex[2]] : [lat-r0,lat+r0,lon-r0,lon+r0];
   if (n1-s1<.02){ s1-=.01; n1+=.01; w1-=.01; e1+=.01; }
   if (n1-s1>.6){ const cy=(s1+n1)/2, cx=(w1+e1)/2; s1=cy-.15; n1=cy+.15; w1=cx-.15; e1=cx+.15; }
   const bb = `${s1},${w1},${n1},${e1}`, dent = /dent/i.test(q), aes = /aesthetic|derma|skin|cosmetic|laser/i.test(q);
   const sel = dent ? ['["amenity"="dentist"]','["healthcare"="dentist"]'] : aes ? ['["amenity"~"clinic|doctors"]["name"~"aesthetic|derma|skin|laser|cosmetic",i]','["healthcare:speciality"~"derm|plastic|cosmetic|aesthetic"]'] : ['["amenity"~"^(dentist|clinic|doctors)$"]','["healthcare"~"^(dentist|clinic|doctor)$"]'];
   const oq = `[out:json][timeout:25];(${sel.map(x=>`nwr${x}(${bb});`).join("")});out center tags 80;`;
+  // Ask every mirror at once and take the first good answer (each can take 20–40s when busy).
+  const ctl = new AbortController(), timer = setTimeout(()=>ctl.abort(), 45000);
   let els = null;
-  for (const u of ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://maps.mail.ru/osm/tools/overpass/api/interpreter","https://overpass.private.coffee/api/interpreter"]) {
-    try { const ctl = new AbortController(), t = setTimeout(()=>ctl.abort(), 30000);
-      const r = await fetch(u, {method:"POST", body:"data="+encodeURIComponent(oq), headers:{"Content-Type":"application/x-www-form-urlencoded"}, signal:ctl.signal}); clearTimeout(t);
-      if (!r.ok) continue; const d = await r.json(); if (!(d.elements||[]).length && d.remark) continue; els = d.elements||[]; break; } catch(e){ /* next mirror */ }
-  }
+  try { els = await Promise.any(["https://overpass-api.de/api/interpreter","https://maps.mail.ru/osm/tools/overpass/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter"].map(async u=>{
+    const r = await fetch(u, {method:"POST", body:"data="+encodeURIComponent(oq), headers:{"Content-Type":"application/x-www-form-urlencoded"}, signal:ctl.signal});
+    if (!r.ok) throw new Error(r.status); const d = await r.json(); if (!(d.elements||[]).length && d.remark) throw new Error("busy"); return d.elements||[]; })); } catch(e){ els = null; }
+  clearTimeout(timer); ctl.abort();
   if (!els) throw new Error("The free map servers are busy right now. Try again in a minute, or add a Google Maps key for faster, complete results.");
   const known = new Set(state.leads.map(l=>String(l.phone).replace(/\D/g,"").slice(-8))), knownN = new Set(state.leads.map(l=>nameKey(l.company)));
   return els.filter(e=>e.tags?.name).map(e=>{ const t = e.tags, p = osmPhone(t.phone||t["contact:phone"]||t["contact:mobile"]||"", mk);
@@ -1424,7 +1426,7 @@ $("dupList").addEventListener("click", async e=>{ const m = e.target.closest("[d
 const keep = document.querySelector(`input[name="keep${i}"]:checked`).value; m.disabled = true;
 try { const r = await opsCall("ops", {action:"merge", keep_id:keep, remove_ids:G.map(x=>x.id).filter(x=>x!==keep)}); toast(`Merged ${r.merged} duplicate${r.merged===1?"":"s"}.`); m.closest(".dup").remove(); } catch(err){ toast("Couldn't merge: "+err.message); m.disabled = false; } });
 $("searchForm").addEventListener("submit", async e=>{ e.preventDefault(); const q = $("searchQ").value.trim(); if (q.length<3){ toast("Type what to search for."); return; }
-$("searchOut").innerHTML = '<p class="muted" style="font-size:13px">Searching…</p>';
+$("searchOut").innerHTML = `<p class="muted" style="font-size:13px">Searching${opsStatus&&opsStatus.google_maps?"":" OpenStreetMap (free; can take up to 40 seconds)"}…</p>`;
 try { const mk = $("searchMk").value; let r;
 if (opsStatus && opsStatus.google_maps) r = await opsCall("ops", {action:"search", query:q, market:mk});
 else r = {source:"OpenStreetMap", results: await osmSearch(q, mk), note:"Free OpenStreetMap search: many clinics have no phone listed there. Add a Google Maps key for complete results with phones and ratings."};
