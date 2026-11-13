@@ -42,7 +42,11 @@ async function testCall(body) {
     city: String(c.city || ''), market: String(c.market || ''), lang: String(c.lang || 'en'),
     positioning: String(body.positioning || '').slice(0, 4000), test_call: 'true',
   }
-  const r = await fetch('https://api.elevenlabs.io/v1/convai/twilio/outbound-call', {
+  // Twilio numbers use the Twilio endpoint; Telnyx, Plivo, Vonage etc. are imported as SIP trunks and use the SIP endpoint.
+  const info = await fetch(`https://api.elevenlabs.io/v1/convai/phone-numbers/${encodeURIComponent(phoneId)}`, { headers: { 'xi-api-key': key } })
+    .then((x) => (x.ok ? x.json() : {})).catch(() => ({}))
+  const route = info.provider === 'sip_trunk' ? 'sip-trunk' : 'twilio'
+  const r = await fetch(`https://api.elevenlabs.io/v1/convai/${route}/outbound-call`, {
     method: 'POST',
     headers: { 'xi-api-key': key, 'content-type': 'application/json' },
     // The destination is always the owner's own number; a clinic number is never accepted here.
