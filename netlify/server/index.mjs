@@ -1,6 +1,6 @@
 // API for the console: Google Maps lookups and test calls to the owner's own phone.
 // Every route requires a logged-in Supabase session from the console.
-import { mapsLookup, sampleLookup } from './maps.mjs'
+import { mapsLookup, sampleLookup, searchClinics } from './maps.mjs'
 
 const SB_URL = 'https://ajwhjvoigyejcgrqjrto.supabase.co'
 // Public anon key (already shipped in index.html); only used to validate the user's session token.
@@ -68,6 +68,15 @@ export default async (req) => {
   const body = await req.json().catch(() => ({}))
   try {
     if (path === '/api/test-call') return await testCall(body)
+    if (path === '/api/maps-search') {
+      const key = process.env.GOOGLE_MAPS_API_KEY
+      const query = String(body.query || '').slice(0, 200).trim()
+      if (query.length < 3) return json({ error: 'bad_request', message: 'Type what to search for.' }, 400)
+      // No key: tell the console to fall back to the free OpenStreetMap search instead of inventing clinics.
+      if (!key) return json({ error: 'not_configured', missing: ['GOOGLE_MAPS_API_KEY'], message: 'Google Maps key not set.' }, 503)
+      const maxRating = Math.min(5, Math.max(1, Number(body.max_rating) || 4))
+      return json({ source: 'Google Maps', max_rating: maxRating, ...(await searchClinics(key, { query, market: String(body.market || ''), maxRating })) })
+    }
     if (path === '/api/maps-lookup') {
       const key = process.env.GOOGLE_MAPS_API_KEY
       const items = (Array.isArray(body.items) ? body.items : [body]).slice(0, 10)

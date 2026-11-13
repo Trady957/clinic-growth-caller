@@ -75,7 +75,7 @@
     <div>
       <div class="eyebrow" id="heroEyebrow">Freelance · Dubai</div>
       <h1>Every clinic called, qualified and <em>booked in.</em></h1>
-      <p class="lede" id="heroLede">Your AI caller phones dental, aesthetic and medical clinics across the GCC, gets past reception to the owner or manager, finds out if they need marketing or AI agents, and books confirmed demo meetings in each clinic's own time zone, with the calendar invite and WhatsApp confirmation ready to send.</p>
+      <p class="lede" id="heroLede">Your AI caller phones dental, aesthetic and medical clinics across the GCC, the US and Canada, gets past reception to the owner or manager, finds out if they need marketing or AI agents, and books confirmed demo meetings in each clinic's own time zone, with the calendar invite and WhatsApp confirmation ready to send.</p>
       <div class="chips">
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>UAE calling rules built in</span>
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Confirmed meetings</span>
@@ -108,7 +108,7 @@
   <div class="camps" id="campaigns"></div>
   <div class="work">
     <div class="glass">
-      <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button> <button type="button" class="btn btn-sm" id="gmapsAllBtn" title="Looks up every clinic on Google Maps: rating, reviews, open or closed, and whether the phone number matches">Google Maps check</button></div>
+      <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button> <button type="button" class="btn btn-sm" id="gmapsAllBtn" title="Looks up every clinic on Google Maps: rating, reviews, open or closed, and whether the phone number matches">Google Maps check</button> <button type="button" class="btn btn-sm" id="cleanupBtn" title="Deletes clinics rated 4★ or more, duplicates and permanently closed clinics, and corrects phones and websites from Google. Shows a preview and downloads a backup first.">Clean up list</button></div>
       <div class="opps" id="opps"></div>
       <div class="tbl"><table><thead><tr><th>Clinic</th><th>Has now</th><th>Propose</th><th>Enhance</th><th>Reviews</th><th>Rule check</th><th></th></tr></thead><tbody id="queue"></tbody></table></div>
     </div>
@@ -178,7 +178,7 @@
   <div class="glass" id="tab-import" hidden>
     <div class="form">
       <label class="field full">Paste rows from Google Sheets or Excel (with a header row)<textarea id="csvIn" style="min-height:150px;font-family:var(--f-mono);font-size:12.5px" placeholder="company,name,role,industry,city,phone,email,market,lang,campaign,context,source,consent,dncr&#10;Pearl Smile Dental Clinic,Clinic manager,Clinic manager,Dental clinic,Riyadh,+966115550000,,SA,ar,dental,Reviews mention unanswered calls,Google Maps,no,no"></textarea></label>
-      <div class="form-f"><button class="btn btn-primary" type="button" id="importBtn">Import clinics</button><small>Columns can be in any order. market: AE, SA, QA, KW, BH, OM. campaign: dental, aesthetic, medical, inbound, proposal. consent and dncr: yes or no.</small></div>
+      <div class="form-f"><button class="btn btn-primary" type="button" id="importBtn">Import clinics</button><small>Columns can be in any order. market: AE, SA, QA, KW, BH, OM, US, CA. campaign: dental, aesthetic, medical, inbound, proposal. consent and dncr: yes or no.</small></div>
     </div>
   </div>
 </div></section>
@@ -284,7 +284,11 @@ notes:["Promotional calls need documented consent","Unsubscribe honoured within 
 QA:{name:"Qatar",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
 KW:{name:"Kuwait",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
 BH:{name:"Bahrain",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
-OM:{name:"Oman",offset:4,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false}
+OM:{name:"Oman",offset:4,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
+US:{name:"United States",offset:-5,tzs:["America/New_York","America/Chicago","America/Denver","America/Los_Angeles"],nanp:true,start:9,end:17,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
+notes:["Business landlines only: AI-voice calls to mobiles need prior written consent (TCPA; FCC 2024 ruling on AI voices)","Scrub against the National Do Not Call Registry at least every 31 days","Calls 09:00–17:00 in the clinic's own time zone, weekdays","Identity, AI assistant and recording announced first; some states need all-party consent to record","Honour every do-not-call request immediately"],source:"TCPA / FTC Telemarketing Sales Rule; confirm with counsel",verified:false},
+CA:{name:"Canada",offset:-5,tzs:["America/Toronto","America/Winnipeg","America/Edmonton","America/Vancouver","America/Halifax"],nanp:true,start:9,end:17,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
+notes:["Business landlines only","Check the National DNCL (CRTC) at least every 31 days and register as a telemarketer","CRTC limits weekday calls to 09:00–21:30; this console uses 09:00–17:00 local","Automated or AI calls for solicitation can need express consent (CRTC ADAD rules): confirm before calling","Identify yourself and who you call for at the start"],source:"CRTC Unsolicited Telecommunications Rules; confirm with counsel",verified:false}
 };
 const TZNAME = {AE:"UAE time",SA:"Saudi time",QA:"Qatar time",KW:"Kuwait time",BH:"Bahrain time",OM:"Oman time"};
 const CAMPAIGNS = {
@@ -316,8 +320,15 @@ let profile = {...DEFAULT_PROFILE};
 let state = {leads:[], log:[], meetings:[]}, simTime, activeCamp = "dental", selectedId = null, call = null, selectedLog = null, simRunning = false;
 let sample = null, db = null, downloads = null, live = false; // live = leads come from the saved list
 function dubaiMidnight(ms){ const d = new Date(ms + 4*36e5); d.setUTCHours(0,0,0,0); return d.getTime() - 4*36e5; }
+// Time zones for US/Canada: use the clinic's own offset from Google when known, otherwise every zone in the country must pass.
+function tzHM(ms, tz){ const o = {}; for (const x of new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"2-digit",minute:"2-digit",weekday:"short",hour12:false}).formatToParts(new Date(ms))) o[x.type]=x.value;
+return {h:(+o.hour)%24, m:+o.minute, dow:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(o.weekday)}; }
+function tzOffsetH(tz){ const n = Date.now(), t = tzHM(n, tz), u = new Date(n); let d = (t.h*60+t.m) - (u.getUTCHours()*60+u.getUTCMinutes()); if (d>720) d-=1440; if (d<-720) d+=1440; return d/60; }
+function leadTimes(p, now){ const mk = MARKETS[p.market]||MARKETS.AE, off = p.audit && typeof p.audit.gUtcOffset==="number" ? p.audit.gUtcOffset/60 : null;
+if (off!==null) return [localHourMin(now, off)]; if (mk.tzs) return mk.tzs.map(z=>tzHM(now, z)); return [localHourMin(now, mk.offset)]; }
 function localHourMin(ms, offset){ const d = new Date(ms + offset*36e5); return {h:d.getUTCHours(), m:d.getUTCMinutes(), dow:d.getUTCDay()}; }
 const fmtHM = (h,m)=> String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
+for (const m of Object.values(MARKETS)) if (m.tzs) m.offset = tzOffsetH(m.tzs[0]);
 function normLead(l){ return {status:"new",score:null,next:"",declined:[],attempts:[],consent:false,dncr:false,lang:"en",market:"AE",campaign:"dental",...l, declined:[...(l.declined||[])], attempts:[...(l.attempts||[])]}; }
 function checkLead(p, campKey, now){
 const mk = MARKETS[p.market]||MARKETS.AE, camp = CAMPAIGNS[campKey]||CAMPAIGNS.dental, checks = [];
@@ -330,9 +341,13 @@ if (p.quality && p.quality.stale) add(false, "", "No longer on the map, check it
 add(!(mk.dncr && p.dncr && !p.consent), p.dncr ? "On DNCR, consent on file" : "Not on Do Not Call Register", "On Do Not Call Register");
 add(!p.declined.includes(campKey), "Has not declined", "Declined this before");
 add(p.status!=="booked", "No meeting booked yet", "Meeting already booked");
-const t = localHourMin(now, mk.offset), mins = t.h*60+t.m;
-add(!mk.weekend.includes(t.dow), "Working day", "Weekend in "+mk.name);
-add(mins >= mk.start*60 && mins < mk.end*60, `${fmtHM(t.h,t.m)} local, inside hours`, `${fmtHM(t.h,t.m)} local, outside hours`);
+if (mk.nanp){ const a = p.audit||{}, fresh = a.dncCheckedAt && now - a.dncCheckedAt < 31*DAY;
+add(a.lineType==="landline", "Confirmed business landline", "Business landline not confirmed (mobiles can't get AI calls)");
+add(!!fresh && !a.onDnc, `Do Not Call list checked ${fresh?new Date(a.dncCheckedAt).toLocaleDateString("en-GB"):""}`, a.onDnc ? "On the Do Not Call list" : "Do Not Call list not checked in the last 31 days"); }
+const TT = leadTimes(p, now), t = TT[0], mins = t.h*60+t.m;
+const inHrs = x => !mk.weekend.includes(x.dow) && x.h*60+x.m >= mk.start*60 && x.h*60+x.m < mk.end*60;
+add(TT.every(x=>!mk.weekend.includes(x.dow)), "Working day", "Weekend in "+mk.name);
+add(TT.every(inHrs), `${fmtHM(t.h,t.m)} local${TT.length>1?" (all time zones)":""}, inside hours`, `${TT.map(x=>fmtHM(x.h,x.m)).join(" / ")} local, outside hours`);
 const att = p.attempts||[], unanswered = att.filter(a=>!a.answered), startToday = now - (mins*6e4);
 const today = unanswered.filter(a=>a.at >= startToday && a.at <= now).length;
 const week = unanswered.filter(a=>a.at > now - 7*DAY && a.at <= now).length;
@@ -1155,6 +1170,14 @@ $("auditAllBtn").onclick = auditAll;
 async function apiCall(path, body){ const { data:{ session } } = await sb.auth.getSession();
 const r = await fetch(path, {method:"POST", headers:{"content-type":"application/json", authorization:"Bearer "+(session?.access_token||"")}, body:JSON.stringify(body)});
 const j = await r.json().catch(()=>({})); if (!r.ok) { const e = new Error(j.message || j.error || ("HTTP "+r.status)); e.code = j.error; throw e; } return j; }
+const digitsKey = s => String(s||"").replace(/\D/g,"").slice(-9);
+async function saveGoogleResults(items, list, mk){ let added = 0, skipped = 0;
+const phones = new Set(state.leads.map(l=>digitsKey(l.phone)).filter(Boolean)), places = new Set(state.leads.map(l=>l.audit&&l.audit.gPlaceId).filter(Boolean));
+for (const x of items){ if (places.has(x.place_id) || (x.phone && phones.has(digitsKey(x.phone)))){ skipped++; continue; }
+const p = normLead({id:newId(), company:x.name, name:"", phone:x.phone||"", website:x.website||"", city:x.city||"", market:mk, lang:"en", campaign:/derm|aesthetic|cosmetic|skin|laser/i.test(x.name+" "+(x.types||[]).join(" "))?"aesthetic":"dental", source:"Google Maps", createdAt:Date.now(),
+context:`${x.rating}★ from ${x.reviews} Google reviews.`, audit:{gChecked:Date.now(), gFound:true, gRating:x.rating, gReviews:x.reviews, gPhone:x.phone, gPhoneMatches:true, gStatus:x.status, gUrl:x.maps_url, gName:x.name, gAddress:x.address, gWebsite:x.website, gPlaceId:x.place_id, gUtcOffset:x.utc_offset, gRegion:x.region||null}});
+await saveLead(p); await sb.from("leads").update({list: (MARKETS[mk]||{}).nanp ? "future" : list}).eq("id", p.id); places.add(x.place_id); if (x.phone) phones.add(digitsKey(x.phone)); added++; }
+return {added, skipped}; }
 let gmapsRun = null;
 $("gmapsAllBtn").onclick = async ()=>{ const b = $("gmapsAllBtn"); if (gmapsRun){ gmapsRun.stop = true; return; }
 const list = state.leads.filter(p=>p.company); gmapsRun = {stop:false}; let done = 0, found = 0, mism = 0, closed = 0;
@@ -1165,11 +1188,42 @@ toast("Sample mode, nothing saved. Set GOOGLE_MAPS_API_KEY in Netlify for real G
 for (const g of results){ const p = state.leads.find(x=>x.id===g.id); if (!p || g.error) continue; done++;
 const audit = {...(p.audit||{}), gChecked:Date.now(), gFound:!!g.found};
 if (g.found){ found++; if (g.phoneMatches===false) mism++; if (g.status && g.status!=="OPERATIONAL") closed++;
-Object.assign(audit, {gRating:g.rating, gReviews:g.count, gPhone:g.phone, gPhoneMatches:g.phoneMatches, gStatus:g.status, gUrl:g.url, gName:g.name, gAddress:g.address, gWebsite:g.website}); }
+Object.assign(audit, {gRating:g.rating, gReviews:g.count, gPhone:g.phone, gPhoneMatches:g.phoneMatches, gStatus:g.status, gUrl:g.url, gName:g.name, gAddress:g.address, gWebsite:g.website, gPlaceId:g.placeId, gUtcOffset:g.utcOffset}); }
 p.audit = audit; await sb.from("leads").update({audit}).eq("id", p.id); } renderAll(); }
 toast(`Google Maps: ${found} of ${done} found · ${mism} phone mismatches · ${closed} not operating.`); }
 catch(e){ toast(e.code==="not_configured" ? "Add the Google Maps key in Netlify first." : e.code==="unauthorized" ? "Log in first." : "Google Maps check failed: "+e.message); }
 gmapsRun = null; b.textContent = "Google Maps check"; };
+// ---- Clean up: keep only clinics under 4 stars with correct, unique details ----
+function cleanupPlan(){ const del = [], fix = [], hold = [], keep = [], booked = new Set(state.meetings.map(m=>m.leadId));
+const prot = p => p.status==="booked" || booked.has(p.id) || state.log.some(l=>l.pid===p.id && l.answered);
+const rate = p => { const a = p.audit||{}, m = p.report&&p.report.maps; return typeof a.gRating==="number" ? a.gRating : m && typeof m.rating==="number" ? m.rating : null; };
+const score = p => (p.audit&&p.audit.gChecked?4:0) + (p.website?1:0) + (p.name?1:0) + (p.report?2:0);
+const groups = {}; for (const p of state.leads){ const a = p.audit||{}; for (const k of [a.gPlaceId && "g:"+a.gPlaceId, digitsKey(p.phone) && "p:"+digitsKey(p.phone)].filter(Boolean)) (groups[k] ||= []).push(p); }
+const dup = new Map(); for (const g of Object.values(groups)) if (g.length>1){ const best = [...g].sort((x,y)=>(prot(y)-prot(x)) || (score(y)-score(x)) || ((x.createdAt||0)-(y.createdAt||0)))[0]; for (const p of g) if (p!==best && !dup.has(p.id)) dup.set(p.id, best); }
+for (const p of state.leads){ const a = p.audit||{}, r = rate(p);
+if (prot(p)){ keep.push(p); continue; }
+if (dup.has(p.id)) { del.push({p, why:`Duplicate of ${dup.get(p.id).company}`}); continue; }
+if (a.gStatus==="CLOSED_PERMANENTLY") { del.push({p, why:"Permanently closed on Google"}); continue; }
+if (r!==null && r>=4) { del.push({p, why:`Rated ${r.toFixed(1)}★ on Google`}); continue; }
+if (!a.gChecked || !a.gFound) { hold.push({p, why: a.gChecked ? "Not found on Google" : "Not checked on Google yet"}); continue; }
+if (r===null) { hold.push({p, why:"No Google rating yet"}); continue; }
+if (a.gStatus==="CLOSED_TEMPORARILY") { fix.push({p, why:"Temporarily closed: moved to Saved for later", set:{list:"future"}}); continue; }
+const gp = String(a.gPhone||"").replace(/[^\d+]/g,"");
+if (a.gPhoneMatches===false && /^\+\d{8,15}$/.test(gp)) { fix.push({p, why:`Phone ${p.phone} → ${gp} (Google)`, set:{phone:gp}, audit:{prevPhone:p.phone, gPhoneMatches:true}}); continue; }
+if (a.gWebsite && !p.website) { fix.push({p, why:"Website added from Google", set:{website:a.gWebsite}}); continue; }
+keep.push(p); }
+return {del, fix, hold, keep}; }
+function downloadJSON(name, data){ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:"application/json"})); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000); }
+$("cleanupBtn").onclick = async ()=>{ const b = $("cleanupBtn"), P = cleanupPlan();
+if (!P.del.length && !P.fix.length){ toast(`Nothing to clean. ${P.hold.length} clinics still need a Google Maps check.`); return; }
+const lines = [...P.del.slice(0,12).map(x=>`✕ ${x.p.company}: ${x.why}`), ...(P.del.length>12?[`…and ${P.del.length-12} more to delete`]:[]), ...P.fix.slice(0,6).map(x=>`✎ ${x.p.company}: ${x.why}`), ...(P.fix.length>6?[`…and ${P.fix.length-6} more fixes`]:[])];
+if (!confirm(`Clean up the lead list (only clinics under 4★ stay)\n\nDelete ${P.del.length} · Fix ${P.fix.length} · Keep ${P.keep.length} · Not checked yet (left alone) ${P.hold.length}\nClinics with a booked meeting or a past answered call are never deleted.\n\n${lines.join("\n")}\n\nA backup file of every affected clinic downloads first. Deleting cannot be undone. Continue?`)) return;
+downloadJSON(`lead-cleanup-backup-${new Date().toISOString().slice(0,10)}.json`, {at:new Date().toISOString(), deleted:P.del.map(x=>({why:x.why, lead:x.p})), fixed:P.fix.map(x=>({why:x.why, lead:x.p}))});
+b.disabled = true; let d = 0, f = 0, errs = 0;
+for (const x of P.del){ b.textContent = `Deleting ${d+1}/${P.del.length}`; const { error } = await sb.from("leads").delete().eq("id", x.p.id); if (error) errs++; else { d++; state.leads = state.leads.filter(l=>l.id!==x.p.id); } }
+for (const x of P.fix){ const upd = {...x.set}; if (x.audit) upd.audit = {...(x.p.audit||{}), ...x.audit}; const { error } = await sb.from("leads").update(upd).eq("id", x.p.id); if (error) errs++; else { f++; Object.assign(x.p, upd); } }
+b.disabled = false; b.textContent = "Clean up list"; renderAll();
+toast(`Deleted ${d}, fixed ${f}${errs?`, ${errs} failed`:""}. ${P.hold.length} not checked on Google yet.`); };
 $("exportBtn").onclick = exportCSV;
 $("pipeFilter").onchange = renderPipe;
 $("pipe").addEventListener("change", async e=>{ const s=e.target.closest("[data-status]"); if(!s) return; const p=state.leads.find(x=>x.id===s.dataset.status); if(!p) return;
@@ -1341,19 +1395,19 @@ if (total > revLimit) $("revRows").insertAdjacentHTML("beforeend", `<tr class="m
 // ---- data & calling operations ----
 let opsStatus = null, batchPrev = null, searchResults = [];
 // Free search runs from the browser: OpenStreetMap's map servers refuse many cloud servers but accept normal visitors.
-const OSM_CC = {AE:"971",SA:"966",QA:"974",KW:"965",BH:"973",OM:"968"}, OSM_T0 = {AE:1,SA:1};
-const OSM_NSN = {AE:[/^(5[024568]\d{7}|[234679]\d{7}|800\d{2,9}|600\d{6})$/,/^5/,/^(800|600)/],SA:[/^(5\d{8}|1[1-7]\d{7}|920\d{6}|800\d{7})$/,/^5/,/^(920|800)/],QA:[/^([3567]\d{7}|4\d{7}|800\d{4})$/,/^[3567]/,/^800/],KW:[/^([569]\d{7}|2\d{7}|18\d{5,6})$/,/^[569]/,/^18/],BH:[/^([367]\d{7}|1[367]\d{6}|8000\d{4})$/,/^[36]/,/^8000/],OM:[/^([79]\d{7}|2[2-6]\d{6}|800\d{5})$/,/^[79]/,/^800/]};
+const OSM_CC = {AE:"971",SA:"966",QA:"974",KW:"965",BH:"973",OM:"968",US:"1",CA:"1"}, OSM_T0 = {AE:1,SA:1};
+const OSM_NSN = {AE:[/^(5[024568]\d{7}|[234679]\d{7}|800\d{2,9}|600\d{6})$/,/^5/,/^(800|600)/],SA:[/^(5\d{8}|1[1-7]\d{7}|920\d{6}|800\d{7})$/,/^5/,/^(920|800)/],QA:[/^([3567]\d{7}|4\d{7}|800\d{4})$/,/^[3567]/,/^800/],KW:[/^([569]\d{7}|2\d{7}|18\d{5,6})$/,/^[569]/,/^18/],BH:[/^([367]\d{7}|1[367]\d{6}|8000\d{4})$/,/^[36]/,/^8000/],OM:[/^([79]\d{7}|2[2-6]\d{6}|800\d{5})$/,/^[79]/,/^800/],US:[/^[2-9]\d{2}[2-9]\d{6}$/,null,/^8(00|33|44|55|66|77|88)/],CA:[/^[2-9]\d{2}[2-9]\d{6}$/,null,/^8(00|33|44|55|66|77|88)/]};
 function osmPhone(raw, mk){ for (const part of String(raw||"").split(/[;,\/]/)){ const r = osmPhone1(part, mk); if (r.phone) return r; } return {}; }
 function osmPhone1(raw, mk){ let s = String(raw||"").trim().replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[^\d+]/g,""); if (!s) return {};
   if (s.startsWith("00")) s = "+"+s.slice(2); const cc = OSM_CC[mk]; let n;
   if (s.startsWith("+")) { if (!s.startsWith("+"+cc)) return {}; n = s.slice(1+cc.length); } else if (s.startsWith(cc) && s.length>cc.length+6) n = s.slice(cc.length); else n = (OSM_T0[mk] && s.startsWith("0")) ? s.slice(1) : s;
   if (n.startsWith("0")) n = n.slice(1); const P = OSM_NSN[mk]; if (!P[0].test(n)) return {};
-  return {phone:"+"+cc+n, type: P[2].test(n) ? "hotline" : P[1].test(n) ? "mobile" : "landline"}; }
+  return {phone:"+"+cc+n, type: P[2].test(n) ? "hotline" : !P[1] ? "unverified" : P[1].test(n) ? "mobile" : "landline"}; }
 const nameKey = s=>String(s||"").toLowerCase().replace(/\b(clinic|clinics|center|centre|medical|dental|dentist|polyclinic|llc|the|and|branch|dr)\b|مركز|عيادة|طبي|للأسنان/g," ").replace(/[^a-z0-9؀-ۿ]+/g," ").trim();
 async function osmSearch(q, mk){
   const country = (MARKETS[mk]||{}).name || mk;
   const place = q.replace(/\b(dental|dentist|dentists|clinic|clinics|medical|centre|center|aesthetic|derma\w*|skin|cosmetic|doctor|doctors|polyclinic|in|near)\b/gi," ").replace(/\s+/g," ").trim() || country;
-  const C0 = {AE:[24.4,54.4],SA:[24.7,46.7],QA:[25.3,51.5],KW:[29.3,47.9],BH:[26.1,50.55],OM:[23.6,58.4]}[mk] || [24.4,54.4];
+  const C0 = {AE:[24.4,54.4],SA:[24.7,46.7],QA:[25.3,51.5],KW:[29.3,47.9],BH:[26.1,50.55],OM:[23.6,58.4],US:[39.8,-98.6],CA:[45.4,-75.7]}[mk] || [24.4,54.4];
   const ph = await fetch(`https://photon.komoot.io/api/?limit=10&layer=district&layer=locality&layer=city&layer=county&layer=state&lat=${C0[0]}&lon=${C0[1]}&q=${encodeURIComponent(place)}`).then(r=>r.json());
   const f = (ph.features||[]).find(x=>String(x.properties?.countrycode||"").toUpperCase()===mk);
   if (!f) throw new Error(`Couldn't find "${place}" in ${country}. Try a city or area name.`);
@@ -1447,7 +1501,9 @@ try { const r = await opsCall("ops", {action:"merge", keep_id:keep, remove_ids:G
 $("searchForm").addEventListener("submit", async e=>{ e.preventDefault(); const q = $("searchQ").value.trim(); if (q.length<3){ toast("Type what to search for."); return; }
 $("searchOut").innerHTML = `<p class="muted" style="font-size:13px">Searching${opsStatus&&opsStatus.google_maps?"":" OpenStreetMap (free; can take up to 40 seconds)"}…</p>`;
 try { const mk = $("searchMk").value; let r;
-if (opsStatus && opsStatus.google_maps) r = await opsCall("ops", {action:"search", query:q, market:mk});
+let gq = null; try { gq = await apiCall("/api/maps-search", {query:q, market:mk, max_rating:4}); } catch(err){ if (err.code!=="not_configured") throw err; }
+if (gq) r = {...gq, note:`Google Maps · showing only open clinics rated under 4★: ${gq.results.length} of ${gq.total} found (${gq.hidden} rated 4★+ or not operating hidden).`};
+else if (opsStatus && opsStatus.google_maps) r = await opsCall("ops", {action:"search", query:q, market:mk});
 else r = {source:"OpenStreetMap", results: await osmSearch(q, mk), note:"Free OpenStreetMap search: many clinics have no phone listed there. Add a Google Maps key for complete results with phones and ratings."};
 searchResults = r.results||[];
 $("searchOut").innerHTML = (r.note?`<p class="dbnote">${esc(r.note)}</p>`:"") + (searchResults.length ? `<div class="tbl res-tbl"><table><thead><tr><th><input type="checkbox" id="selAll" aria-label="Select all new"></th><th>Clinic</th><th>Phone</th><th>Rating</th><th>Website</th><th>Status</th></tr></thead><tbody>${searchResults.map((x,i)=>`<tr><td><input type="checkbox" data-sel="${i}" ${x.in_list?"disabled":""} aria-label="Select ${esc(x.name)}"></td><td><b>${esc(x.name)}</b><small class="cellsub">${esc(x.address||"")}</small></td><td class="mono">${x.phone?esc(x.phone)+` <span class="muted">${esc(x.phone_type||"")}</span>`:'<span class="muted">none listed</span>'}</td><td>${x.rating!=null?`★ ${x.rating} <span class="muted">(${x.reviews||0})</span>`:"–"}</td><td>${x.website?`<a href="${esc(x.website)}" target="_blank" rel="noopener">site</a>`:"–"}</td><td>${x.in_list?'<span class="pill p-mute">Already in list</span>':x.status&&x.status!=="OPERATIONAL"?`<span class="pill p-bad">${esc(x.status.toLowerCase().replace(/_/g," "))}</span>`:'<span class="pill p-ok">New</span>'}</td></tr>`).join("")}</tbody></table></div>
@@ -1457,10 +1513,13 @@ r.source && ($("searchOut").dataset.source = r.source);
 $("searchOut").addEventListener("change", e=>{ if (e.target.id==="selAll") document.querySelectorAll("[data-sel]:not(:disabled)").forEach(c=>c.checked = e.target.checked); });
 $("searchOut").addEventListener("click", async e=>{ const b = e.target.closest("[data-save]"); if (!b) return;
 const items = [...document.querySelectorAll("[data-sel]:checked")].map(c=>searchResults[+c.dataset.sel]); if (!items.length){ toast("Tick the clinics to save first."); return; }
+if (items[0] && items[0].place_id){ b.disabled = true; try { const n = await saveGoogleResults(items, b.dataset.save, $("searchMk").value); toast(`${n.added} saved${b.dataset.save==="queue" && !(MARKETS[$("searchMk").value]||{}).nanp?" to the call queue":" for later (US/Canada need landline and DNC checks before queueing)"}${n.skipped?`, ${n.skipped} already in your list`:""}.`);
+document.querySelectorAll("[data-sel]:checked").forEach(c=>{ c.checked=false; c.disabled=true; }); } catch(err){ toast("Couldn't save: "+err.message); } b.disabled = false; return; }
 b.disabled = true; try { const r = await opsCall("ops", {action:"save", items, list:b.dataset.save, market:$("searchMk").value, source:$("searchOut").dataset.source||"Search"});
 toast(`${r.added} saved${b.dataset.save==="queue"?" to the call queue":" for later"}${r.skipped?`, ${r.skipped} already in your list`:""}.`); document.querySelectorAll("[data-sel]:checked").forEach(c=>{ c.checked=false; c.disabled=true; }); }
 catch(err){ toast("Couldn't save: "+err.message); } b.disabled = false; });
 $("futureList").addEventListener("click", async e=>{ const b = e.target.closest("[data-toqueue]"); if (!b) return; const p = state.leads.find(x=>x.id===b.dataset.toqueue); if (!p) return;
+if ((MARKETS[p.market]||{}).nanp){ const a = p.audit||{}; if (a.lineType!=="landline" || !a.dncCheckedAt || a.onDnc || Date.now()-a.dncCheckedAt>=31*DAY){ selectedId = p.id; renderAll(); toast("US/Canada: confirm the business landline and the Do Not Call check in the call panel first."); return; } }
 b.disabled = true; const { error } = await sb.from("leads").update({list:"queue"}).eq("id", p.id); if (error){ toast("Couldn't move: "+error.message); b.disabled=false; return; } p.list = "queue"; toast(`${p.company} moved to the call queue.`); renderAll(); });
 function renderAll(){ syncLive(); renderClock(); renderAccounts(); renderReviews(); renderOps(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderTranscriptEmpty(); }
 let callBusy = false;
@@ -1469,6 +1528,14 @@ function callPayload(p){
 const n = needsFor(p), top = [...n.marketing, ...n.ai].filter(i=>i.pri==="high").map(i=>i.name).slice(0,4).join("; ");
 return positioningForPrompt(p) + (top ? ` Services that fit (suggest at most two): ${top}.` : "");
 }
+function nanpPanel(p){ const a = p.audit||{}, ca = p.market==="CA";
+return `<div class="gate" style="margin-top:8px"><p style="font-size:12px;margin:0 0 6px"><b>${ca?"Canada":"US"} calling checks</b> (required before Call now)</p>
+<div class="leadbar" style="justify-content:center;flex-wrap:wrap;gap:6px">
+<button type="button" class="btn btn-sm" data-nanp="landline">${a.lineType==="landline"?"✓ Business landline":"Confirm business landline"}</button>
+<button type="button" class="btn btn-sm" data-nanp="mobile">It's a mobile</button>
+<button type="button" class="btn btn-sm" data-nanp="dnc_ok">${a.dncCheckedAt&&!a.onDnc?"✓ DNC checked":"Not on DNC list"}</button>
+<button type="button" class="btn btn-sm" data-nanp="dnc_on">On DNC list</button></div>
+<p class="muted" style="font-size:11.5px;margin:6px 0 0">Check at <a href="${ca?"https://lnnte-dncl.gc.ca/":"https://telemarketing.donotcall.gov/"}" target="_blank" rel="noopener">${ca?"National DNCL (CRTC)":"telemarketing.donotcall.gov"}</a> (needs a subscription) and recheck every 31 days.</p></div>`; }
 function hasTestCall(){ return state.log.some(l=>l.test && l.outcome!=="calling" && l.outcome!=="failed") || localStorage.getItem("cgc_web_test")==="1"; }
 function waNum(phone){ const d = String(phone||"").replace(/[^\d]/g,""); return d.length>=10 ? d : ""; }
 function waClinic(p){ const ar = p.lang==="ar", P = profile;
@@ -1478,7 +1545,7 @@ return `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(txt)}`; }
 // Free browser voice test: talks to the same ElevenLabs agent over WebRTC/WebSocket, no phone line or Twilio minutes.
 const EL_AGENT_ID = "agent_3401m6p7pqnjepwv9rgy15kfq48c";
 // Every {{variable}} the agent's greeting and prompt use must be sent, or ElevenLabs refuses to start the call.
-function agentVars(p){ const P = profile, h = localHourMin(Date.now(), (MARKETS[p.market]||MARKETS.AE||{offset:4}).offset).h;
+function agentVars(p){ const P = profile, h = leadTimes(p, Date.now())[0].h;
 return { lead_company:p.company||"your clinic", lead_name:p.name||"the clinic manager", lead_role:p.role||"", lead_city:p.city||"", clinic_name:p.company||"", company:p.company||"",
 contact_name:p.name||"", city:p.city||"", market:p.market||"", lang:p.lang||"en", time_of_day: h<12?"morning":h<17?"afternoon":"evening",
 agent_name:P.agent_name||"Noor", freelancer_name:P.freelancer_name||"our team", business_name:P.business_name||"our team", positioning:callPayload(p) }; }
@@ -1553,10 +1620,19 @@ ${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.
 <button type="button" class="btn btn-sm" id="webCallBtn" title="Talk to the AI caller through your microphone, playing the clinic. Free: no phone line is used.">${webCall?"End browser call":"Free browser test (mic)"}</button>
 ${waNum(p.phone)?`<a class="btn btn-sm" href="${esc(waClinic(p))}" target="_blank" rel="noopener" title="Opens WhatsApp chat with the clinic. Tap the call icon there for a free WhatsApp call.">WhatsApp chat / call</a>`:""}
 </div>
+${(MARKETS[p.market]||{}).nanp ? nanpPanel(p) : ""}
 ${hasTestCall()?"":`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Run a test call to your own phone first. "Call now" asks you to confirm until one test has finished.</p>`}`}`;
 const b = $("liveCallBtn"); if (b) b.onclick = ()=>startCall(p);
 const t = $("testCallBtn"); if (t) t.onclick = ()=>startCall(p, testNum || "your own phone");
 const w = $("webCallBtn"); if (w) w.onclick = ()=> webCall ? endWebCall() : startWebCall(p);
+document.querySelectorAll("[data-nanp]").forEach(x=>x.onclick = async ()=>{ const k = x.dataset.nanp, a = {...(p.audit||{})};
+if (k==="landline"){ if (!confirm(`Confirm ${p.phone} is ${p.company}'s business landline (not a mobile)?
+
+Check it with a carrier lookup or the clinic's website. AI-voice calls to mobiles need prior written consent.`)) return; a.lineType = "landline"; a.lineCheckedAt = Date.now(); }
+if (k==="mobile"){ a.lineType = "mobile"; a.lineCheckedAt = Date.now(); }
+if (k==="dnc_ok"){ if (!confirm(`Confirm you checked ${p.phone} against the ${p.market==="CA"?"Canadian National DNCL":"US National Do Not Call Registry"} today and it is NOT listed?`)) return; a.dncCheckedAt = Date.now(); a.onDnc = false; }
+if (k==="dnc_on"){ a.dncCheckedAt = Date.now(); a.onDnc = true; }
+p.audit = a; const { error } = await sb.from("leads").update({audit:a}).eq("id", p.id); if (error) toast("Couldn't save: "+error.message); renderAll(); });
 }
 function renderTranscriptEmpty(){
 const p = state.leads.find(x=>x.id===selectedId), el = $("transcript");
