@@ -1477,6 +1477,11 @@ const txt = ar ? `مرحباً، معك ${P.freelancer_name||""} من ${P.busine
 return `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(txt)}`; }
 // Free browser voice test: talks to the same ElevenLabs agent over WebRTC/WebSocket, no phone line or Twilio minutes.
 const EL_AGENT_ID = "agent_3401m6p7pqnjepwv9rgy15kfq48c";
+// Every {{variable}} the agent's greeting and prompt use must be sent, or ElevenLabs refuses to start the call.
+function agentVars(p){ const P = profile, h = localHourMin(Date.now(), (MARKETS[p.market]||MARKETS.AE||{offset:4}).offset).h;
+return { lead_company:p.company||"your clinic", lead_name:p.name||"the clinic manager", lead_role:p.role||"", lead_city:p.city||"", clinic_name:p.company||"", company:p.company||"",
+contact_name:p.name||"", city:p.city||"", market:p.market||"", lang:p.lang||"en", time_of_day: h<12?"morning":h<17?"afternoon":"evening",
+agent_name:P.agent_name||"Noor", freelancer_name:P.freelancer_name||"our team", business_name:P.business_name||"our team", positioning:callPayload(p) }; }
 let webCall = null;
 async function startWebCall(p){
 if (webCall || callBusy) return;
@@ -1488,8 +1493,7 @@ const { Conversation } = await import("https://cdn.jsdelivr.net/npm/@elevenlabs/
 const P = profile;
 webCall = "starting"; renderCallee();
 webCall = await Conversation.startSession({ agentId: EL_AGENT_ID, connectionType: "webrtc",
-dynamicVariables: { clinic_name:p.company||"", company:p.company||"", contact_name:p.name||"", city:p.city||"", market:p.market||"", lang:p.lang||"en",
-  positioning:callPayload(p), agent_name:P.agent_name||"Noor", freelancer_name:P.freelancer_name||"", business_name:P.business_name||"", test_call:"true" },
+dynamicVariables: { ...agentVars(p), test_call:"true" },
 onConnect: ()=>{ toast("Browser test connected. Speak as the clinic."); },
 onDisconnect: ()=>{ webCall = null; line("System", "Call ended."); localStorage.setItem("cgc_web_test","1"); renderCallee(); },
 onMessage: m=>{ if (m && m.message) line(m.source==="ai" ? (P.agent_name||"Noor") : "You (clinic)", m.message); },
@@ -1516,7 +1520,7 @@ const msg = testNumber ? `Test call: ${profile.agent_name||"Noor"} will call YOU
 : `Call ${p.company} now on ${p.phone}?\n\n${profile.agent_name||"Noor"} will introduce herself as an AI assistant and say the call is recorded.`;
 if (!confirm(msg)) return;
 callBusy = true; renderCallee();
-if (testNumber){ try { const r = await apiCall("/api/test-call", {clinic:{company:p.company, name:p.name, city:p.city, market:p.market, lang:p.lang}, positioning:callPayload(p)});
+if (testNumber){ try { const r = await apiCall("/api/test-call", {clinic:{company:p.company, name:p.name, city:p.city, market:p.market, lang:p.lang}, positioning:callPayload(p), vars:agentVars(p)});
 callBusy = false; if (r.simulated){ toast("Sample mode: no call placed. Set "+r.missing.join(", ")+" in Netlify to ring your phone. Meanwhile use Free browser test (mic)."); renderAll(); return; }
 localStorage.setItem("cgc_web_test","1"); toast(`Test call started to your phone ending ${r.to_last4}.`); renderAll(); return; }
 catch(e){ if (e.code!=="not_configured"){ callBusy = false; toast("Couldn't start the test call: "+e.message); renderAll(); return; } }

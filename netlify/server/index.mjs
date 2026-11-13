@@ -40,8 +40,11 @@ async function testCall(body) {
   const vars = {
     clinic_name: String(c.company || ''), company: String(c.company || ''), contact_name: String(c.name || ''),
     city: String(c.city || ''), market: String(c.market || ''), lang: String(c.lang || 'en'),
-    positioning: String(body.positioning || '').slice(0, 4000), test_call: 'true',
+    positioning: String(body.positioning || '').slice(0, 4000),
   }
+  // Variables computed by the console (lead_company, lead_name, time_of_day, agent_name, ...): strings only, size-capped.
+  for (const [k, v] of Object.entries(body.vars || {})) if (/^[a-z_]{1,40}$/.test(k)) vars[k] = String(v ?? '').slice(0, 4000)
+  vars.test_call = 'true'
   // Twilio numbers use the Twilio endpoint; Telnyx, Plivo, Vonage etc. are imported as SIP trunks and use the SIP endpoint.
   const info = await fetch(`https://api.elevenlabs.io/v1/convai/phone-numbers/${encodeURIComponent(phoneId)}`, { headers: { 'xi-api-key': key } })
     .then((x) => (x.ok ? x.json() : {})).catch(() => ({}))
