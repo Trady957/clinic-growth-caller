@@ -1325,7 +1325,8 @@ let opsStatus = null, batchPrev = null, searchResults = [];
 // Free search runs from the browser: OpenStreetMap's map servers refuse many cloud servers but accept normal visitors.
 const OSM_CC = {AE:"971",SA:"966",QA:"974",KW:"965",BH:"973",OM:"968"}, OSM_T0 = {AE:1,SA:1};
 const OSM_NSN = {AE:[/^(5[024568]\d{7}|[234679]\d{7}|800\d{2,9}|600\d{6})$/,/^5/,/^(800|600)/],SA:[/^(5\d{8}|1[1-7]\d{7}|920\d{6}|800\d{7})$/,/^5/,/^(920|800)/],QA:[/^([3567]\d{7}|4\d{7}|800\d{4})$/,/^[3567]/,/^800/],KW:[/^([569]\d{7}|2\d{7}|18\d{5,6})$/,/^[569]/,/^18/],BH:[/^([367]\d{7}|1[367]\d{6}|8000\d{4})$/,/^[36]/,/^8000/],OM:[/^([79]\d{7}|2[2-6]\d{6}|800\d{5})$/,/^[79]/,/^800/]};
-function osmPhone(raw, mk){ let s = String(raw||"").split(/[;,]/)[0].trim().replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[^\d+]/g,""); if (!s) return {};
+function osmPhone(raw, mk){ for (const part of String(raw||"").split(/[;,\/]/)){ const r = osmPhone1(part, mk); if (r.phone) return r; } return {}; }
+function osmPhone1(raw, mk){ let s = String(raw||"").trim().replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[^\d+]/g,""); if (!s) return {};
   if (s.startsWith("00")) s = "+"+s.slice(2); const cc = OSM_CC[mk]; let n;
   if (s.startsWith("+")) { if (!s.startsWith("+"+cc)) return {}; n = s.slice(1+cc.length); } else if (s.startsWith(cc) && s.length>cc.length+6) n = s.slice(cc.length); else n = (OSM_T0[mk] && s.startsWith("0")) ? s.slice(1) : s;
   if (n.startsWith("0")) n = n.slice(1); const P = OSM_NSN[mk]; if (!P[0].test(n)) return {};
@@ -1450,6 +1451,41 @@ function callPayload(p){
 const n = needsFor(p), top = [...n.marketing, ...n.ai].filter(i=>i.pri==="high").map(i=>i.name).slice(0,4).join("; ");
 return positioningForPrompt(p) + (top ? ` Services that fit (suggest at most two): ${top}.` : "");
 }
+function hasTestCall(){ return state.log.some(l=>l.test && l.outcome!=="calling" && l.outcome!=="failed") || localStorage.getItem("cgc_web_test")==="1"; }
+function waNum(phone){ const d = String(phone||"").replace(/[^\d]/g,""); return d.length>=10 ? d : ""; }
+function waClinic(p){ const ar = p.lang==="ar", P = profile;
+const txt = ar ? `مرحباً، معك ${P.freelancer_name||""} من ${P.business_name||""}. نساعد العيادات في ${p.city||"المنطقة"} على جذب مرضى أكثر بالتسويق ومساعد ذكي يرد على المكالمات والواتساب ٢٤/٧. هل يمكنني التحدث مع مدير ${p.company}؟`
+: `Hi, this is ${P.freelancer_name||""} from ${P.business_name||""}. We help clinics in ${p.city||"the area"} get more patients with marketing and an AI receptionist that answers calls and WhatsApp 24/7. Could I speak with the manager of ${p.company}?`;
+return `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(txt)}`; }
+// Free browser voice test: talks to the same ElevenLabs agent over WebRTC/WebSocket, no phone line or Twilio minutes.
+const EL_AGENT_ID = "agent_3401m6p7pqnjepwv9rgy15kfq48c";
+let webCall = null;
+async function startWebCall(p){
+if (webCall || callBusy) return;
+const el = $("transcript"); el.innerHTML = `<div class="sysnote">Free browser test with ${esc(p.company)}'s details. Allow the microphone, then answer as the clinic's reception.</div>`;
+const line = (who, txt) => { const d = document.createElement("div"); d.className = "sysnote"; d.style.textAlign = "left"; d.innerHTML = `<b>${esc(who)}:</b> ${esc(txt)}`; el.appendChild(d); el.scrollTop = el.scrollHeight; };
+try {
+await navigator.mediaDevices.getUserMedia({audio:true});
+const { Conversation } = await import("https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.36.0/+esm");
+const P = profile;
+webCall = "starting"; renderCallee();
+webCall = await Conversation.startSession({ agentId: EL_AGENT_ID, connectionType: "webrtc",
+dynamicVariables: { clinic_name:p.company||"", company:p.company||"", contact_name:p.name||"", city:p.city||"", market:p.market||"", lang:p.lang||"en",
+  positioning:callPayload(p), agent_name:P.agent_name||"Noor", freelancer_name:P.freelancer_name||"", business_name:P.business_name||"", test_call:"true" },
+onConnect: ()=>{ toast("Browser test connected. Speak as the clinic."); },
+onDisconnect: ()=>{ webCall = null; line("System", "Call ended."); localStorage.setItem("cgc_web_test","1"); renderCallee(); },
+onMessage: m=>{ if (m && m.message) line(m.source==="ai" ? (P.agent_name||"Noor") : "You (clinic)", m.message); },
+onError: e=>{ line("System", "Error: "+(e && e.message || e)); }
+});
+renderCallee();
+} catch(e){
+webCall = null; renderCallee();
+const m = String(e && e.message || e);
+line("System", /permission|denied|NotAllowed/i.test(m) ? "Microphone blocked. Allow mic access in the browser and try again."
+: "Couldn't start the browser call: "+m+". If the agent requires authentication, turn off 'Enable authentication' in the agent's Security settings in ElevenLabs.");
+}
+}
+async function endWebCall(){ const c = webCall; webCall = null; try { if (c && c.endSession) await c.endSession(); } catch(e){} renderCallee(); }
 async function fnError(error){
 try{ const j = await error.context.json(); return j; }catch(e){ return {message: error.message}; }
 }
@@ -1457,6 +1493,7 @@ async function startCall(p, testNumber){
 if (callBusy) return;
 const g = checkLead(p, p.campaign, Date.now());
 if (!testNumber && !g.ok){ toast("The calling rules block this clinic right now."); return; }
+if (!testNumber && !hasTestCall() && !confirm("You haven't finished a test call to your own phone yet. Test first so you hear the script and check the number works.\n\nPress OK only if you want to call the real clinic anyway.")) return;
 const msg = testNumber ? `Test call: ${profile.agent_name||"Noor"} will call YOUR phone (${testNumber}) using ${p.company}'s details. The clinic is not called.`
 : `Call ${p.company} now on ${p.phone}?\n\n${profile.agent_name||"Noor"} will introduce herself as an AI assistant and say the call is recorded.`;
 if (!confirm(msg)) return;
@@ -1484,9 +1521,15 @@ ${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.
 <div class="leadbar" style="justify-content:center;margin-top:6px">
 <button type="button" class="btn btn-primary" id="liveCallBtn" ${g.ok&&!callBusy?"":"disabled"}>${ICON.phone}${callBusy?"Starting…":"Call now"}</button>
 <button type="button" class="btn" id="testCallBtn" ${testNum&&!callBusy?"":"disabled"} title="${testNum?"Calls your own phone with this clinic's script":"Add your mobile under Your pitch first"}">Test call to my phone</button>
-</div>`}`;
+</div>
+<div class="leadbar" style="justify-content:center;margin-top:6px">
+<button type="button" class="btn btn-sm" id="webCallBtn" title="Talk to the AI caller through your microphone, playing the clinic. Free: no phone line is used.">${webCall?"End browser call":"Free browser test (mic)"}</button>
+${waNum(p.phone)?`<a class="btn btn-sm" href="${esc(waClinic(p))}" target="_blank" rel="noopener" title="Opens WhatsApp chat with the clinic. Tap the call icon there for a free WhatsApp call.">WhatsApp chat / call</a>`:""}
+</div>
+${hasTestCall()?"":`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Run a test call to your own phone first. "Call now" asks you to confirm until one test has finished.</p>`}`}`;
 const b = $("liveCallBtn"); if (b) b.onclick = ()=>startCall(p);
 const t = $("testCallBtn"); if (t) t.onclick = ()=>startCall(p, testNum);
+const w = $("webCallBtn"); if (w) w.onclick = ()=> webCall ? endWebCall() : startWebCall(p);
 }
 function renderTranscriptEmpty(){
 const p = state.leads.find(x=>x.id===selectedId), el = $("transcript");
