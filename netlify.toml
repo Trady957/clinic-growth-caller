@@ -1,5 +1,7 @@
 [build]
-  publish = "."
+  # Publish only the static page; netlify/server holds server code and must not be served as files.
+  command = "mkdir -p dist && cp index.html dist/"
+  publish = "dist"
 
 [[headers]]
   for = "/*"

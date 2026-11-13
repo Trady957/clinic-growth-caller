@@ -108,7 +108,7 @@
   <div class="camps" id="campaigns"></div>
   <div class="work">
     <div class="glass">
-      <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button></div>
+      <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button> <button type="button" class="btn btn-sm" id="gmapsAllBtn" title="Looks up every clinic on Google Maps: rating, reviews, open or closed, and whether the phone number matches">Google Maps check</button></div>
       <div class="opps" id="opps"></div>
       <div class="tbl"><table><thead><tr><th>Clinic</th><th>Has now</th><th>Propose</th><th>Enhance</th><th>Reviews</th><th>Rule check</th><th></th></tr></thead><tbody id="queue"></tbody></table></div>
     </div>
@@ -1152,6 +1152,24 @@ if (b.dataset.mact==="ics") return downloadIcs(m);
 if (b.dataset.mact==="confirmed"){ await saveMeeting({...m, status:"confirmed"}); const p = state.leads.find(x=>x.id===m.leadId); if (p){ p.status="booked"; p.next=`Demo ${m.label}`; await saveLead(p); if(!live) renderAll(); } } });
 $("mtgs").addEventListener("change", async e=>{ const s=e.target.closest("[data-mset]"); if(!s||!s.value) return; const m = state.meetings.find(x=>x.id===s.closest("[data-mid]").dataset.mid); if(!m) return; await saveMeeting({...m, status:s.value}); });
 $("auditAllBtn").onclick = auditAll;
+async function apiCall(path, body){ const { data:{ session } } = await sb.auth.getSession();
+const r = await fetch(path, {method:"POST", headers:{"content-type":"application/json", authorization:"Bearer "+(session?.access_token||"")}, body:JSON.stringify(body)});
+const j = await r.json().catch(()=>({})); if (!r.ok) { const e = new Error(j.message || j.error || ("HTTP "+r.status)); e.code = j.error; throw e; } return j; }
+let gmapsRun = null;
+$("gmapsAllBtn").onclick = async ()=>{ const b = $("gmapsAllBtn"); if (gmapsRun){ gmapsRun.stop = true; return; }
+const list = state.leads.filter(p=>p.company); gmapsRun = {stop:false}; let done = 0, found = 0, mism = 0, closed = 0;
+try { for (let i=0; i<list.length && !gmapsRun.stop; i+=10){ b.textContent = `Stop (${i}/${list.length})`;
+const chunk = list.slice(i, i+10), { results, sample } = await apiCall("/api/maps-lookup", {items:chunk.map(p=>({id:p.id, company:p.company, city:p.city, market:p.market, phone:p.phone}))});
+if (sample){ const ex = results.slice(0,3).map(g=>`${g.name}: ${g.rating}★ (${g.count})`).join(" · ");
+toast("Sample mode, nothing saved. Set GOOGLE_MAPS_API_KEY in Netlify for real Google Maps data. Example: "+ex); gmapsRun = null; b.textContent = "Google Maps check"; return; }
+for (const g of results){ const p = state.leads.find(x=>x.id===g.id); if (!p || g.error) continue; done++;
+const audit = {...(p.audit||{}), gChecked:Date.now(), gFound:!!g.found};
+if (g.found){ found++; if (g.phoneMatches===false) mism++; if (g.status && g.status!=="OPERATIONAL") closed++;
+Object.assign(audit, {gRating:g.rating, gReviews:g.count, gPhone:g.phone, gPhoneMatches:g.phoneMatches, gStatus:g.status, gUrl:g.url, gName:g.name, gAddress:g.address, gWebsite:g.website}); }
+p.audit = audit; await sb.from("leads").update({audit}).eq("id", p.id); } renderAll(); }
+toast(`Google Maps: ${found} of ${done} found · ${mism} phone mismatches · ${closed} not operating.`); }
+catch(e){ toast(e.code==="not_configured" ? "Add the Google Maps key in Netlify first." : e.code==="unauthorized" ? "Log in first." : "Google Maps check failed: "+e.message); }
+gmapsRun = null; b.textContent = "Google Maps check"; };
 $("exportBtn").onclick = exportCSV;
 $("pipeFilter").onchange = renderPipe;
 $("pipe").addEventListener("change", async e=>{ const s=e.target.closest("[data-status]"); if(!s) return; const p=state.leads.find(x=>x.id===s.dataset.status); if(!p) return;
@@ -1498,6 +1516,11 @@ const msg = testNumber ? `Test call: ${profile.agent_name||"Noor"} will call YOU
 : `Call ${p.company} now on ${p.phone}?\n\n${profile.agent_name||"Noor"} will introduce herself as an AI assistant and say the call is recorded.`;
 if (!confirm(msg)) return;
 callBusy = true; renderCallee();
+if (testNumber){ try { const r = await apiCall("/api/test-call", {clinic:{company:p.company, name:p.name, city:p.city, market:p.market, lang:p.lang}, positioning:callPayload(p)});
+callBusy = false; if (r.simulated){ toast("Sample mode: no call placed. Set "+r.missing.join(", ")+" in Netlify to ring your phone. Meanwhile use Free browser test (mic)."); renderAll(); return; }
+localStorage.setItem("cgc_web_test","1"); toast(`Test call started to your phone ending ${r.to_last4}.`); renderAll(); return; }
+catch(e){ if (e.code!=="not_configured"){ callBusy = false; toast("Couldn't start the test call: "+e.message); renderAll(); return; } }
+if (!/^\+\d{8,15}$/.test(testNumber)){ callBusy = false; toast("Test calling isn't connected yet. Add your mobile under Your pitch, or the test-call keys in Netlify."); renderAll(); return; } }
 const { data, error } = await sb.functions.invoke("start-call", {body:{lead_id:p.id, positioning:callPayload(p), ...(testNumber?{test_to_number:testNumber}:{})}});
 callBusy = false;
 if (error){
@@ -1520,7 +1543,7 @@ ${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.
 <div class="gate"><ul>${g.checks.map(c=>`<li><span class="tick ${c.ok?"y":"n"}">${c.ok?"✓":"✕"}</span><span>${esc(c.text)}</span></li>`).join("")}</ul></div>
 <div class="leadbar" style="justify-content:center;margin-top:6px">
 <button type="button" class="btn btn-primary" id="liveCallBtn" ${g.ok&&!callBusy?"":"disabled"}>${ICON.phone}${callBusy?"Starting…":"Call now"}</button>
-<button type="button" class="btn" id="testCallBtn" ${testNum&&!callBusy?"":"disabled"} title="${testNum?"Calls your own phone with this clinic's script":"Add your mobile under Your pitch first"}">Test call to my phone</button>
+<button type="button" class="btn" id="testCallBtn" ${!callBusy?"":"disabled"} title="Calls your own phone with this clinic's script. The clinic is not called.">Test call to my phone</button>
 </div>
 <div class="leadbar" style="justify-content:center;margin-top:6px">
 <button type="button" class="btn btn-sm" id="webCallBtn" title="Talk to the AI caller through your microphone, playing the clinic. Free: no phone line is used.">${webCall?"End browser call":"Free browser test (mic)"}</button>
@@ -1528,7 +1551,7 @@ ${waNum(p.phone)?`<a class="btn btn-sm" href="${esc(waClinic(p))}" target="_blan
 </div>
 ${hasTestCall()?"":`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Run a test call to your own phone first. "Call now" asks you to confirm until one test has finished.</p>`}`}`;
 const b = $("liveCallBtn"); if (b) b.onclick = ()=>startCall(p);
-const t = $("testCallBtn"); if (t) t.onclick = ()=>startCall(p, testNum);
+const t = $("testCallBtn"); if (t) t.onclick = ()=>startCall(p, testNum || "your own phone");
 const w = $("webCallBtn"); if (w) w.onclick = ()=> webCall ? endWebCall() : startWebCall(p);
 }
 function renderTranscriptEmpty(){
