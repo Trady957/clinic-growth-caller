@@ -1866,12 +1866,12 @@ async function waSendReport(p, btn){
   finally { if (btn){ btn.disabled = false; btn.textContent = label; } }
 }
 
-function waUrl(p, text){ return `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(text)}`; }
+function waUrl(p, text){ return `https://api.whatsapp.com/send?phone=${waNum(p.phone)}&text=${encodeURIComponent(text)}`; }
 // Opens WhatsApp, and always shows a panel with the message and other ways to open it (copy, WhatsApp Web, the app),
 // because some browsers and in-app panes block new windows or wa.me links.
 function waOpen(p, text, win){
   const n = waNum(p.phone), t = encodeURIComponent(text);
-  const links = { web:`https://web.whatsapp.com/send?phone=${n}&text=${t}`, app:`whatsapp://send?phone=${n}&text=${t}`, wame:`https://wa.me/${n}?text=${t}` };
+  const links = { web:`https://web.whatsapp.com/send?phone=${n}&text=${t}`, app:`whatsapp://send?phone=${n}&text=${t}`, wame:`https://api.whatsapp.com/send?phone=${n}&text=${t}` };
   try { if (win && !win.closed) win.location.href = links.wame; else window.open(links.wame, "_blank", "noopener"); } catch(e){}
   document.getElementById("waPanel")?.remove();
   const d = document.createElement("div"); d.id = "waPanel";
@@ -1884,7 +1884,7 @@ function waOpen(p, text, win){
       <button type="button" class="btn btn-primary btn-sm" data-wp="copy">Copy message</button>
       <a class="btn btn-sm" href="${links.web}" target="_blank" rel="noopener">Open WhatsApp Web</a>
       <a class="btn btn-sm" href="${links.app}">Open WhatsApp app</a>
-      <a class="btn btn-sm" href="${links.wame}" target="_blank" rel="noopener">Open wa.me link</a>
+      <a class="btn btn-sm" href="${links.wame}" target="_blank" rel="noopener">Open WhatsApp link</a>
     </div></div>`;
   d.addEventListener("click", async e=>{ const k = e.target.dataset?.wp;
     if (e.target===d || k==="close") d.remove();
