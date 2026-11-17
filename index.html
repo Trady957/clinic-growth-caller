@@ -1874,14 +1874,14 @@ function waOpen(p, text, win){
   const n = waNum(p.phone), t = encodeURIComponent(text);
   const links = { web:`https://web.whatsapp.com/send?phone=${n}&text=${t}`, app:`whatsapp://send?phone=${n}&text=${t}`, wame:`https://api.whatsapp.com/send?phone=${n}&text=${t}` };
   // Inside the Claude app's browser (an embedded browser WhatsApp Web refuses), hand off to the WhatsApp desktop app instead.
-  if (WA_EMBEDDED){ try { win && win.close(); } catch(e){} try { location.href = links.app; } catch(e){} }
+  if (WA_EMBEDDED){ try { win && win.close(); } catch(e){} try { navigator.clipboard.writeText(text).catch(()=>{}); } catch(e){} try { location.href = links.app; } catch(e){} }
   else { try { if (win && !win.closed) win.location.href = links.wame; else window.open(links.wame, "_blank", "noopener"); } catch(e){} }
   document.getElementById("waPanel")?.remove();
   const d = document.createElement("div"); d.id = "waPanel";
   d.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
   d.innerHTML = `<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);font:14px system-ui">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>WhatsApp to ${esc(p.company)} · +${n}</b><button type="button" class="btn btn-sm" data-wp="close">Close</button></div>
-    <p class="muted" style="margin:0 0 8px;font-size:12px">${WA_EMBEDDED ? "WhatsApp Web doesn't work inside the Claude app, so this opens the WhatsApp desktop app. If it doesn't open, install WhatsApp for Mac/Windows, or copy the message." : "If WhatsApp didn't open, copy the message or use one of the buttons below."}</p>
+    <p class="muted" style="margin:0 0 8px;font-size:12px">${WA_EMBEDDED ? "The message is already copied. In WhatsApp (desktop app or Safari), open the chat with +${n} and paste. Or click Open WhatsApp app." : "If WhatsApp didn't open, copy the message or use one of the buttons below."}</p>
     <textarea readonly style="width:100%;height:220px;font:13px system-ui;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box" dir="auto">${esc(text)}</textarea>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
       <a class="btn btn-primary btn-sm" href="${links.app}">Open WhatsApp app</a>
