@@ -1054,11 +1054,11 @@ const conf = state.meetings.filter(m=>m.status==="confirmed" && m.at && m.at>now
 $("mtgSum").textContent = `${conf} confirmed and upcoming · ${pend} awaiting confirmation · ${state.meetings.length} total`;
 $("mtgs").innerHTML = rows.length ? rows.map(m=>{ const g=gcalLink(m), w=waLink(m), st=MSTATUS[m.status]||MSTATUS.proposed;
 return `<tr data-mid="${esc(m.id)}"><td><b>${esc(m.clinic)}</b><span class="cellsub">${esc(m.attendee||"")}${m.email?" · "+esc(m.email):""}${m.whatsapp?" · "+esc(m.whatsapp):""}</span></td>
-<td class="mono">${esc(m.label||"Time not set")}<span class="cellsub">${m.format==="in_person"?"Visit":"Online"}${m.source==="call"?" · booked by caller":""}</span></td>
+<td class="mono">${esc(m.label||"Time not set")}<span class="cellsub">${m.format==="in_person"?"Visit":"Online"}${m.source==="call"?" · booked by caller":""}${m.gcalLink?" · ✓ in your calendar":""}${m.gcalError?" · ⚠ "+esc(m.gcalError):""}</span></td>
 <td><span class="pill ${st[1]}">${st[0]}</span></td>
 <td><div class="leadbar" style="justify-content:flex-end">
 ${m.status==="proposed"?`<button type="button" class="btn btn-sm btn-primary" data-mact="confirmed">Mark confirmed</button>`:""}
-${g?`<a class="btn btn-sm" href="${esc(g)}" target="_blank" rel="noopener">Google Calendar</a>`:""}
+${m.gcalLink?`<a class="btn btn-sm" href="${esc(m.gcalLink)}" target="_blank" rel="noopener">Open in calendar</a>`:g?`<a class="btn btn-sm" href="${esc(g)}" target="_blank" rel="noopener">Add to Google Calendar</a>`:""}${m.gcalMeet?`<a class="btn btn-sm" href="${esc(m.gcalMeet)}" target="_blank" rel="noopener">Meet link</a>`:""}
 ${m.at?`<button type="button" class="btn btn-sm" data-mact="ics">.ics invite</button>`:""}
 ${w?`<a class="btn btn-sm" href="${esc(w)}" target="_blank" rel="noopener">WhatsApp</a>`:""}
 ${["confirmed","done"].includes(m.status)&&payLink(m)?`<a class="btn btn-sm" href="${esc(payLink(m))}" target="_blank" rel="noopener" title="Opens PayPal checkout paying ${esc(profile.paypal_email||"")}">PayPal page</a><button type="button" class="btn btn-sm" data-mact="copypay">Copy pay link</button>${waPayLink(m)?`<a class="btn btn-sm" href="${esc(waPayLink(m))}" target="_blank" rel="noopener">Send pay link</a>`:""}`:""}
@@ -1312,7 +1312,7 @@ const ms = v => v ? Date.parse(v) : null;
 function leadToRow(id, d){ const r = {id}; for (const k of LEAD_COLS) if (k in d) r[k] = d[k]; if ("nameAr" in d) r.name_ar = d.nameAr || null; if ("optedOut" in d) r.opted_out = !!d.optedOut; if (r.score!==undefined && r.score!==null) r.score = Math.round(r.score); return r; }
 function rowToLead(r){ const o = {...r}; o.nameAr = r.name_ar || ""; o.optedOut = !!r.opted_out; o.createdAt = ms(r.created_at); delete o.name_ar; delete o.opted_out; delete o.created_at; delete o.updated_at; return o; }
 function meetingToRow(id, d){ return {id, lead_id:d.leadId||null, clinic:d.clinic||"Clinic", market:d.market||DEFAULT_MK, at:d.at?new Date(d.at).toISOString():null, label:d.label||null, attendee:d.attendee||null, email:d.email||null, whatsapp:d.whatsapp||null, format:d.format||"online", status:d.status||"confirmed", source:d.source||"manual"}; }
-function rowToMeeting(r){ return {leadId:r.lead_id, clinic:r.clinic, market:r.market, at:ms(r.at), label:r.label || (r.at?fmtLocal(ms(r.at), r.market):""), attendee:r.attendee, email:r.email, whatsapp:r.whatsapp, format:r.format, status:r.status, source:r.source, createdAt:ms(r.created_at)}; }
+function rowToMeeting(r){ return {leadId:r.lead_id, clinic:r.clinic, market:r.market, at:ms(r.at), label:r.label || (r.at?fmtLocal(ms(r.at), r.market):""), attendee:r.attendee, email:r.email, whatsapp:r.whatsapp, format:r.format, status:r.status, source:r.source, gcalLink:r.gcal_link||null, gcalMeet:r.gcal_meet||null, gcalError:r.gcal_error||null, createdAt:ms(r.created_at)}; }
 const LIVE_OUTCOME = r => r.status==="initiated"||r.status==="in_progress" ? "calling" : r.status==="failed" ? "failed" : (r.outcome || "ended");
 function rowToCall(r){
 const at = ms(r.created_at), t = localHourMin(at, 4), s = r.duration_s||0, lead = state.leads.find(x=>x.id===r.lead_id);
