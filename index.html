@@ -1641,148 +1641,180 @@ $("mapsNow").onclick = async ()=>{ $("emFormMsg").textContent = "Searching Googl
   try { const r = await opsCall("maps-harvest", {searches:50}); $("emFormMsg").textContent = r.message ? r.message : r.ok ? "Started: new clinics appear in a few minutes." : (r.error||""); } catch(e){ $("emFormMsg").textContent = e.message; } };
 
 // ---------- WhatsApp playbook (cold first touch only in calls-first markets; everywhere else after engagement) ----------
+// Every message is built from the clinic's report: its top 1–2 findings, the service that fixes them, and one clear call to action.
+// Arabic-speaking countries get English + Arabic in the same message; Morocco gets French + Arabic.
 let waCfg = {wa_daily_new:30, wa_cold_markets:["SA","QA","KW","BH","OM","EG","JO","MA"]};
 const WA_GAP = [0, 2, 3, 4]; // days to wait after step 1, 2, 3 before the next one
-const WA_FOCUS = {receptionist:"AI receptionist", website:"Website", marketing:"Marketing", bundle:"Marketing + AI receptionist"};
-const WA_STEP = ["First message","Follow-up: what you get","Follow-up: offer + times","Last message"];
+const WA_FOCUS = {receptionist:"AI receptionist", website:"Website", seo:"SEO / Google ranking", marketing:"Marketing & reviews"};
+const WA_STEP = ["1 · Findings + free report","2 · Value + next step","3 · Pilot offer + times","4 · Last message"];
 async function loadWaCfg(){ try { const { data } = await sb.from("settings").select("data").eq("id","outreach").maybeSingle(); waCfg = {...waCfg, ...(data?.data||{})}; } catch(e){} }
 function waNameAr(P){ return P.freelancer_name_ar || ({Maha:"مها"})[String(P.freelancer_name||"Maha").trim()] || P.freelancer_name || "مها"; }
-function waLang(p){ return p.lang==="ar" ? "ar" : p.lang==="fr" ? "fr" : ["MA","FR","BE"].includes(p.market) ? "fr" : "en"; }
-function waFocus(p){
-  if (p.wa_focus) return p.wa_focus;
-  const a = p.audit||{}, q = p.quality||{}, rating = a.gRating ?? q.g_rating, reviews = a.gReviews ?? q.g_reviews;
-  const noSite = !p.website || a.website===false || (a.website===null && a.note);
-  const bookGap = a.booking==="phone_only" || a.whatsapp===false || (a.website===true && a.chat===false);
-  const mktGap = (reviews!=null && reviews < 80) || (rating!=null && rating < 4.3) || a.instagram===false || (a.website===true && !a.analytics && !a.metaPixel);
-  if (noSite) return "website";
-  if (bookGap && mktGap) return "bundle";
-  if (bookGap) return "receptionist";
-  if (mktGap) return "marketing";
-  return "receptionist";
+// Languages of the message, in order.
+function waLangs(p){
+  if (["SA","QA","KW","BH","OM","EG","JO","AE"].includes(p.market)) return ["en","ar"];
+  if (p.market==="MA") return ["fr","ar"];
+  if (["FR","BE"].includes(p.market) || p.lang==="fr") return ["fr"];
+  return ["en"];
 }
+function waLang(p){ return waLangs(p)[0]; }
+// What the report says this clinic needs, most urgent first.
+function waNeeds(p){
+  const r = p.report||{}, a = p.audit||{}, q = p.quality||{}, w = r.website||{}, m = r.maps||{}, ps = r.pagespeed||{}, soc = r.social||{};
+  const rating = m.rating ?? a.gRating ?? q.g_rating, reviews = m.count ?? a.gReviews ?? q.g_reviews;
+  const complaints = [...(r.review_insights?.complaints||[]), ...(r.reviewThemes?.complaints||[])].join(" ");
+  const hasSite = p.website && !/instagram\.com|facebook\.com|tiktok\.com|linktr\.ee/i.test(p.website);
+  const siteUp = w.loaded===true || a.website===true;
+  const N = [];
+  if (/phone|reach|answer/i.test(complaints)) N.push({k:"phone", s:"receptionist"});
+  if (!hasSite) N.push({k:"nosite", s:"website"});
+  else if (w.loaded===false || (a.website===null && a.note)) N.push({k:"sitedown", s:"website"});
+  if (siteUp && (w.booking||a.booking) && (w.booking||a.booking)!=="online") N.push({k:"nobook", s:"receptionist"});
+  if (siteUp && (soc.whatsapp===null || a.whatsapp===false)) N.push({k:"nowa", s:"receptionist"});
+  const miss = (r.keywords||[]).filter(k=>!k.onSite).map(k=>k.keyword);
+  if (w.loaded && miss.length >= 4) N.push({k:"seo", s:"seo", kw: miss[0]});
+  if (w.loaded && ps && !ps.error && ps.performance < 50) N.push({k:"slow", s:"seo", perf: ps.performance});
+  if (reviews!=null && reviews < 80) N.push({k:"fewrev", s:"marketing", n: reviews});
+  else if (rating!=null && rating < 4.3) N.push({k:"lowrate", s:"marketing", r: rating});
+  if (w.loaded && r.social && !soc.instagram && a.instagram!==true) N.push({k:"noig", s:"marketing"});
+  if (!N.length) N.push({k:"generic", s:"receptionist"});
+  return N;
+}
+function waFocus(p){ return p.wa_focus || waNeeds(p)[0].s; }
+// The two findings to mention: the top one for the chosen focus first, then the next most urgent.
+function waPick(p){ const f = waFocus(p), N = waNeeds(p); const a = N.find(n=>n.s===f) || N[0]; const b = N.find(n=>n!==a && n.k!=="generic"); return [a, b].filter(Boolean); }
+const WA_T = {
+  en:{
+    find:{ phone:()=>"some Google reviews say patients can't get through by phone", nosite:()=>"no website comes up for you on Google", sitedown:()=>"your website didn't load when we checked",
+      nobook:()=>"patients can't book online, only by phone", nowa:()=>"there's no WhatsApp booking on your website", seo:(n)=>`you don't show up for searches like "${n.kw}"`,
+      slow:(n)=>`your website is slow on mobile (${n.perf}/100)`, fewrev:(n)=>`you have only ${n.n} Google reviews`, lowrate:(n)=>`your Google rating is ${n.r}★`,
+      noig:()=>"we couldn't find your Instagram", generic:()=>"many patients call after hours or while reception is busy" },
+    fix:{ receptionist:"Our AI receptionist answers every call and WhatsApp 24/7 and books straight into your calendar.",
+      website:"We build fast Arabic/English clinic websites with online booking and WhatsApp.",
+      website_intl:"We build fast clinic websites with online booking and WhatsApp.",
+      seo:"We fix your Google ranking so nearby patients find you first.",
+      marketing:"We run ads, content and a review system that bring new patients every month." },
+    hi:(c,P)=>`Hi ${c} team 👋 ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"} here.`,
+    checked:(c,f)=>`We checked ${c} online: ${f}.`,
+    and:" and ",
+    cta1:(c)=>`👉 Reply "YES" and I'll send ${c}'s free 1-page report with the fixes.`,
+    cta2:{ receptionist:(c,P)=>`👉 Want to hear it answer a call as ${c}? Reply "DEMO"${P.demo_link?` or listen here: ${P.demo_link}`:""}.`,
+      website:()=>`👉 Reply "CALL" for a 15-minute walkthrough of what your new site would look like.`,
+      website_intl:()=>`👉 Reply "CALL" for a 15-minute walkthrough of what your new site would look like.`,
+      seo:(c)=>`👉 Reply "LIST" and I'll send the Google searches ${c} is missing out on.`,
+      marketing:()=>`👉 Reply "PLAN" for a free 3-step plan to get more reviews and new patients.` },
+    get:{ receptionist:["Every call and WhatsApp answered, day and night","Bookings straight into your calendar, with reminders"],
+      website:["A fast, mobile-first site in Arabic and English","Online booking + WhatsApp on every page"],
+      website_intl:["A fast, mobile-first website","Online booking + WhatsApp on every page"],
+      seo:["Pages for the treatments patients search for","A faster, Google-ready website and profile"],
+      marketing:["Google and Instagram ads near your clinic","More 5★ reviews from happy patients"] },
+    quick:(c)=>`Quick follow-up for ${c}:`,
+    offer:"Most clinics start with a 60-day pilot: set up in about a week, no long contract.",
+    pick:(l)=>`👉 Pick a time for a 15-minute call: ${l}`,
+    slots:(a,b)=>`👉 ${a} or ${b} for a 15-minute call?`,
+    last:(c)=>`Last message from me, ${c} team. Not the right time? Reply "LATER" and I'll check back in 3 months, or "STOP" and I won't message again.`,
+    replies:{
+      details:(c,f)=>`Of course! For ${c} we'd start with: ${WA_T.en.get[f].join("; ")}. We set everything up for you. Shall we do a 15-minute call this week?`,
+      price:(P)=>`${P.freelancer_pricing ? "As a guide: "+P.freelancer_pricing+"." : "It depends on what you need."} Most clinics start with a 60-day pilot so they see results first. Shall I send the details?`,
+      who:(P,f)=>`I'm ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"}. We help dental and aesthetic clinics with marketing, websites and AI receptionists. I reached out because ${f}.`,
+      manager:()=>`Thank you! Could you share the clinic manager's or owner's name, and the best number or email to reach them?`,
+      book:(link,s)=>`Great! ${link ? "Pick a time here: "+link : `Does ${s[0]} or ${s[1]} work?`} I'll send a calendar invite with a video link.`,
+      no:(c)=>`Understood, thank you. I won't message again. Wishing ${c} a great year!` },
+  },
+  ar:{
+    find:{ phone:()=>"بعض تقييمات جوجل تذكر أن المرضى لا يستطيعون الوصول إليكم بالهاتف", nosite:()=>"لا يظهر لكم موقع إلكتروني على جوجل", sitedown:()=>"موقعكم لم يفتح عند فحصه",
+      nobook:()=>"لا يمكن للمرضى الحجز أونلاين، فقط بالهاتف", nowa:()=>"لا يوجد حجز عبر واتساب في موقعكم", seo:(n)=>`لا تظهرون في عمليات بحث مثل "${n.kw}"`,
+      slow:(n)=>`موقعكم بطيء على الجوال (${n.perf}/100)`, fewrev:(n)=>`لديكم ${n.n} تقييماً فقط على جوجل`, lowrate:(n)=>`تقييمكم على جوجل ${n.r}★`,
+      noig:()=>"لم نجد حسابكم على إنستغرام", generic:()=>"كثير من المرضى يتصلون بعد الدوام أو عندما يكون الاستقبال مشغولاً" },
+    fix:{ receptionist:"موظف الاستقبال الذكي لدينا يرد على كل مكالمة وواتساب على مدار الساعة ويحجز مباشرة في تقويمكم.",
+      website:"نصمّم مواقع سريعة للعيادات بالعربية والإنجليزية مع حجز إلكتروني وواتساب.",
+      seo:"نحسّن ظهوركم في جوجل ليجدكم المرضى القريبون أولاً.",
+      marketing:"ندير الإعلانات والمحتوى ونظام التقييمات لجلب مرضى جدد كل شهر." },
+    hi:(c,P)=>`مرحباً فريق ${c} 👋 معكم ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}.`,
+    checked:(c,f)=>`راجعنا حضور ${c} على الإنترنت: ${f}.`,
+    and:"، و",
+    cta1:(c)=>`👈 ردّوا بـ «نعم» وأرسل لكم تقرير ${c} المجاني (صفحة واحدة) مع الحلول.`,
+    cta2:{ receptionist:(c,P)=>`👈 تودّون سماعه وهو يرد باسم ${c}؟ ردّوا بـ «تجربة»${P.demo_link?` أو استمعوا هنا: ${P.demo_link}`:""}.`,
+      website:()=>`👈 ردّوا بـ «مكالمة» لنعرض لكم في 15 دقيقة شكل موقعكم الجديد.`,
+      seo:(c)=>`👈 ردّوا بـ «قائمة» وأرسل لكم عمليات البحث التي تفوت ${c} على جوجل.`,
+      marketing:()=>`👈 ردّوا بـ «خطة» لتصلكم خطة مجانية من 3 خطوات لتقييمات ومرضى أكثر.` },
+    get:{ receptionist:["الرد على كل مكالمة وواتساب ليلاً ونهاراً","حجز مباشر في التقويم مع تذكيرات"],
+      website:["موقع سريع للجوال بالعربية والإنجليزية","حجز إلكتروني وواتساب في كل صفحة"],
+      seo:["صفحات للعلاجات التي يبحث عنها المرضى","موقع وملف جوجل أسرع وجاهز للظهور"],
+      marketing:["إعلانات جوجل وإنستغرام قرب عيادتكم","تقييمات 5 نجوم أكثر من المرضى الراضين"] },
+    quick:(c)=>`متابعة سريعة لـ ${c}:`,
+    offer:"أغلب العيادات تبدأ بتجربة 60 يوماً: الإعداد خلال أسبوع تقريباً ودون عقد طويل.",
+    pick:(l)=>`👈 اختاروا وقتاً لمكالمة 15 دقيقة: ${l}`,
+    slots:(a,b)=>`👈 هل يناسبكم ${a} أو ${b} لمكالمة 15 دقيقة؟`,
+    last:(c)=>`رسالتي الأخيرة لفريق ${c}. الوقت غير مناسب؟ ردّوا بـ «لاحقاً» وأتواصل بعد 3 أشهر، أو «توقف» ولن أراسلكم مجدداً.`,
+    replies:{
+      details:(c,f)=>`بكل سرور! نبدأ لـ ${c} بـ: ${WA_T.ar.get[f].join("، ")}. ونتولى الإعداد كاملاً. هل نتحدث 15 دقيقة هذا الأسبوع؟`,
+      price:(P)=>`${P.pricing_ar ? "كمرجع: "+P.pricing_ar+"." : "السعر يعتمد على حجم العيادة والخدمات المطلوبة، وسأرسل لكم عرضاً مخصصاً."} أغلب العيادات تبدأ بتجربة 60 يوماً لترى النتائج أولاً.`,
+      who:(P,f)=>`أنا ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}. نساعد عيادات الأسنان والتجميل في التسويق والمواقع وموظفي الاستقبال بالذكاء الاصطناعي. تواصلت معكم بعد مراجعة حضوركم على الإنترنت: ${f}.`,
+      manager:()=>`شكراً لكم! هل يمكن مشاركة اسم مدير العيادة أو مالكها، وأفضل رقم أو بريد للتواصل معه؟`,
+      book:(link,s)=>`ممتاز! ${link ? "اختاروا الوقت المناسب من هنا: "+link : `هل يناسبكم ${s[0]} أو ${s[1]}؟`} سأرسل دعوة في التقويم مع رابط المكالمة.`,
+      no:(c)=>`مفهوم، شكراً لكم. لن أراسلكم مجدداً. كل التوفيق لـ ${c}!` },
+  },
+  fr:{
+    find:{ phone:()=>"certains avis Google disent que les patients n'arrivent pas à vous joindre", nosite:()=>"aucun site web n'apparaît pour vous sur Google", sitedown:()=>"votre site ne s'est pas chargé lors de notre vérification",
+      nobook:()=>"les patients ne peuvent pas réserver en ligne, seulement par téléphone", nowa:()=>"il n'y a pas de réservation WhatsApp sur votre site", seo:(n)=>`vous n'apparaissez pas sur des recherches comme « ${n.kw} »`,
+      slow:(n)=>`votre site est lent sur mobile (${n.perf}/100)`, fewrev:(n)=>`vous n'avez que ${n.n} avis Google`, lowrate:(n)=>`votre note Google est de ${n.r}★`,
+      noig:()=>"nous n'avons pas trouvé votre Instagram", generic:()=>"beaucoup de patients appellent après la fermeture ou quand l'accueil est occupé" },
+    fix:{ receptionist:"Notre réceptionniste IA répond à chaque appel et WhatsApp 24h/24 et réserve directement dans votre agenda.",
+      website:"Nous créons des sites rapides pour cliniques, avec réservation en ligne et WhatsApp.",
+      seo:"Nous améliorons votre référencement Google pour que les patients proches vous trouvent en premier.",
+      marketing:"Nous gérons publicité, contenus et avis pour amener de nouveaux patients chaque mois." },
+    hi:(c,P)=>`Bonjour l'équipe ${c} 👋 Ici ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}.`,
+    checked:(c,f)=>`Nous avons vérifié ${c} en ligne : ${f}.`,
+    and:" et ",
+    cta1:(c)=>`👉 Répondez « OUI » et je vous envoie le rapport gratuit d'une page de ${c}, avec les solutions.`,
+    cta2:{ receptionist:(c,P)=>`👉 Envie de l'entendre répondre au nom de ${c} ? Répondez « DÉMO »${P.demo_link?` ou écoutez ici : ${P.demo_link}`:""}.`,
+      website:()=>`👉 Répondez « APPEL » pour voir en 15 minutes à quoi ressemblerait votre nouveau site.`,
+      seo:(c)=>`👉 Répondez « LISTE » et je vous envoie les recherches Google que ${c} manque.`,
+      marketing:()=>`👉 Répondez « PLAN » pour un plan gratuit en 3 étapes : plus d'avis, plus de nouveaux patients.` },
+    get:{ receptionist:["Chaque appel et WhatsApp traité, jour et nuit","Rendez-vous directement dans votre agenda, avec rappels"],
+      website:["Un site rapide, pensé pour le mobile","Réservation en ligne + WhatsApp sur chaque page"],
+      seo:["Des pages pour les soins que les patients recherchent","Un site et une fiche Google plus rapides et optimisés"],
+      marketing:["Publicités Google et Instagram autour de la clinique","Plus d'avis 5★ de patients satisfaits"] },
+    quick:(c)=>`Petit suivi pour ${c} :`,
+    offer:"La plupart des cliniques commencent par un pilote de 60 jours : mise en place en une semaine environ, sans engagement long.",
+    pick:(l)=>`👉 Choisissez un créneau de 15 minutes : ${l}`,
+    slots:(a,b)=>`👉 ${a} ou ${b} pour un appel de 15 minutes ?`,
+    last:(c)=>`Dernier message de ma part, équipe ${c}. Pas le bon moment ? Répondez « PLUS TARD » et je reviens dans 3 mois, ou « STOP » et je ne vous écrirai plus.`,
+    replies:{
+      details:(c,f)=>`Avec plaisir ! Pour ${c}, nous commencerions par : ${WA_T.fr.get[f].join(" ; ")}. Nous nous occupons de tout. Un appel de 15 minutes cette semaine ?`,
+      price:(P)=>`${P.pricing_fr ? "À titre indicatif : "+P.pricing_fr+"." : "Le tarif dépend de la taille de la clinique et des services choisis ; je vous prépare une proposition sur mesure."} La plupart des cliniques commencent par un pilote de 60 jours.`,
+      who:(P,f)=>`Je suis ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}. Nous accompagnons les cliniques dentaires et esthétiques : marketing, sites web et réceptionnistes IA. Je vous ai contactés car ${f}.`,
+      manager:()=>`Merci ! Pourriez-vous m'indiquer le nom du responsable ou du propriétaire, et le meilleur numéro ou e-mail pour le joindre ?`,
+      book:(link,s)=>`Parfait ! ${link ? "Choisissez un créneau ici : "+link : `${s[0]} ou ${s[1]} vous conviendrait-il ?`} Je vous enverrai une invitation avec un lien vidéo.`,
+      no:(c)=>`Bien compris, merci. Je ne vous écrirai plus. Très belle année à ${c} !` },
+  },
+};
 function waSlots(p, lang){
   const mk = MARKETS[p.market]||MARKETS[DEFAULT_MK], tz = mk.tz || (mk.tzs||[])[0] || "Asia/Dubai";
   const loc = lang==="ar" ? "ar" : lang==="fr" ? "fr-FR" : "en-GB";
   return slotsFrom(Date.now(), p.market).slice(0,2).map((s,i)=>{ const t = new Date(s.at).toLocaleString(loc, {timeZone:tz, weekday:"long", day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"}); return i===0 ? t.charAt(0).toUpperCase()+t.slice(1) : t; });
 }
-// One observed fact about the clinic, in the message's language. Facts only, no guesses.
-function waFact(p, lang, focus){
-  const c = p.company, a = p.audit||{}, q = p.quality||{}, rating = a.gRating ?? q.g_rating, reviews = a.gReviews ?? q.g_reviews;
-  const T = {
-    en:{ nosite:`I couldn't find a website for ${c}, so patients searching on Google mostly find other clinics first.`, sitedown:`${c}'s website didn't load when I checked it today.`, phone:`I noticed patients can only book with ${c} by calling.`, nowa:`I couldn't see a WhatsApp booking option for ${c}.`, reviews:`${c} has a ${rating}★ rating from ${reviews} Google reviews; clinics with more reviews usually show up first on Google Maps.`, noig:`I couldn't find an Instagram page for ${c}.`, lowrate:`${c} has a ${rating}★ rating on Google; a steady flow of new 5★ reviews lifts that and brings more new patients.`, mkt:`Clinics near you are competing hard for new patients on Google and Instagram.`, dflt:`Many patients call clinics after hours, at lunch, or while the front desk is busy.` },
-    ar:{ nosite:`لم أجد موقعاً إلكترونياً لـ ${c}، فالمرضى الذين يبحثون في جوجل يجدون عيادات أخرى أولاً.`, sitedown:`موقع ${c} لم يفتح عندما جربته اليوم.`, phone:`لاحظت أن الحجز في ${c} يتم بالاتصال فقط.`, nowa:`لم أجد خيار الحجز عبر واتساب لدى ${c}.`, reviews:`تقييم ${c} على جوجل ${rating}★ من ${reviews} مراجعة، والعيادات ذات المراجعات الأكثر تظهر عادة أولاً في خرائط جوجل.`, noig:`لم أجد حساباً على إنستغرام لـ ${c}.`, lowrate:`تقييم ${c} على جوجل ${rating}★، وتدفق مستمر من تقييمات 5 نجوم الجديدة يرفعه ويجلب مرضى جدداً أكثر.`, mkt:`المنافسة على المرضى الجدد في جوجل وإنستغرام قوية بين العيادات القريبة منكم.`, dflt:`كثير من المرضى يتصلون بالعيادات بعد الدوام أو وقت الغداء أو عندما يكون الاستقبال مشغولاً.` },
-    fr:{ nosite:`Je n'ai pas trouvé de site web pour ${c} : les patients qui cherchent sur Google trouvent d'abord d'autres cliniques.`, sitedown:`Le site de ${c} ne s'est pas chargé quand je l'ai consulté aujourd'hui.`, phone:`J'ai remarqué que chez ${c}, on ne peut prendre rendez-vous que par téléphone.`, nowa:`Je n'ai pas vu de prise de rendez-vous par WhatsApp chez ${c}.`, reviews:`${c} a une note de ${rating}★ sur ${reviews} avis Google ; les cliniques avec plus d'avis apparaissent en général en premier sur Google Maps.`, noig:`Je n'ai pas trouvé de page Instagram pour ${c}.`, lowrate:`${c} a une note de ${rating}★ sur Google ; un flux régulier de nouveaux avis 5★ la fait monter et amène plus de nouveaux patients.`, mkt:`Les cliniques autour de vous se disputent les nouveaux patients sur Google et Instagram.`, dflt:`Beaucoup de patients appellent après les heures d'ouverture, à midi, ou quand l'accueil est occupé.` },
-  }[lang];
-  if (focus==="website") return !p.website ? T.nosite : (a.website===null && a.note) ? T.sitedown : T.dflt;
-  if (focus==="marketing" || focus==="bundle"){ if (reviews!=null && rating!=null && reviews < 80) return T.reviews; if (rating!=null && rating < 4.3) return T.lowrate; if (a.instagram===false) return T.noig; if (focus==="marketing") return T.mkt; }
-  if (a.booking==="phone_only") return T.phone;
-  if (a.whatsapp===false) return T.nowa;
-  return T.dflt;
-}
-const WA_COPY = {
-  en:{
-    hi:(c)=>`Hi ${c} team,`,
-    me:(P)=>`this is ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"}.`,
-    benefit:{ receptionist:"We set up an AI receptionist for clinics: it answers every call and WhatsApp message 24/7 in Arabic and English, books straight into your calendar and sends reminders, so no patient is lost to a missed call.",
-      website:"We build fast, bilingual clinic websites with online booking and WhatsApp, so people who find you on Google book an appointment instead of calling around.",
-      marketing:"We run marketing for clinics: Google and Instagram ads, content and a simple system to collect more 5★ reviews, so more new patients choose you.",
-      bundle:"We help clinics fill their calendar: marketing that brings new patients (ads, content, reviews), plus an AI receptionist that answers every call and WhatsApp 24/7 and books them in." },
-    ask1:"Could I send you a 1-minute example of how it would work for your clinic?",
-    bullets:{ receptionist:["Every call and WhatsApp answered, day and night, in Arabic and English","Appointments booked straight into your calendar, with reminders to cut no-shows","Your team only handles what needs a human"],
-      website:["A fast, mobile-first website in Arabic and English","Online booking and a WhatsApp button on every page","Set up for Google so patients nearby find you"],
-      marketing:["Google and Instagram ads aimed at patients near you","Posts and short videos made for your clinic","An easy way to ask happy patients for Google reviews"],
-      bundle:["Ads and content that bring new patients","More Google reviews from happy patients","An AI receptionist that answers and books every call and WhatsApp, 24/7"] },
-    ex:(c)=>`Here is what it would look like for ${c}:`,
-    demo:(l)=>`1-minute demo: ${l}`,
-    ask2:"Would a 15-minute call this week be useful?",
-    offer:"Most clinics start with a 60-day pilot: we set everything up in about a week, and there's no long contract.",
-    pick:(l)=>`You can pick a time that suits you here: ${l}`,
-    slots:(a,b)=>`Would ${a} or ${b} suit you for a quick 15-minute call?`,
-    last:(c)=>`Last message from me, ${c} team. If now isn't the right time, no problem: reply "later" and I'll check back in 3 months, or "stop" and I won't message again.`,
-    sign:(P)=>`${P.freelancer_name||"Maha"}, ${P.business_name||"Mizan AI Agents"}`,
-    replies:{
-      details:(c,f,b)=>`Of course! In short:\n• ${b.join("\n• ")}\nWe set it all up for you in about a week. Shall we have a quick 15-minute call so I can show you how it would work for ${c}?`,
-      price:(P)=>`Good question. ${P.freelancer_pricing ? "As a guide: "+P.freelancer_pricing+"." : "It depends on what you need."} Most clinics start with a 60-day pilot so they see results before committing. Shall I send you the details?`,
-      who:(P,fact)=>`I'm ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"}. We work with dental and aesthetic clinics on marketing, websites and AI receptionists. I reached out because ${fact.charAt(0).toLowerCase()+fact.slice(1)}`,
-      manager:()=>`Thank you! Could you share the name of the clinic manager or owner, and the best number or email to reach them?`,
-      book:(link,s)=>`Great! ${link ? "Please pick a time that suits you here: "+link : `Does ${s[0]} or ${s[1]} work for you?`} I'll send a calendar invite with a video link.`,
-      no:(c)=>`Understood, thank you for letting me know. I won't message again. Wishing ${c} a great year!`,
-    },
-  },
-  ar:{
-    hi:(c)=>`مرحباً فريق ${c}،`,
-    me:(P)=>`معكم ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}.`,
-    benefit:{ receptionist:"نقدّم للعيادات موظف استقبال بالذكاء الاصطناعي يرد على كل مكالمة ورسالة واتساب على مدار الساعة بالعربية والإنجليزية، ويحجز المواعيد مباشرة في التقويم ويرسل التذكيرات، فلا يضيع أي مريض بسبب مكالمة فائتة.",
-      website:"نصمّم للعيادات مواقع سريعة باللغتين مع حجز إلكتروني وزر واتساب، حتى يحجز من يجدكم على جوجل موعداً مباشرة.",
-      marketing:"ندير التسويق للعيادات: إعلانات جوجل وإنستغرام، ومحتوى، وطريقة سهلة لجمع تقييمات 5 نجوم، حتى يختاركم مرضى جدد أكثر.",
-      bundle:"نساعد العيادات على امتلاء جدول المواعيد: تسويق يجلب مرضى جدداً (إعلانات ومحتوى وتقييمات)، وموظف استقبال ذكي يرد على كل مكالمة وواتساب ويحجز لهم على مدار الساعة." },
-    ask1:"هل يمكنني إرسال مثال قصير (دقيقة واحدة) لطريقة عمله في عيادتكم؟",
-    bullets:{ receptionist:["الرد على كل مكالمة ورسالة واتساب ليلاً ونهاراً بالعربية والإنجليزية","حجز المواعيد مباشرة في التقويم مع تذكيرات تقلل الغياب","فريقكم يتفرغ لما يحتاج إلى إنسان فقط"],
-      website:["موقع سريع مناسب للجوال بالعربية والإنجليزية","حجز إلكتروني وزر واتساب في كل صفحة","تهيئة لجوجل ليجدكم المرضى القريبون"],
-      marketing:["إعلانات جوجل وإنستغرام موجّهة للمرضى القريبين منكم","منشورات وفيديوهات قصيرة خاصة بعيادتكم","طريقة سهلة لطلب تقييمات جوجل من المرضى الراضين"],
-      bundle:["إعلانات ومحتوى يجلبان مرضى جدداً","تقييمات جوجل أكثر من المرضى الراضين","موظف استقبال ذكي يرد ويحجز كل مكالمة وواتساب على مدار الساعة"] },
-    ex:(c)=>`هكذا سيكون الأمر لـ ${c}:`,
-    demo:(l)=>`عرض قصير (دقيقة): ${l}`,
-    ask2:"هل تناسبكم مكالمة مدتها 15 دقيقة هذا الأسبوع؟",
-    offer:"أغلب العيادات تبدأ بتجربة لمدة 60 يوماً: نجهّز كل شيء خلال أسبوع تقريباً، ودون عقد طويل.",
-    pick:(l)=>`يمكنكم اختيار الوقت المناسب من هنا: ${l}`,
-    slots:(a,b)=>`هل يناسبكم ${a} أو ${b} لمكالمة قصيرة مدتها 15 دقيقة؟`,
-    last:(c)=>`رسالتي الأخيرة لفريق ${c}. إذا لم يكن الوقت مناسباً الآن فلا بأس: ردّوا بكلمة "لاحقاً" وسأتواصل بعد 3 أشهر، أو "توقف" ولن أراسلكم مجدداً.`,
-    sign:(P)=>`${waNameAr(P)}، ${P.business_name||"Mizan AI Agents"}`,
-    replies:{
-      details:(c,f,b)=>`بكل سرور! باختصار:\n• ${b.join("\n• ")}\nنجهّز كل شيء خلال أسبوع تقريباً. هل نتحدث 15 دقيقة لأريكم كيف سيعمل لـ ${c}؟`,
-      price:(P)=>`سؤال مهم. ${P.pricing_ar ? "كمرجع: "+P.pricing_ar+"." : "السعر يعتمد على حجم العيادة والخدمات التي تحتاجونها، وسأرسل لكم عرضاً مخصصاً."} أغلب العيادات تبدأ بتجربة 60 يوماً لترى النتائج قبل الالتزام. هل أرسل لكم التفاصيل؟`,
-      who:(P,fact)=>`أنا ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}. نعمل مع عيادات الأسنان والتجميل في التسويق والمواقع وموظفي الاستقبال بالذكاء الاصطناعي. تواصلت معكم لأن: ${fact}`,
-      manager:()=>`شكراً لكم! هل يمكن مشاركة اسم مدير العيادة أو مالكها، وأفضل رقم أو بريد للتواصل معه؟`,
-      book:(link,s)=>`ممتاز! ${link ? "اختاروا الوقت المناسب من هنا: "+link : `هل يناسبكم ${s[0]} أو ${s[1]}؟`} سأرسل دعوة في التقويم مع رابط المكالمة.`,
-      no:(c)=>`مفهوم، شكراً لإبلاغي. لن أراسلكم مجدداً. كل التوفيق لـ ${c}!`,
-    },
-  },
-  fr:{
-    hi:(c)=>`Bonjour l'équipe ${c},`,
-    me:(P)=>`ici ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}.`,
-    benefit:{ receptionist:"Nous mettons en place un réceptionniste IA pour les cliniques : il répond à chaque appel et message WhatsApp 24h/24, en français, arabe et anglais, prend les rendez-vous directement dans votre agenda et envoie les rappels. Aucun patient perdu pour un appel manqué.",
-      website:"Nous créons des sites rapides et multilingues pour les cliniques, avec prise de rendez-vous en ligne et bouton WhatsApp, pour que les patients qui vous trouvent sur Google réservent directement.",
-      marketing:"Nous gérons le marketing des cliniques : publicités Google et Instagram, contenus, et une méthode simple pour obtenir plus d'avis 5★, pour que plus de nouveaux patients vous choisissent.",
-      bundle:"Nous aidons les cliniques à remplir leur agenda : du marketing qui amène de nouveaux patients (publicité, contenus, avis), et un réceptionniste IA qui répond à chaque appel et WhatsApp 24h/24 et prend les rendez-vous." },
-    ask1:"Puis-je vous envoyer un exemple d'une minute de ce que cela donnerait pour votre clinique ?",
-    bullets:{ receptionist:["Chaque appel et message WhatsApp traité, jour et nuit","Rendez-vous directement dans votre agenda, avec rappels pour réduire les absences","Votre équipe ne gère que ce qui demande une personne"],
-      website:["Un site rapide, pensé pour le mobile, en plusieurs langues","Prise de rendez-vous en ligne et bouton WhatsApp sur chaque page","Optimisé pour Google pour être trouvé par les patients proches"],
-      marketing:["Publicités Google et Instagram ciblées près de chez vous","Publications et courtes vidéos pour votre clinique","Une façon simple de demander des avis Google aux patients satisfaits"],
-      bundle:["Publicité et contenus qui amènent de nouveaux patients","Plus d'avis Google de patients satisfaits","Un réceptionniste IA qui répond et réserve chaque appel et WhatsApp, 24h/24"] },
-    ex:(c)=>`Voici ce que cela donnerait pour ${c} :`,
-    demo:(l)=>`Démo d'une minute : ${l}`,
-    ask2:"Un appel de 15 minutes cette semaine vous serait-il utile ?",
-    offer:"La plupart des cliniques commencent par un pilote de 60 jours : nous mettons tout en place en une semaine environ, sans engagement long.",
-    pick:(l)=>`Vous pouvez choisir le créneau qui vous convient ici : ${l}`,
-    slots:(a,b)=>`${a} ou ${b} vous conviendrait-il pour un court appel de 15 minutes ?`,
-    last:(c)=>`Dernier message de ma part, équipe ${c}. Si ce n'est pas le bon moment, aucun souci : répondez « plus tard » et je reviendrai vers vous dans 3 mois, ou « stop » et je ne vous écrirai plus.`,
-    sign:(P)=>`${P.freelancer_name||"Maha"}, ${P.business_name||"Mizan AI Agents"}`,
-    replies:{
-      details:(c,f,b)=>`Avec plaisir ! En bref :\n• ${b.join("\n• ")}\nNous mettons tout en place en une semaine environ. On se parle 15 minutes pour que je vous montre ce que cela donnerait pour ${c} ?`,
-      price:(P)=>`Bonne question. ${P.pricing_fr ? "À titre indicatif : "+P.pricing_fr+"." : "Le tarif dépend de la taille de la clinique et des services choisis ; je vous prépare une proposition sur mesure."} La plupart des cliniques commencent par un pilote de 60 jours pour voir les résultats avant de s'engager. Je vous envoie les détails ?`,
-      who:(P,fact)=>`Je suis ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}. Nous accompagnons les cliniques dentaires et esthétiques en marketing, sites web et réceptionnistes IA. Je vous ai contactés car : ${fact}`,
-      manager:()=>`Merci ! Pourriez-vous m'indiquer le nom du responsable ou du propriétaire de la clinique, et le meilleur numéro ou e-mail pour le joindre ?`,
-      book:(link,s)=>`Parfait ! ${link ? "Choisissez le créneau qui vous convient ici : "+link : `${s[0]} ou ${s[1]} vous conviendrait-il ?`} Je vous enverrai une invitation avec un lien vidéo.`,
-      no:(c)=>`Bien compris, merci de m'avoir répondu. Je ne vous écrirai plus. Très belle année à ${c} !`,
-    },
-  },
-};
-function waMessage(p, step){
-  const lang = waLang(p), T = WA_COPY[lang], P = profile, f = waFocus(p), c = p.company;
-  if (step===1) return `${T.hi(c)} ${T.me(P)}\n\n${waFact(p, lang, f)} ${T.benefit[f]}\n\n${T.ask1}`;
-  if (step===2) return `${T.ex(c)}\n• ${T.bullets[f].join("\n• ")}${P.demo_link ? "\n\n"+T.demo(P.demo_link) : ""}\n\n${T.ask2}`;
-  if (step===3){ const s = waSlots(p, lang); return `${T.offer}\n\n${P.booking_link ? T.pick(P.booking_link) : T.slots(s[0], s[1])}\n\n${T.sign(P)}`; }
+function waFindings(p, lang){ const T = WA_T[lang]; return waPick(p).map(n=>T.find[n.k](n)).join(T.and); }
+const WA_ARABIC_MK = ["SA","QA","KW","BH","OM","EG","JO","AE","MA"];
+function waOne(p, step, lang){
+  const T = WA_T[lang], P = profile, c = p.company, f0 = waFocus(p);
+  const f = lang==="en" && f0==="website" && !WA_ARABIC_MK.includes(p.market) ? "website_intl" : f0;
+  if (step===1) return `${T.hi(c,P)}\n${T.checked(c, waFindings(p, lang))}\n${T.fix[f]}\n${T.cta1(c)}`;
+  if (step===2) return `${T.quick(c)}\n• ${T.get[f].join("\n• ")}\n${T.cta2[f](c,P)}`;
+  if (step===3){ const s = waSlots(p, lang); return `${T.offer}\n${P.booking_link ? T.pick(P.booking_link) : T.slots(s[0], s[1])}`; }
   return T.last(c);
 }
+const WA_SEP = "\n\n— — —\n\n";
+function waMessage(p, step){ return waLangs(p).map(l=>waOne(p, step, l)).join(WA_SEP); }
 function waReply(p, kind){
-  const lang = waLang(p), T = WA_COPY[lang], P = profile, f = waFocus(p), R = T.replies;
-  if (kind==="details") return R.details(p.company, f, T.bullets[f]);
-  if (kind==="price") return R.price(P);
-  if (kind==="who") return R.who(P, waFact(p, lang, f));
-  if (kind==="manager") return R.manager();
-  if (kind==="book") return R.book(P.booking_link, waSlots(p, lang));
-  return R.no(p.company);
+  const P = profile, f = waFocus(p);
+  return waLangs(p).map(lang=>{ const R = WA_T[lang].replies;
+    if (kind==="details") return R.details(p.company, f);
+    if (kind==="price") return R.price(P);
+    if (kind==="who") return R.who(P, waFindings(p, lang));
+    if (kind==="manager") return R.manager();
+    if (kind==="book") return R.book(P.booking_link, waSlots(p, lang));
+    return R.no(p.company); }).join(WA_SEP);
 }
 function waUrl(p, text){ return `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(text)}`; }
 function waEngaged(p){ return !!(p.consent || ["replied","interested"].includes(p.email_status) || ["hot","callback","referral","warm"].includes(p.status)); }
@@ -1841,8 +1873,8 @@ function renderWa(){
     const step = Math.min(4, (p.wa_step||0)+1), f = waFocus(p), msg = p.wa_status==="replied" ? "" : waMessage(p, step), lang = waLang(p);
     const tag = p.wa_status==="replied" ? `<span class="pill p-ok"><span class="d"></span>Replied</span>` : `<span class="pill p-mute"><span class="d"></span>${p.wa_step ? "Step "+step+" of 4" : "New"}</span>`;
     return `<tr><td><b>${esc(p.company)}</b><span class="cellsub">${esc((MARKETS[p.market]||{}).name||p.market)} · <span class="mono">${esc(p.phone)}</span>${p.quality?.phone_type==="mobile"?"":" · landline: may not have WhatsApp"}</span>${tag}</td>
-<td><select class="btn btn-sm" data-wafocus="${esc(p.id)}">${Object.entries(WA_FOCUS).map(([k,v])=>`<option value="${k}" ${k===f?"selected":""}>${v}</option>`).join("")}</select>${p.wa_focus?"":`<span class="cellsub">picked from their gaps</span>`}</td>
-<td dir="${lang==="ar"?"rtl":"auto"}" style="white-space:pre-wrap;font-size:12.5px;max-width:520px">${p.wa_status==="replied" ? `<span class="muted">Reply with a ready answer:</span>` : `<span class="cellsub">${esc(WA_STEP[step-1])}</span>${esc(msg)}`}</td>
+<td><select class="btn btn-sm" data-wafocus="${esc(p.id)}">${Object.entries(WA_FOCUS).map(([k,v])=>`<option value="${k}" ${k===f?"selected":""}>${v}</option>`).join("")}</select><span class="cellsub">${esc(waPick(p).map(n=>WA_T.en.find[n.k](n)).join("; "))}${p.report?" · from report":" · quick scan only"}</span></td>
+<td dir="auto" style="white-space:pre-wrap;font-size:12.5px;max-width:520px">${p.wa_status==="replied" ? `<span class="muted">Reply with a ready answer:</span>` : `<span class="cellsub">${esc(WA_STEP[step-1])}</span>${esc(msg)}`}</td>
 <td style="text-align:right;white-space:nowrap"><div class="leadbar" style="justify-content:flex-end;flex-wrap:wrap;gap:4px">
 ${p.wa_status==="replied" ? "" : `<button type="button" class="btn btn-sm btn-primary" data-wasend="${esc(p.id)}">Open WhatsApp</button>`}
 <select class="btn btn-sm" data-wareply="${esc(p.id)}" aria-label="Send a ready reply"><option value="">Reply with…</option><option value="details">More details</option><option value="price">Price question</option><option value="who">Who are you?</option><option value="manager">Ask for the manager</option><option value="book">Book the call</option><option value="no">Not interested (close)</option></select>

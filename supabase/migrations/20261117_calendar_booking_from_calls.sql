@@ -17,3 +17,6 @@ select cron.schedule('sync-call-results', '*/5 * * * *', $$
     headers := jsonb_build_object('Content-Type','application/json','x-cron-key',(select data->>'key' from public.settings where id='cron')),
     body := '{}'::jsonb, timeout_milliseconds := 60000);
 $$);
+
+-- (17 Nov, later) Reports for every clinic, 8 every 5 minutes, reusing the Google rating already in the list.
+-- select cron.schedule('clinic-reports-5m', '*/5 * * * *', $$ select net.http_post(url := '.../functions/v1/deep-scan', headers := ... x-cron-key ..., body := '{"batch":8}'::jsonb); $$);
