@@ -1696,7 +1696,7 @@ const WA_T = {
     hi:(c,P)=>`Hi ${c} team 👋 ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"} here.`,
     checked:(c,f)=>`We checked ${c} online: ${f}.`,
     and:" and ",
-    cta1:(c)=>`👉 Reply "YES" and I'll send ${c}'s free 1-page report with the fixes.`,
+    cta1:(c)=>`👉 Reply "YES" and I'll send ${c}'s free growth report with the fixes.`,
     cta2:{ receptionist:(c,P)=>`👉 Want to hear it answer a call as ${c}? Reply "DEMO"${P.demo_link?` or listen here: ${P.demo_link}`:""}.`,
       website:()=>`👉 Reply "CALL" for a 15-minute walkthrough of what your new site would look like.`,
       website_intl:()=>`👉 Reply "CALL" for a 15-minute walkthrough of what your new site would look like.`,
@@ -1732,7 +1732,7 @@ const WA_T = {
     hi:(c,P)=>`مرحباً فريق ${c} 👋 معكم ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}.`,
     checked:(c,f)=>`راجعنا حضور ${c} على الإنترنت: ${f}.`,
     and:"، و",
-    cta1:(c)=>`👈 ردّوا بـ «نعم» وأرسل لكم تقرير ${c} المجاني (صفحة واحدة) مع الحلول.`,
+    cta1:(c)=>`👈 ردّوا بـ «نعم» وأرسل لكم تقرير ${c} المجاني مع الحلول.`,
     cta2:{ receptionist:(c,P)=>`👈 تودّون سماعه وهو يرد باسم ${c}؟ ردّوا بـ «تجربة»${P.demo_link?` أو استمعوا هنا: ${P.demo_link}`:""}.`,
       website:()=>`👈 ردّوا بـ «مكالمة» لنعرض لكم في 15 دقيقة شكل موقعكم الجديد.`,
       seo:(c)=>`👈 ردّوا بـ «قائمة» وأرسل لكم عمليات البحث التي تفوت ${c} على جوجل.`,
@@ -1766,7 +1766,7 @@ const WA_T = {
     hi:(c,P)=>`Bonjour l'équipe ${c} 👋 Ici ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}.`,
     checked:(c,f)=>`Nous avons vérifié ${c} en ligne : ${f}.`,
     and:" et ",
-    cta1:(c)=>`👉 Répondez « OUI » et je vous envoie le rapport gratuit d'une page de ${c}, avec les solutions.`,
+    cta1:(c)=>`👉 Répondez « OUI » et je vous envoie le rapport de croissance gratuit de ${c}, avec les solutions.`,
     cta2:{ receptionist:(c,P)=>`👉 Envie de l'entendre répondre au nom de ${c} ? Répondez « DÉMO »${P.demo_link?` ou écoutez ici : ${P.demo_link}`:""}.`,
       website:()=>`👉 Répondez « APPEL » pour voir en 15 minutes à quoi ressemblerait votre nouveau site.`,
       seo:(c)=>`👉 Répondez « LISTE » et je vous envoie les recherches Google que ${c} manque.`,
@@ -1816,6 +1816,56 @@ function waReply(p, kind){
     if (kind==="book") return R.book(P.booking_link, waSlots(p, lang));
     return R.no(p.company); }).join(WA_SEP);
 }
+// ---------- Send the clinic its growth report on WhatsApp (PDF link) ----------
+const WA_RPT = {
+  en:(c,u,P,s)=>`Here is ${c}'s free growth report, as promised 📄\n${u}\nThe top fixes for the clinic are inside.\n👉 ${P.booking_link ? "Pick a time for a 15-minute walkthrough: "+P.booking_link : `${s[0]} or ${s[1]} for a 15-minute walkthrough?`}`,
+  ar:(c,u,P,s)=>`كما وعدتكم، هذا تقرير ${c} المجاني 📄\n${u}\nفي داخله أهم الحلول لعيادتكم.\n👈 ${P.booking_link ? "اختاروا وقتاً لشرح التقرير في 15 دقيقة: "+P.booking_link : `هل يناسبكم ${s[0]} أو ${s[1]} لشرح التقرير في 15 دقيقة؟`}`,
+  fr:(c,u,P,s)=>`Comme promis, voici le rapport gratuit de ${c} 📄\n${u}\nVous y trouverez les priorités pour votre clinique.\n👉 ${P.booking_link ? "Choisissez un créneau de 15 minutes pour le parcourir : "+P.booking_link : `${s[0]} ou ${s[1]} pour le parcourir en 15 minutes ?`}`,
+};
+function loadScript(src){ return new Promise((ok, no)=>{ if ([...document.scripts].some(s=>s.src===src)) return ok(); const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = ()=>no(new Error("Couldn't load "+src)); document.head.appendChild(s); }); }
+const H2P_SRC = "https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js";
+// The report is rendered in its own invisible frame, so the console's styles can't interfere with the PDF.
+async function reportPdfBlob(p){
+  const f = document.createElement("iframe");
+  f.style.cssText = "position:fixed;left:0;top:0;width:940px;height:1300px;opacity:0;pointer-events:none;border:0;z-index:-1";
+  document.body.appendChild(f);
+  try {
+    const d = f.contentDocument;
+    d.open(); d.write(reportHtml(p).replace(/<button class="pbtn"[^>]*>Save as PDF<\/button>/, "")); d.close();
+    await new Promise(r=>setTimeout(r, 500));
+    await new Promise((ok, no)=>{ const s = d.createElement("script"); s.src = H2P_SRC; s.onload = ok; s.onerror = ()=>no(new Error("PDF maker didn't load")); d.head.appendChild(s); });
+    const el = d.querySelector(".r2") || d.body;
+    // Options are built inside the frame (the PDF library checks arrays with instanceof).
+    const opts = f.contentWindow.JSON.parse(JSON.stringify({ margin:[8,8,8,8], image:{type:"jpeg", quality:0.9}, html2canvas:{scale:2, useCORS:true, backgroundColor:"#ffffff"}, jsPDF:{unit:"mm", format:"a4", orientation:"portrait"}, pagebreak:{mode:["css","legacy"], avoid:[".r2-card",".r2-ring",".r2-m"]} }));
+    const out = await f.contentWindow.html2pdf().set(opts).from(el).outputPdf("blob");
+    return new Blob([await out.arrayBuffer()], {type:"application/pdf"});
+  } finally { f.remove(); }
+}
+async function waSendReport(p, btn){
+  const win = window.open("", "_blank"); // opened now, so the browser doesn't block it after the upload
+  const label = btn ? btn.textContent : ""; if (btn){ btn.disabled = true; btn.textContent = "Preparing report…"; }
+  try {
+    if (!p.report){ if (btn) btn.textContent = "Scanning the clinic…"; const ok = await deepScan(p); if (!ok || !p.report) throw new Error("the scan didn't finish"); }
+    let url = p.report_pdf_url;
+    if (!url || (p.report_at && p.report_pdf_at && Date.parse(p.report_at) > p.report_pdf_at)){
+      if (btn) btn.textContent = "Making PDF…";
+      const blob = await reportPdfBlob(p);
+      const slug = (p.company||"clinic").normalize("NFKD").replace(/[^\w]+/g,"-").replace(/^-|-$/g,"").toLowerCase().slice(0,40) || "clinic";
+      const path = `${slug}-${crypto.randomUUID().slice(0,12)}.pdf`;
+      const up = await sb.storage.from("reports").upload(path, blob, {contentType:"application/pdf", upsert:false});
+      if (up.error) throw new Error(up.error.message);
+      url = sb.storage.from("reports").getPublicUrl(path).data.publicUrl;
+      p.report_pdf_url = url; p.report_pdf_at = Date.now();
+      await sb.from("leads").update({report_pdf_url:url}).eq("id", p.id);
+    }
+    const text = waLangs(p).map(l=>WA_RPT[l](p.company, url, profile, waSlots(p, l))).join(WA_SEP);
+    win.location.href = waUrl(p, text);
+    await waSave(p, { wa_status: p.wa_status==="booked" ? "booked" : "replied", wa_next_at: null, status: ["booked"].includes(p.status) ? p.status : "hot", next: "Report sent on WhatsApp: book the walkthrough" }, { event:"report_sent", url });
+    toast(`Report ready for ${p.company}. WhatsApp opened with the link.`);
+  } catch(e){ win.close(); toast("Couldn't send the report: "+e.message); }
+  finally { if (btn){ btn.disabled = false; btn.textContent = label; } }
+}
+
 function waUrl(p, text){ return `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(text)}`; }
 function waEngaged(p){ return !!(p.consent || ["replied","interested"].includes(p.email_status) || ["hot","callback","referral","warm"].includes(p.status)); }
 function waEligible(p){
@@ -1877,7 +1927,8 @@ function renderWa(){
 <td dir="auto" style="white-space:pre-wrap;font-size:12.5px;max-width:520px">${p.wa_status==="replied" ? `<span class="muted">Reply with a ready answer:</span>` : `<span class="cellsub">${esc(WA_STEP[step-1])}</span>${esc(msg)}`}</td>
 <td style="text-align:right;white-space:nowrap"><div class="leadbar" style="justify-content:flex-end;flex-wrap:wrap;gap:4px">
 ${p.wa_status==="replied" ? "" : `<button type="button" class="btn btn-sm btn-primary" data-wasend="${esc(p.id)}">Open WhatsApp</button>`}
-<select class="btn btn-sm" data-wareply="${esc(p.id)}" aria-label="Send a ready reply"><option value="">Reply with…</option><option value="details">More details</option><option value="price">Price question</option><option value="who">Who are you?</option><option value="manager">Ask for the manager</option><option value="book">Book the call</option><option value="no">Not interested (close)</option></select>
+<select class="btn btn-sm" data-wareply="${esc(p.id)}" aria-label="Send a ready reply"><option value="">Reply with…</option><option value="details">More details</option><option value="price">Price question</option><option value="who">Who are you?</option><option value="manager">Ask for the manager</option><option value="book">Book the call</option><option value="report">Send the report (PDF)</option><option value="no">Not interested (close)</option></select>
+<button type="button" class="btn btn-sm" data-wareport="${esc(p.id)}" title="Makes the clinic's growth report as a PDF and opens WhatsApp with the link">Send report (PDF)</button>
 <button type="button" class="btn btn-sm" data-wamark="replied" data-id="${esc(p.id)}">They replied</button>
 <button type="button" class="btn btn-sm" data-wamark="booked" data-id="${esc(p.id)}">Booked</button>
 <button type="button" class="btn btn-sm btn-ghost" data-wamark="nowa" data-id="${esc(p.id)}" title="The number isn't on WhatsApp">No WhatsApp</button>
@@ -1886,8 +1937,10 @@ ${p.wa_status==="replied" ? "" : `<button type="button" class="btn btn-sm btn-pr
   const byId = id => state.leads.find(x=>x.id===id);
   document.querySelectorAll("[data-wasend]").forEach(b=>b.onclick = ()=>{ const p = byId(b.dataset.wasend); if (p) waSend(p); });
   document.querySelectorAll("[data-wamark]").forEach(b=>b.onclick = ()=>{ const p = byId(b.dataset.id); if (p) waMark(p, b.dataset.wamark); });
+  document.querySelectorAll("[data-wareport]").forEach(b=>b.onclick = ()=>{ const p = byId(b.dataset.wareport); if (p) waSendReport(p, b); });
   document.querySelectorAll("[data-wafocus]").forEach(s=>s.onchange = ()=>{ const p = byId(s.dataset.wafocus); if (p) waSave(p, { wa_focus: s.value }, null); });
   document.querySelectorAll("[data-wareply]").forEach(s=>s.onchange = ()=>{ const p = byId(s.dataset.wareply), k = s.value; s.value = ""; if (!p || !k) return;
+    if (k==="report"){ waSendReport(p, null); return; }
     window.open(waUrl(p, waReply(p, k)), "_blank", "noopener");
     if (k==="no") waSave(p, { wa_status:"stopped", wa_next_at:null, status:"cold" }, { event:"not_interested" }); else waSave(p, {}, { reply:k }); });
 }
@@ -2022,7 +2075,7 @@ ${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.
 </div>
 <div class="leadbar" style="justify-content:center;margin-top:6px">
 <button type="button" class="btn btn-sm" id="webCallBtn" title="Talk to the AI caller through your microphone, playing the clinic. Free: no phone line is used.">${webCall?"End browser call":"Free browser test (mic)"}</button>
-${waNum(p.phone)?(waEligible(p)?`<button type="button" class="btn btn-sm" id="waCalleeBtn" title="Opens WhatsApp with the next message of this clinic's sequence and schedules the follow-up.">WhatsApp: ${p.wa_step?"next message":"first message"}</button>`:`<a class="btn btn-sm" href="https://wa.me/${waNum(p.phone)}" target="_blank" rel="noopener" title="Opens a WhatsApp chat. First messages go only to calls-first countries or clinics that already engaged.">WhatsApp chat / call</a>`):""}
+${waNum(p.phone)?(waEligible(p)?`<button type="button" class="btn btn-sm" id="waCalleeBtn" title="Opens WhatsApp with the next message of this clinic's sequence and schedules the follow-up.">WhatsApp: ${p.wa_step?"next message":"first message"}</button><button type="button" class="btn btn-sm" id="waRptBtn" title="Makes the clinic's growth report as a PDF and opens WhatsApp with the link">Send report (PDF)</button>`:`<a class="btn btn-sm" href="https://wa.me/${waNum(p.phone)}" target="_blank" rel="noopener" title="Opens a WhatsApp chat. First messages go only to calls-first countries or clinics that already engaged.">WhatsApp chat / call</a>`):""}
 </div>
 ${(MARKETS[p.market]||{}).nanp ? nanpPanel(p) : ""}
 ${hasTestCall()?"":`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Run a test call to your own phone first. "Call now" asks you to confirm until one test has finished.</p>`}`}`;
@@ -2030,6 +2083,7 @@ const b = $("liveCallBtn"); if (b) b.onclick = ()=>startCall(p);
 const t = $("testCallBtn"); if (t) t.onclick = ()=>startCall(p, testNum || "your own phone");
 const w = $("webCallBtn"); if (w) w.onclick = ()=> webCall ? endWebCall() : startWebCall(p);
 const wb = $("waCalleeBtn"); if (wb) wb.onclick = ()=>waSend(p);
+const wr = $("waRptBtn"); if (wr) wr.onclick = ()=>waSendReport(p, wr);
 document.querySelectorAll("[data-nanp]").forEach(x=>x.onclick = async ()=>{ const k = x.dataset.nanp, a = {...(p.audit||{})};
 if (k==="landline"){ if (!confirm(`Confirm ${p.phone} is ${p.company}'s business landline (not a mobile)?
 
