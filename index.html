@@ -1222,7 +1222,7 @@ const k = hv.dataset.hv, cur = haveMap(p)[k], nv = cur===null ? true : cur===tru
 const a = {...(p.audit||{})}; if (nv===null) delete a[k]; else a[k] = nv; if (k==="booking" && nv!==null) a.booking = nv ? "online" : "phone_only";
 a.checkedAt = Date.now(); a.source = "manual"; p.audit = a; await saveLead(p); renderQueue(); return; }
 const cb = e.target.closest("[data-call]"); const tr = e.target.closest("tr[data-id]"); if(!tr || call) return;
-selectedId = tr.dataset.id; renderQueue(); renderCallee();
+selectedId = tr.dataset.id; renderQueue(); renderCallee(); if (!call) renderTranscriptEmpty();
 if (cb){ const p = state.leads.find(x=>x.id===selectedId); if (p && checkLead(p,p.campaign,simTime).ok) startCall(p); }
 });
 $("revFilter").addEventListener("change", ()=>{ revLimit = 50; renderReviews(); });
