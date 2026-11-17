@@ -39,6 +39,15 @@ Deno.serve(async (req) => {
 
   const { data: cs } = await admin.from("settings").select("data").eq("id", "calling").maybeSingle();
   const C = { daily_cap: 299, auto: false, per_run: 50, concurrency: 5, ...(cs?.data || {}) };
+  // Safe ramp-up (settings row "outreach"): week 1 = 100 calls/day, week 2 = 200, then 300.
+  const { data: os } = await admin.from("settings").select("data").eq("id", "outreach").maybeSingle();
+  const O = os?.data || {};
+  if (Array.isArray(O.ramp) && O.ramp.length && O.ramp_off !== true) {
+    const start = Date.parse((O.start_date || new Date().toISOString().slice(0, 10)) + "T00:00:00+04:00");
+    const week = Math.max(1, Math.floor((Date.now() - start) / (7 * DAY)) + 1);
+    const row = [...O.ramp].sort((a: any, b: any) => a.week - b.week).filter((r: any) => r.week <= week).pop() || O.ramp[0];
+    if (row?.calls) C.daily_cap = Math.min(Number(C.daily_cap), Number(row.calls));
+  }
   if (fromCron && !C.auto) return json({ ok: true, skipped: "auto-dial is off" });
 
   const now = Date.now(), dayStart = new Date(Math.floor((now + 4 * 3600000) / DAY) * DAY - 4 * 3600000);

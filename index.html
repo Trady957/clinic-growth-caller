@@ -65,7 +65,7 @@
   </a>
   <span class="vsep" aria-hidden="true"></span>
   <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>Worldwide · not UAE clinics</small></div>
-  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#calls">Calls</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
+  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#calls">Calls</a><a href="#emails">Emails</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
   <div class="bar-r"><span class="muted" id="whoami" style="font-size:12px"></span><button type="button" class="btn btn-sm btn-ghost" id="signOutBtn">Sign out</button><span class="pill p-ok" id="winPill"><span class="d"></span>Calling open</span><span class="pill p-mute" id="dbPill" title="Where your leads are saved"><span class="d"></span>Sample data</span></div>
 </div></header>
 <div class="testbar" id="testBar" hidden><div class="wrap"><span>Test mode: sign-in is off. Only your Netlify login protects this page.</span><button type="button" class="btn btn-sm" id="lockOpen">Lock it with a password</button></div></div>
@@ -121,6 +121,36 @@
         <div class="ctrls"><label class="tog"><input type="checkbox" id="voiceTog" checked> Speak the caller's lines</label><button class="btn btn-end" id="hangBtn" type="button" disabled aria-label="End call"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 9c-3.6 0-7 1-9.4 2.9-.6.5-.8 1.3-.4 2l1.4 2.4c.4.7 1.3 1 2 .7l2.9-1.2c.6-.3 1-.9.9-1.6l-.2-1.6c1.8-.6 3.8-.6 5.6 0l-.2 1.6c-.1.7.3 1.3.9 1.6l2.9 1.2c.7.3 1.6 0 2-.7l1.4-2.4c.4-.7.2-1.5-.4-2C19 10 15.6 9 12 9z"/></svg></button></div>
       </div>
     </aside>
+  </div>
+</div></section>
+<section class="blk" id="emails"><div class="wrap">
+  <div class="sec-h"><div><h2>Emails</h2><p>The second channel. Clinics you can't call (UAE, UK/EU without consent, US/Canada without a confirmed landline) or couldn't reach (2 unanswered calls) get one 3-step email sequence through Instantly. Replies come back here.</p></div><button type="button" class="btn btn-sm" id="emRefresh">Refresh</button></div>
+  <div class="ops-conn" id="emReach"><div class="glass ops-card"><p class="muted">Loading today's reach…</p></div></div>
+  <div class="ops-grid">
+    <div class="glass ops-card">
+      <div class="ops-h"><div><div class="eyebrow">Today's batch</div><h3 id="emHead">Clinics to email</h3></div><span class="pill p-mute" id="emAutoPill"><span class="d"></span>Automatic emailing off</span></div>
+      <div class="ops-stats ops-stats3" id="emStats"></div>
+      <div class="leadbar"><button type="button" class="btn btn-sm" id="emPreview">Preview today's batch</button><button type="button" class="btn btn-sm btn-primary" id="emSend">Send today's batch to Instantly</button><button type="button" class="btn btn-sm" id="emSync">Check replies now</button></div>
+      <small class="dbnote" id="emMsg"></small>
+      <div id="emPreviewList"></div>
+    </div>
+    <div class="glass ops-card">
+      <div class="ops-h"><div><div class="eyebrow">Settings</div><h3>Sender and plan</h3></div></div>
+      <form class="ops-form" id="emForm">
+        <label class="field" style="grid-column:1/-1">Business postal address (shown in every email, required by law)<input id="emAddr" placeholder="Mizan AI Agents, Office 000, Building, Street, City, Country" autocomplete="street-address"></label>
+        <label class="field">Sender name<input id="emName" placeholder="Maha"></label>
+        <label class="field">Company<input id="emCompany" placeholder="Mizan AI Agents"></label>
+        <label class="field">Google Maps searches a day<input id="emMaps" type="number" min="0" max="400" inputmode="numeric"></label>
+        <label class="field">Never email these countries<input id="emExcl" placeholder="DE"></label>
+        <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="emAuto"> Send each day's batch automatically</label>
+        <div class="form-f"><button class="btn btn-sm" type="submit">Save</button><button class="btn btn-sm" type="button" id="mapsNow">Find more clinics now (50 searches)</button><small id="emFormMsg"></small></div>
+      </form>
+      <p class="dbnote">Safe ramp-up from the start date: week 1 = 100 calls + 50 new clinics emailed a day, week 2 = 200 + 150, week 3 = 300 + 350, then 300 + 700. Each clinic gets one sequence (day 0, day 3, day 7) and never again. Replies stop the sequence. Unsubscribes and bounces are never contacted again, by email or phone.</p>
+    </div>
+  </div>
+  <div class="glass" style="margin-top:14px">
+    <div class="card-h"><div><h3>Email activity</h3><small id="emActSum"></small></div></div>
+    <div class="tbl"><table><thead><tr><th>Clinic</th><th>Country</th><th>Email</th><th>Why email</th><th>Status</th><th>Last update</th></tr></thead><tbody id="emAct"></tbody></table></div>
   </div>
 </div></section>
 <section class="blk" id="meetings"><div class="wrap">
@@ -1496,7 +1526,8 @@ const numTxt = (el.numbers||[]).length ? (el.numbers||[]).map(n=>`${n.number} ($
 $("opsConn").innerHTML = `
 <div class="glass conn"><b>ElevenLabs</b>${OK(el.api_key && el.key_works!==false, el.api_key ? (el.key_works===false ? "Key rejected" : "API key connected") : "API key missing")}<span class="muted">${el.api_key ? (el.agent_found ? "Agent Noor found." : esc(el.error||"Agent not checked.")) : "Add ELEVENLABS_API_KEY in Supabase secrets."}</span></div>
 <div class="glass conn"><b>Calling number</b>${OK(el.phone_ok, el.phone_ok ? "Number ready" : el.phone_number_id ? "Number ID not found" : "Not set")}<span class="muted">${esc(el.api_key ? numTxt : "Import a Twilio or SIP number in ElevenLabs, then add its ID as ELEVENLABS_PHONE_NUMBER_ID.")}</span></div>
-<div class="glass conn"><b>Call results</b>${OK(el.webhook_secret, el.webhook_secret ? "Webhook connected" : "Webhook secret missing")}<span class="muted">${el.webhook_secret ? "Outcomes and meetings save automatically." : "Set the post-call webhook in ElevenLabs and add ELEVENLABS_WEBHOOK_SECRET."}</span></div>
+<div class="glass conn"><b>Call results</b>${OK(true, el.webhook_secret ? "Webhook + 5-minute sync" : "Synced every 5 minutes")}<span class="muted">Outcomes, transcripts and booked meetings save automatically, and confirmed meetings go into your Google Calendar.</span></div>
+<div class="glass conn"><b>Instantly (email)</b>${OK(st.instantly, st.instantly ? "API key connected" : "Key missing")}<span class="muted">${st.instantly ? "Cold emails send through your Instantly inboxes." : "Add INSTANTLY_API_KEY in Supabase secrets to switch on the email channel."}</span></div>
 <div class="glass conn"><b>Google Maps</b>${OK(st.google_maps, st.google_maps ? "Connected" : "Key missing")}<span class="muted">${st.google_maps ? "Ratings, reviews, open/closed checks and search are live." : "Add GOOGLE_PLACES_API_KEY for reviews, verification and full search."}</span></div>`;
 const C = {daily_cap:299, auto:false, per_run:50, concurrency:5, ...(st.calling||{})};
 const today = (batchPrev && batchPrev.calls_today) ?? st.calls_today ?? 0;
@@ -1536,6 +1567,63 @@ if (error){ toast("Couldn't save: "+error.message); return; } toast(`Saved: up t
 $("batchNow").onclick = async ()=>{ const b = $("batchNow"); b.disabled = true; $("batchMsg").textContent = "Sending batch to ElevenLabs…";
 try { const r = await opsCall("batch-call", {}); $("batchMsg").textContent = r.submitted ? `Sent ${r.submitted} calls. ${r.remaining_today} left today.` : (r.reason||"Nothing to send."); toast(r.submitted ? `Batch started: ${r.submitted} calls` : (r.reason||"Nothing to send")); }
 catch(e){ $("batchMsg").textContent = e.message; } loadOps(); };
+
+// ---------- Emails (second channel, Instantly) ----------
+let emStatus = null;
+const EM_REASON = {uae:"UAE: no AI calls", consent_market:"UK/EU: email first", us_ca:"US/Canada: landline not confirmed", no_phone:"No callable number", unreachable:"2 unanswered calls"};
+const EM_SHORT = {uae:"UAE", consent_market:"UK/EU", us_ca:"US/Canada", no_phone:"no number", unreachable:"unreachable"};
+const EM_STATUS = {queued:["In Instantly","p-mute"], skipped:["Skipped (already in Instantly)","p-mute"], sent:["Emailed","p-mute"], replied:["Replied","p-ok"], interested:["Interested","p-ok"], not_interested:["Not interested","p-bad"], bounced:["Bounced","p-bad"], unsubscribed:["Unsubscribed","p-bad"], failed:["Failed","p-bad"]};
+async function loadEmails(){
+  try { emStatus = await opsCall("email-outreach", {mode:"status"}); } catch(e){ $("emReach").innerHTML = `<div class="glass conn"><b>Couldn't load email status</b><span class="muted">${esc(e.message)}</span></div>`; return; }
+  renderEmails();
+  const { data: rows } = await sb.from("leads").select("company, market, email, email_status, email_reason, email_pushed_at, email_last_event_at").not("email_status","is",null).order("email_pushed_at", {ascending:false}).limit(60);
+  $("emAct").innerHTML = (rows||[]).length ? rows.map(r=>{ const s = EM_STATUS[r.email_status]||[r.email_status,"p-mute"]; const t = r.email_last_event_at||r.email_pushed_at;
+    return `<tr><td><b>${esc(r.company)}</b></td><td>${esc(r.market)}</td><td class="mono">${esc(r.email||"")}</td><td class="muted">${esc(EM_REASON[r.email_reason]||r.email_reason||"")}</td><td><span class="pill ${s[1]}"><span class="d"></span>${esc(s[0])}</span></td><td class="muted">${t?new Date(t).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</td></tr>`; }).join("")
+    : `<tr><td colspan="6" class="muted">No emails sent yet.</td></tr>`;
+  const T = emStatus.totals||{}; $("emActSum").textContent = Object.keys(T).length ? Object.entries(T).map(([k,v])=>`${(EM_STATUS[k]||[k])[0]} ${v}`).join(" · ") : "";
+}
+function renderEmails(){
+  const S = emStatus; if (!S) return; const t = S.today, target = S.target_per_day||1000, reach = t.calls + t.emails, plan = t.call_cap + t.email_cap, I = S.instantly||{};
+  const bar = (n,cap)=>`<div class="ops-track"><i style="width:${Math.min(100, n/Math.max(1,cap)*100)}%"></i></div>`;
+  $("emReach").innerHTML = `
+<div class="glass conn"><b>Reach today</b><span style="font-size:22px;font-weight:800">${reach} <span class="muted" style="font-size:13px">/ ${plan} planned · goal ${target}</span></span>${bar(reach, plan)}<span class="muted">Week ${S.week} of the ramp-up.</span></div>
+<div class="glass conn"><b>Calls today</b><span style="font-size:22px;font-weight:800">${t.calls} <span class="muted" style="font-size:13px">/ ${t.call_cap}</span></span>${bar(t.calls, t.call_cap)}<span class="muted">Clinics that pass every calling rule.</span></div>
+<div class="glass conn"><b>New clinics emailed today</b><span style="font-size:22px;font-weight:800">${t.emails} <span class="muted" style="font-size:13px">/ ${t.email_cap}</span></span>${bar(t.emails, t.email_cap)}<span class="muted">${t.email_left} left today.</span></div>
+<div class="glass conn"><b>Instantly</b>${OK(I.key_saved && I.ok && I.sending_accounts>0, !I.key_saved ? "API key missing" : I.ok ? `${I.sending_accounts} sending inbox${I.sending_accounts===1?"":"es"}` : "Key rejected")}<span class="muted">${!I.key_saved ? "Add INSTANTLY_API_KEY in Supabase → Edge Functions → Secrets." : I.error ? esc(I.error) : I.sending_accounts ? `${I.warmed} warming up. Campaigns: ${Object.keys(I.campaigns||{}).length}.` : "Add sending inboxes in Instantly and let them warm up 2–3 weeks."}</span></div>`;
+  const by = S.eligible_by_reason||{}, mk = S.eligible_by_market||{};
+  $("emHead").textContent = `${S.eligible} clinic${S.eligible===1?"":"s"} ready for email`;
+  $("emStats").innerHTML = [["Why email", Object.keys(by).length ? Object.entries(by).map(([k,v])=>`${v} ${EM_SHORT[k]||k}`).join(" · ") : "–", "calls come first where they're allowed"],["By country", Object.keys(mk).length ? Object.entries(mk).map(([k,v])=>`${k} ${v}`).join(" · ") : "–", "Germany is never emailed"],["Not ready", (S.not_eligible?.no_email||0) + " no email", "emails are found on clinic websites automatically"]]
+    .map(([a,b,c])=>`<div><span>${a}</span><b style="font-size:14px">${esc(String(b))}</b><small>${esc(c)}</small></div>`).join("");
+  const pill = $("emAutoPill"); pill.className = "pill " + (S.auto ? "p-ok" : "p-mute"); pill.innerHTML = `<span class="d"></span>Automatic emailing ${S.auto?"on":"off"}`;
+  const blockers = [!I.key_saved && "add the Instantly key", I.key_saved && !I.sending_accounts && "add sending inboxes in Instantly", !S.sender_address_set && "add your postal address in Settings"].filter(Boolean);
+  $("emSend").disabled = !!blockers.length || !t.email_left || !S.eligible;
+  $("emSend").textContent = `Send today's batch to Instantly (${Math.min(t.email_left, S.eligible)})`;
+  $("emMsg").textContent = blockers.length ? "Before sending: " + blockers.join(", ") + "." : !t.email_left ? "Today's email limit is reached." : "";
+}
+async function loadEmailSettings(){
+  const { data } = await sb.from("settings").select("data").eq("id","outreach").maybeSingle(); const O = data?.data||{};
+  if (document.activeElement?.closest("#emForm")) return;
+  $("emAddr").value = O.sender_address||""; $("emName").value = O.sender_name||""; $("emCompany").value = O.sender_company||"";
+  $("emMaps").value = O.maps_searches_per_day ?? 150; $("emExcl").value = (O.email_excluded_markets||["DE"]).join(", "); $("emAuto").checked = !!O.email_auto;
+}
+$("emForm").addEventListener("submit", async e=>{ e.preventDefault();
+  const { data: cur } = await sb.from("settings").select("data").eq("id","outreach").maybeSingle();
+  const next = {...(cur?.data||{}), sender_address: $("emAddr").value.trim()||null, sender_name: $("emName").value.trim()||"Maha", sender_company: $("emCompany").value.trim()||"Mizan AI Agents",
+    maps_searches_per_day: Math.max(0, Math.min(400, +$("emMaps").value||0)), email_excluded_markets: $("emExcl").value.split(/[\s,]+/).map(x=>x.trim().toUpperCase()).filter(Boolean), email_auto: $("emAuto").checked};
+  if (next.email_auto && !next.sender_address){ toast("Add your postal address before switching on automatic emailing."); return; }
+  const { error } = await sb.from("settings").upsert({id:"outreach", data: next});
+  if (error){ toast("Couldn't save: "+error.message); return; } toast("Email settings saved."); loadEmails(); });
+$("emRefresh").onclick = ()=>{ loadEmails(); loadEmailSettings(); };
+$("emPreview").onclick = async ()=>{ $("emMsg").textContent = "Building today's batch…";
+  try { const r = await opsCall("email-outreach", {mode:"plan"}); const P = r.preview||[];
+    $("emPreviewList").innerHTML = P.length ? `<div class="tbl"><table><thead><tr><th>Clinic</th><th>Email</th><th>Opening line</th></tr></thead><tbody>${P.map(x=>`<tr><td><b>${esc(x.company)}</b><span class="cellsub">${esc(x.market)} · ${esc(EM_REASON[x.reason]||x.reason)}</span></td><td class="mono">${esc(x.email)}</td><td dir="auto">${esc(x.opener)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">Nothing to email right now.</p>`;
+    $("emMsg").textContent = P.length ? `First ${P.length} of today's batch.` : ""; } catch(e){ $("emMsg").textContent = e.message; } };
+$("emSend").onclick = async ()=>{ const b = $("emSend"); b.disabled = true; $("emMsg").textContent = "Sending to Instantly…";
+  try { const r = await opsCall("email-outreach", {mode:"push"}); $("emMsg").textContent = r.error ? (r.message||r.error) : r.pushed ? `${r.pushed} clinics added to Instantly.${r.note?" "+r.note:""}` : (r.reason||"Nothing sent."); if (r.pushed) toast(`${r.pushed} clinics added to Instantly`); }
+  catch(e){ $("emMsg").textContent = e.message; } loadEmails(); };
+$("emSync").onclick = async ()=>{ $("emMsg").textContent = "Checking Instantly…"; try { const r = await opsCall("email-outreach", {mode:"sync"}); $("emMsg").textContent = r.error ? "Instantly isn't connected yet." : `${r.changed} update${r.changed===1?"":"s"} from ${r.checked} clinics.`; } catch(e){ $("emMsg").textContent = e.message; } loadEmails(); };
+$("mapsNow").onclick = async ()=>{ $("emFormMsg").textContent = "Searching Google Maps…";
+  try { const r = await opsCall("maps-harvest", {searches:50}); $("emFormMsg").textContent = r.message ? r.message : r.ok ? "Started: new clinics appear in a few minutes." : (r.error||""); } catch(e){ $("emFormMsg").textContent = e.message; } };
 async function runVerify(all){ const b = all ? $("revalBtn") : $("verifyBtn"); b.disabled = true; let total = 0;
 try { for (let i=0;i<(all?10:1);i++){ $("verifyMsg").textContent = `Checking… ${total} done`; const r = await opsCall("ops", {action:"verify", limit:40, all}); total += r.verified; if (!all || r.verified < 40) { $("verifyMsg").textContent = `Checked ${total} accounts. ${r.remaining} not yet verified.${r.google_maps?"":" Google Maps checks need the key."}`; break; } } }
 catch(e){ $("verifyMsg").textContent = "Couldn't verify: "+e.message; } b.disabled = false; }
@@ -1765,7 +1853,7 @@ hideAuth(); $("whoami").textContent = session ? session.user.email : "Test mode"
 $("testBar").hidden = !testMode; $("signOutBtn").hidden = !session;
 if (started) return; started = true;
 db = makeDb(); downloads = downloadsShim; sample = null; mcp = null;
-goLive(); loadSync(); loadOps(); setInterval(loadOps, 5*60000);
+goLive(); loadSync(); loadOps(); setInterval(loadOps, 5*60000); loadEmails(); loadEmailSettings(); setInterval(loadEmails, 5*60000);
 sb.channel("rt-sync").on("postgres_changes", {event:"*", schema:"public", table:"sync_runs"}, ()=>loadSync()).subscribe();
 $("dbPill").className = "pill p-ok"; $("dbPill").innerHTML = '<span class="d"></span>Live';
 $("simBtn").lastChild.textContent = "Call next cleared clinic";
