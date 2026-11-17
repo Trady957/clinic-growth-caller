@@ -1884,10 +1884,10 @@ function waOpen(p, text, win){
     <p class="muted" style="margin:0 0 8px;font-size:12px">${WA_EMBEDDED ? "The message is already copied. In WhatsApp (desktop app or Safari), open the chat with +${n} and paste. Or click Open WhatsApp app." : "If WhatsApp didn't open, copy the message or use one of the buttons below."}</p>
     <textarea readonly style="width:100%;height:220px;font:13px system-ui;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box" dir="auto">${esc(text)}</textarea>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
-      <a class="btn btn-primary btn-sm" href="${links.app}">Open WhatsApp app</a>
+      <a class="btn btn-primary btn-sm" href="${links.app}">Open in WhatsApp app</a>
       <button type="button" class="btn btn-sm" data-wp="copy">Copy message</button>
-      <a class="btn btn-sm" href="${links.web}" target="_blank" rel="noopener">Open WhatsApp Web</a>
-      <a class="btn btn-sm" href="${links.wame}" target="_blank" rel="noopener">Open WhatsApp link</a>
+      ${WA_EMBEDDED ? "" : `<a class="btn btn-sm" href="${links.web}" target="_blank" rel="noopener">Open WhatsApp Web</a>
+      <a class="btn btn-sm" href="${links.wame}" target="_blank" rel="noopener">Open WhatsApp link</a>`}
     </div></div>`;
   d.addEventListener("click", async e=>{ const k = e.target.dataset?.wp;
     if (e.target===d || k==="close") d.remove();
