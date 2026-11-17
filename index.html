@@ -75,7 +75,7 @@
     <div>
       <div class="eyebrow" id="heroEyebrow">Freelance · Dubai</div>
       <h1>Every clinic called, qualified and <em>booked in.</em></h1>
-      <p class="lede" id="heroLede">Your AI caller phones dental, aesthetic and medical clinics across the GCC, gets past reception to the owner or manager, finds out if they need marketing or AI agents, and books confirmed demo meetings in each clinic's own time zone, with the calendar invite and WhatsApp confirmation ready to send.</p>
+      <p class="lede" id="heroLede">Your AI caller phones dental, aesthetic and medical clinics worldwide (outside the UAE), gets past reception to the owner or manager, finds out if they need marketing or AI agents, and books confirmed demo meetings in each clinic's own time zone, with the calendar invite and WhatsApp confirmation ready to send.</p>
       <div class="chips">
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>UAE calling rules built in</span>
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Confirmed meetings</span>
@@ -171,14 +171,14 @@
       <label class="field">Campaign<select name="campaign"></select></label>
       <label class="field">Source<input name="source" placeholder="Google Maps, Instagram, referral"></label>
       <label class="field full">Why them (context for the caller, never read out)<textarea name="context" placeholder="4.6★ from 300 reviews; several mention nobody answering the phone. No online booking."></textarea></label>
-      <div class="form-f"><label class="chk"><input type="checkbox" name="consent"> They agreed to be contacted (demo request or existing contact)</label><label class="chk"><input type="checkbox" name="dncr"> Number is on the UAE Do Not Call Register</label>
+      <div class="form-f"><label class="chk"><input type="checkbox" name="consent"> They agreed to be contacted (demo request or existing contact)</label><label class="chk"><input type="checkbox" name="dncr"> Number is on a national Do Not Call register</label>
         <button class="btn btn-primary" type="submit">Add clinic</button><small>Saved to your clinic list.</small></div>
     </div>
   </form>
   <div class="glass" id="tab-import" hidden>
     <div class="form">
       <label class="field full">Paste rows from Google Sheets or Excel (with a header row)<textarea id="csvIn" style="min-height:150px;font-family:var(--f-mono);font-size:12.5px" placeholder="company,name,role,industry,city,phone,email,market,lang,campaign,context,source,consent,dncr&#10;Pearl Smile Dental Clinic,Clinic manager,Clinic manager,Dental clinic,Riyadh,+966115550000,,SA,ar,dental,Reviews mention unanswered calls,Google Maps,no,no"></textarea></label>
-      <div class="form-f"><button class="btn btn-primary" type="button" id="importBtn">Import clinics</button><small>Columns can be in any order. market: AE, SA, QA, KW, BH, OM. campaign: dental, aesthetic, medical, inbound, proposal. consent and dncr: yes or no.</small></div>
+      <div class="form-f"><button class="btn btn-primary" type="button" id="importBtn">Import clinics</button><small>Columns can be in any order. market: SA, QA, KW, BH, OM, EG, JO, MA, GB, IE, FR, BE, DE, ES, IT, NL, US, USC, USM, USP, CA, CAW (UAE is not called). campaign: dental, aesthetic, medical, inbound, proposal. consent and dncr: yes or no.</small></div>
     </div>
   </div>
 </div></section>
@@ -218,7 +218,7 @@
   </form>
   <div class="glass agentcard">
     <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
-    <div><b>Live voice agent · Clinic Growth Caller – GCC</b><p>The same script runs as a real-voice ElevenLabs agent. It gets past reception, qualifies the clinic, and only books a meeting after reading back the day, time zone, attendee and invite email. Each call returns the meeting details, decision-maker and next step.</p></div>
+    <div><b>Live voice agent · Clinic Growth Caller</b><p>The same script runs as a real-voice ElevenLabs agent. It gets past reception, qualifies the clinic, and only books a meeting after reading back the day, time zone, attendee and invite email. Each call returns the meeting details, decision-maker and next step.</p></div>
     <a class="btn" href="https://elevenlabs.io/app/agents/agents/agent_3401m6p7pqnjepwv9rgy15kfq48c" target="_blank" rel="noopener">Open in ElevenLabs</a>
   </div>
 </div></section>
@@ -276,19 +276,44 @@
 </div>
 <div class="toast" id="toast" hidden></div>
 <script>
+/* Markets. Offsets come from each IANA time zone, so daylight saving is handled.
+   UAE is kept only so older leads still display; it is never called (excluded: true).
+   consentRequired: AI voice calls need prior consent there (US/Canada TCPA; UK PECR reg. 19 and EU ePrivacy art. 13 for automated calls). Email first, call after a reply. */
+function tzOffset(tz, ms){ const d = new Date(ms ?? Date.now()); const p = Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(d).map(x=>[x.type,x.value]));
+  return Math.round((Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute) - Math.floor(d.getTime()/6e4)*6e4)/36e5*4)/4; }
+const GULF_NOTES = ["Conservative defaults until confirmed with an advisor","Identity, AI assistant and recording announced first","Unanswered: max 1 a day, 2 a week; declined: never again for that campaign"];
+const CONSENT_NOTES = ["AI voice calls only after the clinic replied or asked for a call","First touch is an email; record the reply as consent","Check the national do-not-call register before dialling"];
+const mkDef = (o)=>({start:9,end:18,dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,verified:false,consentRequired:false,...o, get offset(){ return tzOffset(this.tz); }});
 const MARKETS = {
-AE:{name:"UAE",offset:4,start:9,end:18,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
-notes:["Calls only 09:00–18:00 local, working days","Identity, AI assistant and recording announced first","No DNCR numbers without consent","Unanswered: max 1 a day, 2 a week","Declined: not called again for that campaign","Call from a number registered to your licence"],source:"Cabinet Resolutions 56 & 57 of 2024",verified:true},
-SA:{name:"Saudi Arabia",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
-notes:["Promotional calls need documented consent","Unsubscribe honoured within 24 hours","Window set conservatively to 09:00–18:00"],source:"CST rules; confirm window locally",verified:false},
-QA:{name:"Qatar",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
-KW:{name:"Kuwait",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
-BH:{name:"Bahrain",offset:3,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false},
-OM:{name:"Oman",offset:4,start:9,end:18,weekend:[5,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,notes:["Conservative defaults until confirmed with an advisor"],source:"Conservative default",verified:false}
+AE:mkDef({name:"UAE (excluded)",cc:"AE",tz:"Asia/Dubai",weekend:[0,6],excluded:true,center:[24.4,54.4],notes:["Not called: UAE telemarketing needs TDRA approval and a licensed local number"],source:"Cabinet Resolutions 56 & 57 of 2024",verified:true}),
+SA:mkDef({name:"Saudi Arabia",cc:"SA",tz:"Asia/Riyadh",weekend:[5,6],center:[24.7,46.7],notes:["Promotional calls need documented consent","Unsubscribe honoured within 24 hours","Window set conservatively to 09:00–18:00"],source:"CST rules; confirm window locally"}),
+QA:mkDef({name:"Qatar",cc:"QA",tz:"Asia/Qatar",weekend:[5,6],center:[25.3,51.5],notes:GULF_NOTES,source:"Conservative default"}),
+KW:mkDef({name:"Kuwait",cc:"KW",tz:"Asia/Kuwait",weekend:[5,6],center:[29.3,47.9],notes:GULF_NOTES,source:"Conservative default"}),
+BH:mkDef({name:"Bahrain",cc:"BH",tz:"Asia/Bahrain",weekend:[5,6],center:[26.1,50.55],notes:GULF_NOTES,source:"Conservative default"}),
+OM:mkDef({name:"Oman",cc:"OM",tz:"Asia/Muscat",weekend:[5,6],center:[23.6,58.4],notes:GULF_NOTES,source:"Conservative default"}),
+EG:mkDef({name:"Egypt",cc:"EG",tz:"Africa/Cairo",weekend:[5,6],start:10,end:17,center:[30.04,31.24],notes:GULF_NOTES,source:"Conservative default"}),
+JO:mkDef({name:"Jordan",cc:"JO",tz:"Asia/Amman",weekend:[5,6],start:9,end:17,center:[31.95,35.93],notes:GULF_NOTES,source:"Conservative default"}),
+MA:mkDef({name:"Morocco",cc:"MA",tz:"Africa/Casablanca",weekend:[0,6],start:9,end:17,center:[33.57,-7.59],notes:GULF_NOTES,source:"Conservative default"}),
+GB:mkDef({name:"United Kingdom",cc:"GB",tz:"Europe/London",weekend:[0,6],start:9,end:17,consentRequired:true,center:[51.5,-0.12],notes:[...CONSENT_NOTES,"Screen against TPS/CTPS"],source:"PECR reg. 19 (automated calls)"}),
+IE:mkDef({name:"Ireland",cc:"IE",tz:"Europe/Dublin",weekend:[0,6],start:9,end:17,consentRequired:true,center:[53.35,-6.26],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+FR:mkDef({name:"France",cc:"FR",tz:"Europe/Paris",weekend:[0,6],start:10,end:17,consentRequired:true,center:[48.86,2.35],notes:[...CONSENT_NOTES,"Screen against Bloctel"],source:"ePrivacy art. 13"}),
+BE:mkDef({name:"Belgium",cc:"BE",tz:"Europe/Brussels",weekend:[0,6],start:9,end:17,consentRequired:true,center:[50.85,4.35],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+DE:mkDef({name:"Germany",cc:"DE",tz:"Europe/Berlin",weekend:[0,6],start:9,end:17,consentRequired:true,center:[52.52,13.4],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+ES:mkDef({name:"Spain",cc:"ES",tz:"Europe/Madrid",weekend:[0,6],start:9,end:17,consentRequired:true,center:[40.42,-3.7],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+IT:mkDef({name:"Italy",cc:"IT",tz:"Europe/Rome",weekend:[0,6],start:9,end:17,consentRequired:true,center:[41.9,12.5],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+NL:mkDef({name:"Netherlands",cc:"NL",tz:"Europe/Amsterdam",weekend:[0,6],start:9,end:17,consentRequired:true,center:[52.37,4.9],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+US:mkDef({name:"United States (Eastern)",cc:"US",tz:"America/New_York",weekend:[0,6],start:9,end:17,consentRequired:true,center:[40.71,-74.0],notes:[...CONSENT_NOTES,"Screen against the National DNC Registry"],source:"TCPA; FCC ruling Feb 2024 (AI voices)"}),
+USC:mkDef({name:"United States (Central)",cc:"US",tz:"America/Chicago",weekend:[0,6],start:9,end:17,consentRequired:true,center:[41.88,-87.63],notes:CONSENT_NOTES,source:"TCPA; FCC ruling Feb 2024 (AI voices)"}),
+USM:mkDef({name:"United States (Mountain)",cc:"US",tz:"America/Denver",weekend:[0,6],start:9,end:17,consentRequired:true,center:[39.74,-104.99],notes:CONSENT_NOTES,source:"TCPA; FCC ruling Feb 2024 (AI voices)"}),
+USP:mkDef({name:"United States (Pacific)",cc:"US",tz:"America/Los_Angeles",weekend:[0,6],start:9,end:17,consentRequired:true,center:[34.05,-118.24],notes:CONSENT_NOTES,source:"TCPA; FCC ruling Feb 2024 (AI voices)"}),
+CA:mkDef({name:"Canada (Eastern)",cc:"CA",tz:"America/Toronto",weekend:[0,6],start:9,end:17,consentRequired:true,center:[43.65,-79.38],notes:[...CONSENT_NOTES,"Screen against the National DNCL"],source:"CRTC rules"}),
+CAW:mkDef({name:"Canada (Pacific)",cc:"CA",tz:"America/Vancouver",weekend:[0,6],start:9,end:17,consentRequired:true,center:[49.28,-123.12],notes:CONSENT_NOTES,source:"CRTC rules"})
 };
-const TZNAME = {AE:"UAE time",SA:"Saudi time",QA:"Qatar time",KW:"Kuwait time",BH:"Bahrain time",OM:"Oman time"};
+const DEFAULT_MK = "SA";
+const callableMarkets = ()=>Object.entries(MARKETS).filter(([,m])=>!m.excluded);
+const TZNAME = Object.fromEntries(Object.entries(MARKETS).map(([k,m])=>[k, m.name.replace(/ \(excluded\)/,"")+" time"]));
 const CAMPAIGNS = {
-dental:{name:"Dental clinics",kind:"cold",desc:"Dental clinics and centres across the GCC."},
+dental:{name:"Dental clinics",kind:"cold",desc:"Dental clinics and centres, Gulf (not UAE), Middle East, Europe and North America."},
 aesthetic:{name:"Aesthetic & derma",kind:"cold",desc:"Cosmetic, dermatology and laser clinics."},
 medical:{name:"Medical centres",kind:"cold",desc:"Polyclinics, family and specialist clinics."},
 inbound:{name:"Demo requests",kind:"warm",desc:"Clinics that asked about marketing or AI agents."},
@@ -301,10 +326,10 @@ const DEFAULT_PROFILE = {
 currency:"AED", rev_dental:"1500", rev_aesthetic:"2000", rev_medical:"700", missed_calls_week:"10",
 freelancer_name:"Maha", agent_name:"Noor", business_name:"Mizan AI Agents", freelancer_title:"marketing and AI agents for clinics",
 freelancer_service:"marketing (social media, ads, Google reviews, websites) and AI agents (24/7 AI receptionist on calls and WhatsApp, patient recall and aftercare calls)",
-freelancer_value:"help dental and medical clinics across the GCC answer every patient call and message and book more appointments",
+freelancer_value:"help dental and medical clinics in the Gulf, the Middle East, Europe and North America answer every patient call and message and book more appointments",
 freelancer_proof:"we can show a live demo of an AI assistant that phones dental patients for recalls and next-day aftercare check-ins in Arabic and English",
 freelancer_pricing:"marketing retainers from around AED 3,500 a month; an AI receptionist from around AED 1,500 a month after setup",
-freelancer_phone:"+971 50 000 0000", freelancer_email:"hello@example.com", handoff_hours:"Mon–Fri 10:00–17:00", meeting_length:"20", test_phone:""
+freelancer_phone:"+971 52 685 5212", freelancer_email:"maha.lasfar.2015@gmail.com", handoff_hours:"Mon–Fri 10:00–17:00", meeting_length:"20", test_phone:""
 };
 const SAMPLE_LEADS = [];
 const AV_COLORS = ["#4C3FD1","#8A3FD1","#C2672E","#0A7E8C","#2E8B57","#B2445E","#3E6FB0","#8C6A12"];
@@ -318,16 +343,18 @@ let sample = null, db = null, downloads = null, live = false; // live = leads co
 function dubaiMidnight(ms){ const d = new Date(ms + 4*36e5); d.setUTCHours(0,0,0,0); return d.getTime() - 4*36e5; }
 function localHourMin(ms, offset){ const d = new Date(ms + offset*36e5); return {h:d.getUTCHours(), m:d.getUTCMinutes(), dow:d.getUTCDay()}; }
 const fmtHM = (h,m)=> String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
-function normLead(l){ return {status:"new",score:null,next:"",declined:[],attempts:[],consent:false,dncr:false,lang:"en",market:"AE",campaign:"dental",...l, declined:[...(l.declined||[])], attempts:[...(l.attempts||[])]}; }
+function normLead(l){ return {status:"new",score:null,next:"",declined:[],attempts:[],consent:false,dncr:false,lang:"en",market:DEFAULT_MK,campaign:"dental",...l, declined:[...(l.declined||[])], attempts:[...(l.attempts||[])]}; }
 function checkLead(p, campKey, now){
-const mk = MARKETS[p.market]||MARKETS.AE, camp = CAMPAIGNS[campKey]||CAMPAIGNS.dental, checks = [];
+const mk = MARKETS[p.market]||MARKETS[DEFAULT_MK], camp = CAMPAIGNS[campKey]||CAMPAIGNS.dental, checks = [];
 const add = (ok, okText, failText) => checks.push({ok, text: ok ? okText : failText});
+if (mk.excluded) add(false, "", "UAE is excluded: not called");
+if (mk.consentRequired) add(!!p.consent, "Replied or asked for a call (consent on file)", "Email first: AI calls here need the clinic's consent");
 add(!p.optedOut && p.status!=="dnc", "Has not opted out", "Asked not to be called");
 if (p.quality && p.quality.phone_valid===false) add(false, "", "Number failed the format check");
 if (p.list==="future") add(false, "", "Saved for later, not in the call queue");
 if (!/^\+\d{8,15}$/.test(String(p.phone||""))) add(false, "", "No phone number yet");
 if (p.quality && p.quality.stale) add(false, "", "No longer on the map, check it's open");
-add(!(mk.dncr && p.dncr && !p.consent), p.dncr ? "On DNCR, consent on file" : "Not on Do Not Call Register", "On Do Not Call Register");
+add(!(mk.dncr && p.dncr && !p.consent), p.dncr ? "On DNCR, consent on file" : "Not on a Do Not Call register", "On a Do Not Call register");
 add(!p.declined.includes(campKey), "Has not declined", "Declined this before");
 add(p.status!=="booked", "No meeting booked yet", "Meeting already booked");
 const t = localHourMin(now, mk.offset), mins = t.h*60+t.m;
@@ -362,9 +389,9 @@ function renderClock(){
 const t = localHourMin(simTime, 4);
 $("clockTxt").textContent = fmtHM(t.h,t.m);
 $("clock").value = t.h*60+t.m;
-const mk=MARKETS.AE, open = !mk.weekend.includes(t.dow) && t.h>=9 && t.h<18, wp=$("winPill");
-wp.className = "pill "+(open?"p-ok":"p-warn"); wp.innerHTML = `<span class="d"></span>${open?"Calling open until 6 pm":"Calling closed now"}`;
-const seen = new Set(["AE",...state.leads.map(p=>p.market)].filter(k=>MARKETS[k]));
+const mk=MARKETS[DEFAULT_MK], lt0 = localHourMin(simTime, mk.offset), open = !mk.weekend.includes(lt0.dow) && lt0.h>=mk.start && lt0.h<mk.end, wp=$("winPill");
+wp.className = "pill "+(open?"p-ok":"p-warn"); wp.innerHTML = `<span class="d"></span>${open?`Calling open in ${mk.name}`:`Calling closed in ${mk.name}`}`;
+const seen = new Set([DEFAULT_MK,...state.leads.map(p=>p.market)].filter(k=>MARKETS[k]&&!MARKETS[k].excluded));
 $("windowPills").innerHTML = [...seen].map(k=>{
 const m = MARKETS[k], lt = localHourMin(simTime, m.offset), mins = lt.h*60+lt.m, o = !m.weekend.includes(lt.dow) && mins>=m.start*60 && mins<m.end*60;
 return `<span class="pill ${o?"p-ok":"p-bad"}"><span class="d"></span>${m.name} ${fmtHM(lt.h,lt.m)}</span>`;
@@ -853,7 +880,7 @@ $("queue").innerHTML = (shown.length ? shown.map(({p, g})=>{
 const status = g.ok ? `<span class="pill p-ok"><span class="d"></span>Cleared to call</span>` :
 `<div class="reasons">${g.fails.map(f=>`<span class="pill ${/outside|tried|Weekly|spoke|Weekend|booked/i.test(f.text)?"p-warn":"p-bad"}">${esc(f.text)}</span>`).join("")}</div>`;
 return `<tr data-id="${esc(p.id)}" class="${p.id===selectedId?"sel":""}">
-<td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.company)}</b>${qflag(p)}<small>${esc(isPerson(p)?p.name+(p.role?", "+p.role:""):(p.role||"Clinic manager"))}</small><small class="mono">${esc(p.phone)} · ${p.lang==="ar"?"Arabic":"English"} · ${esc(p.city?p.city+", ":"")}${(MARKETS[p.market]||MARKETS.AE).name}</small></div></div></td>
+<td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.company)}</b>${qflag(p)}<small>${esc(isPerson(p)?p.name+(p.role?", "+p.role:""):(p.role||"Clinic manager"))}</small><small class="mono">${esc(p.phone)} · ${p.lang==="ar"?"Arabic":"English"} · ${esc(p.city?p.city+", ":"")}${(MARKETS[p.market]||MARKETS[DEFAULT_MK]).name}</small></div></div></td>
 <td class="qc qc-have">${haveCell(p)}</td><td class="qc">${proposeCell(p)}</td><td class="qc">${enhanceCell(p)}</td><td class="qc qc-rev">${reviewsCell(p)}</td>
 <td>${status}<span class="cellsub"><span class="pill ${STATUS[p.status||"new"][1]}">${STATUS[p.status||"new"][0]}</span></span></td>
 <td style="text-align:right"><button type="button" class="btn btn-sm ${g.ok?"btn-primary":""}" data-call="${esc(p.id)}" ${call||!g.ok?"disabled":""}>${ICON.phone}Call</button></td></tr>
@@ -903,16 +930,16 @@ const f = $("profileForm"); for (const k in DEFAULT_PROFILE){ if (f.elements[k] 
 $("brandName").textContent = profile.business_name || profile.freelancer_name || "Clinic Growth";
 $("agentNameBar").textContent = profile.agent_name || "Noor";
 $("footName").textContent = `${profile.business_name||""} · Clinic prospecting by ${profile.agent_name||"Noor"}`;
-$("heroEyebrow").textContent = `${profile.business_name||""} · ${profile.freelancer_title||""} · GCC`;
+$("heroEyebrow").textContent = `${profile.business_name||""} · ${profile.freelancer_title||""} · Worldwide, excl. UAE`;
 $("callerId").textContent = "Caller ID " + (profile.freelancer_phone||"");
-$("openEn").textContent = openingLine({name:"Clinic manager",lang:"en",campaign:"dental",company:"Marina Bright Dental",market:"AE"});
+$("openEn").textContent = openingLine({name:"Clinic manager",lang:"en",campaign:"dental",company:"Marina Bright Dental",market:"SA"});
 $("openAr").textContent = openingLine({name:"Dr. Faisal",nameAr:"د. فيصل",lang:"ar",campaign:"dental",company:"عيادة لؤلؤة الابتسامة",market:"SA"});
-$("openIn").textContent = openingLine({name:"Dr. Lina Haddad",lang:"en",campaign:"inbound",company:"Smile Studio",market:"AE"});
+$("openIn").textContent = openingLine({name:"Dr. Lina Haddad",lang:"en",campaign:"inbound",company:"Smile Studio",market:"GB"});
 $("openFu").textContent = openingLine({name:"Dr. Khalid",lang:"en",campaign:"proposal",company:"Jeddah Dental Care",market:"SA"});
 }
 
 
-function timeOfDay(p){ const mk = MARKETS[p.market]||MARKETS.AE, h = localHourMin(simTime, mk.offset).h; return h<12?"morning":"afternoon"; }
+function timeOfDay(p){ const mk = MARKETS[p.market]||MARKETS[DEFAULT_MK], h = localHourMin(simTime, mk.offset).h; return h<12?"morning":"afternoon"; }
 function isPerson(p){ return p.name && !/^(reception|clinic manager|front desk)$/i.test(p.name.trim()); }
 function openingLine(p){
 const P = profile, ag = P.agent_name||"Noor", fn = P.freelancer_name||"our team", biz = P.business_name||"our team", co = p.company||"your clinic";
@@ -929,11 +956,11 @@ if (p.campaign==="proposal") return `${hi} I'm just following up on the proposal
 return `${hi} We help clinics like ${co} answer every patient call and WhatsApp and book more appointments. Could I speak with ${who}, or whoever looks after marketing at the clinic?`;
 }
 function localMidnight(ms, off){ const d = new Date(ms + off*36e5); d.setUTCHours(0,0,0,0); return d.getTime() - off*36e5; }
-function fmtLocal(ms, market){ const mk = MARKETS[market]||MARKETS.AE, d = new Date(ms + mk.offset*36e5);
+function fmtLocal(ms, market){ const mk = MARKETS[market]||MARKETS[DEFAULT_MK], d = new Date(ms + mk.offset*36e5);
 const wd = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getUTCDay()], mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()];
-return `${wd} ${d.getUTCDate()} ${mo}, ${fmtHM(d.getUTCHours(), d.getUTCMinutes())} ${TZNAME[market]||"UAE time"}`; }
+return `${wd} ${d.getUTCDate()} ${mo}, ${fmtHM(d.getUTCHours(), d.getUTCMinutes())} ${TZNAME[market]||"local time"}`; }
 function slotsFrom(now, market){
-const mk = MARKETS[market]||MARKETS.AE, out=[], times=[[10,0],[11,30],[13,0],[16,0]]; let d = localMidnight(now, mk.offset)+DAY, i=0;
+const mk = MARKETS[market]||MARKETS[DEFAULT_MK], out=[], times=[[10,0],[11,30],[13,0],[16,0]]; let d = localMidnight(now, mk.offset)+DAY, i=0;
 while (out.length<5 && i<14){ const dow = new Date(d+mk.offset*36e5).getUTCDay();
 if (!mk.weekend.includes(dow)){ const t = times[(out.length+i)%times.length], at = d + t[0]*36e5 + t[1]*6e4; out.push({at, label:fmtLocal(at, market)}); }
 d+=DAY; i++; }
@@ -1005,8 +1032,8 @@ ${["proposed","confirmed"].includes(m.status)?`<select class="btn btn-sm" data-m
 function openSchedule(leadId){
 const p = state.leads.find(x=>x.id===leadId), f = $("mtgForm");
 f.hidden = false; f.elements.leadId.value = leadId||""; f.elements.clinic.value = p?.company||""; f.elements.attendee.value = p && isPerson(p) ? `${p.name}${p.role?", "+p.role:""}` : "";
-f.elements.email.value = p?.email||""; f.elements.whatsapp.value = ""; f.elements.market.value = p?.market||"AE";
-const sl = slotsFrom(Date.now(), p?.market||"AE")[0], mk = MARKETS[p?.market||"AE"], d = new Date(sl.at + mk.offset*36e5);
+f.elements.email.value = p?.email||""; f.elements.whatsapp.value = ""; f.elements.market.value = p?.market||DEFAULT_MK;
+const sl = slotsFrom(Date.now(), p?.market||DEFAULT_MK)[0], mk = MARKETS[p?.market||DEFAULT_MK], d = new Date(sl.at + mk.offset*36e5);
 f.elements.when.value = `${d.getUTCFullYear()}-${pad2(d.getUTCMonth()+1)}-${pad2(d.getUTCDate())}T${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
 f.scrollIntoView({behavior:"smooth", block:"center"}); f.elements.attendee.focus({preventScroll:true});
 }
@@ -1043,7 +1070,7 @@ function newId(){ return "L"+Date.now().toString(36)+Math.random().toString(36).
 const yes = v => /^(y|yes|true|1|نعم)$/i.test(String(v||"").trim());
 function cleanLead(o){
 const camp = CAMPAIGNS[String(o.campaign||"").trim().toLowerCase()] ? String(o.campaign).trim().toLowerCase() : "dental";
-const mk = MARKETS[String(o.market||"").trim().toUpperCase()] ? String(o.market).trim().toUpperCase() : "AE";
+const mk = MARKETS[String(o.market||"").trim().toUpperCase()] ? String(o.market).trim().toUpperCase() : DEFAULT_MK;
 return normLead({id:newId(), name:String(o.name||"").trim(), company:String(o.company||o.clinic||"").trim(), city:String(o.city||"").trim(), role:String(o.role||"").trim(), industry:String(o.industry||"").trim(),
 phone:String(o.phone||"").trim(), email:String(o.email||"").trim(), market:mk, lang:/^ar/i.test(o.lang||"")?"ar":"en", campaign:camp,
 hook:String(o.hook||"").trim(), context:String(o.context||"").trim(), source:String(o.source||"").trim(),
@@ -1141,7 +1168,7 @@ $("pipe").addEventListener("click", e=>{ const b=e.target.closest("[data-sched]"
 $("newMtgBtn").onclick = ()=>openSchedule(null);
 $("mtgFilter").onchange = renderMeetings;
 $("mtgCancel").onclick = ()=>{ $("mtgForm").hidden = true; };
-$("mtgForm").addEventListener("submit", async e=>{ e.preventDefault(); const f=e.target, mk = MARKETS[f.elements.market.value]||MARKETS.AE;
+$("mtgForm").addEventListener("submit", async e=>{ e.preventDefault(); const f=e.target, mk = MARKETS[f.elements.market.value]||MARKETS[DEFAULT_MK];
 const v = f.elements.when.value; if (!v){ toast("Pick a date and time."); return; }
 const [dd,tt] = v.split("T"), [Y,M,D] = dd.split("-").map(Number), [h,mi] = tt.split(":").map(Number), at = Date.UTC(Y,M-1,D,h,mi) - mk.offset*36e5;
 const m = {id:"m"+Date.now().toString(36)+Math.random().toString(36).slice(2,5), leadId:f.elements.leadId.value||"", clinic:f.elements.clinic.value.trim()||"Clinic", market:f.elements.market.value, at, label:fmtLocal(at, f.elements.market.value), attendee:f.elements.attendee.value.trim(), email:f.elements.email.value.trim(), whatsapp:f.elements.whatsapp.value.trim(), format:f.elements.format.value, status:f.elements.confirmed.checked?"confirmed":"proposed", source:"manual", createdAt:Date.now()};
@@ -1164,7 +1191,7 @@ if (live && db){ try{ await db.doc("settings/profile").set({...profile}); $("pro
 else { try{ localStorage.setItem("flc_profile", JSON.stringify(profile)); }catch(err){} $("profileNote").textContent="Saved for this browser."; }
 renderProfile(); renderTranscriptEmpty(); });
 function fillSelects(){ const f=$("tab-add");
-f.elements.market.innerHTML = Object.entries(MARKETS).map(([k,m])=>`<option value="${k}">${m.name}</option>`).join("");
+f.elements.market.innerHTML = callableMarkets().map(([k,m])=>`<option value="${k}">${m.name}</option>`).join("");
 $("mtgForm").elements.market.innerHTML = f.elements.market.innerHTML;
 f.elements.campaign.innerHTML = Object.entries(CAMPAIGNS).map(([k,c])=>`<option value="${k}" ${k===activeCamp?"selected":""}>${c.name}</option>`).join(""); }
 if ("speechSynthesis" in window){ try{ speechSynthesis.getVoices(); }catch(e){} } else { $("voiceTog").checked=false; $("voiceTog").disabled=true; }
@@ -1189,7 +1216,7 @@ const LEAD_COLS = ["name","company","city","role","industry","phone","email","we
 const ms = v => v ? Date.parse(v) : null;
 function leadToRow(id, d){ const r = {id}; for (const k of LEAD_COLS) if (k in d) r[k] = d[k]; if ("nameAr" in d) r.name_ar = d.nameAr || null; if ("optedOut" in d) r.opted_out = !!d.optedOut; if (r.score!==undefined && r.score!==null) r.score = Math.round(r.score); return r; }
 function rowToLead(r){ const o = {...r}; o.nameAr = r.name_ar || ""; o.optedOut = !!r.opted_out; o.createdAt = ms(r.created_at); delete o.name_ar; delete o.opted_out; delete o.created_at; delete o.updated_at; return o; }
-function meetingToRow(id, d){ return {id, lead_id:d.leadId||null, clinic:d.clinic||"Clinic", market:d.market||"AE", at:d.at?new Date(d.at).toISOString():null, label:d.label||null, attendee:d.attendee||null, email:d.email||null, whatsapp:d.whatsapp||null, format:d.format||"online", status:d.status||"confirmed", source:d.source||"manual"}; }
+function meetingToRow(id, d){ return {id, lead_id:d.leadId||null, clinic:d.clinic||"Clinic", market:d.market||DEFAULT_MK, at:d.at?new Date(d.at).toISOString():null, label:d.label||null, attendee:d.attendee||null, email:d.email||null, whatsapp:d.whatsapp||null, format:d.format||"online", status:d.status||"confirmed", source:d.source||"manual"}; }
 function rowToMeeting(r){ return {leadId:r.lead_id, clinic:r.clinic, market:r.market, at:ms(r.at), label:r.label || (r.at?fmtLocal(ms(r.at), r.market):""), attendee:r.attendee, email:r.email, whatsapp:r.whatsapp, format:r.format, status:r.status, source:r.source, createdAt:ms(r.created_at)}; }
 const LIVE_OUTCOME = r => r.status==="initiated"||r.status==="in_progress" ? "calling" : r.status==="failed" ? "failed" : (r.outcome || "ended");
 function rowToCall(r){
@@ -1243,7 +1270,7 @@ for (const p of state.leads) p.attempts = state.log.filter(l=>l.pid===p.id && !l
 }
 // ---- accounts dashboard ----
 let syncRuns = [];
-const MKORDER = ["AE","SA","QA","KW","BH","OM"];
+const MKORDER = Object.keys(MARKETS);
 function ago(ms){ const m = Math.round((Date.now()-ms)/60000); if (m < 1) return "just now"; if (m < 60) return m+" min ago"; const h = Math.round(m/60); if (h < 36) return h+" h ago"; return Math.round(h/24)+" days ago"; }
 function renderAccounts(){
 const L = state.leads, called = new Set(state.log.filter(l=>!l.test).map(l=>l.pid));
@@ -1334,9 +1361,9 @@ const nameKey = s=>String(s||"").toLowerCase().replace(/\b(clinic|clinics|center
 async function osmSearch(q, mk){
   const country = (MARKETS[mk]||{}).name || mk;
   const place = q.replace(/\b(dental|dentist|dentists|clinic|clinics|medical|centre|center|aesthetic|derma\w*|skin|cosmetic|doctor|doctors|polyclinic|in|near)\b/gi," ").replace(/\s+/g," ").trim() || country;
-  const C0 = {AE:[24.4,54.4],SA:[24.7,46.7],QA:[25.3,51.5],KW:[29.3,47.9],BH:[26.1,50.55],OM:[23.6,58.4]}[mk] || [24.4,54.4];
+  const C0 = (MARKETS[mk]||{}).center || [24.7,46.7], CC = (MARKETS[mk]||{}).cc || mk;
   const ph = await fetch(`https://photon.komoot.io/api/?limit=10&layer=district&layer=locality&layer=city&layer=county&layer=state&lat=${C0[0]}&lon=${C0[1]}&q=${encodeURIComponent(place)}`).then(r=>r.json());
-  const f = (ph.features||[]).find(x=>String(x.properties?.countrycode||"").toUpperCase()===mk);
+  const f = (ph.features||[]).find(x=>String(x.properties?.countrycode||"").toUpperCase()===CC);
   if (!f) throw new Error(`Couldn't find "${place}" in ${country}. Try a city or area name.`);
   const [lon,lat] = f.geometry.coordinates, ex = f.properties.extent, r0 = /city|state|county/.test(f.properties.type||"") ? .12 : .02;
   let [s1,n1,w1,e1] = ex ? [ex[3],ex[1],ex[0],ex[2]] : [lat-r0,lat+r0,lon-r0,lon+r0];
@@ -1577,7 +1604,7 @@ setInterval(()=>{ simTime = Date.now(); renderClock(); }, 30000);
 }
 simTime = Date.now();
 fillSelects(); renderRules(); renderProfile();
-$("searchMk").innerHTML = Object.entries(MARKETS).map(([k,m])=>`<option value="${k}">${esc(m.name)}</option>`).join("");
+$("searchMk").innerHTML = callableMarkets().map(([k,m])=>`<option value="${k}">${esc(m.name)}</option>`).join("");
 sb.auth.getSession().then(({data})=>boot(data.session));
 sb.auth.onAuthStateChange((_e, session)=>{ if (session) boot(session); });
 </script>
