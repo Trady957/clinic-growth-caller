@@ -1842,7 +1842,7 @@ async function reportPdfBlob(p){
   } finally { f.remove(); }
 }
 async function waSendReport(p, btn){
-  const win = window.open("", "_blank"); // opened now, so the browser doesn't block it after the upload
+  const win = WA_EMBEDDED ? null : window.open("", "_blank"); // opened now, so the browser doesn't block it after the upload
   const label = btn ? btn.textContent : ""; if (btn){ btn.disabled = true; btn.textContent = "Preparing report…"; }
   try {
     if (!p.report){ if (btn) btn.textContent = "Scanning the clinic…"; const ok = await deepScan(p); if (!ok || !p.report) throw new Error("the scan didn't finish"); }
@@ -1869,21 +1869,24 @@ async function waSendReport(p, btn){
 function waUrl(p, text){ return `https://api.whatsapp.com/send?phone=${waNum(p.phone)}&text=${encodeURIComponent(text)}`; }
 // Opens WhatsApp, and always shows a panel with the message and other ways to open it (copy, WhatsApp Web, the app),
 // because some browsers and in-app panes block new windows or wa.me links.
+const WA_EMBEDDED = /Electron|Claude/i.test(navigator.userAgent);
 function waOpen(p, text, win){
   const n = waNum(p.phone), t = encodeURIComponent(text);
   const links = { web:`https://web.whatsapp.com/send?phone=${n}&text=${t}`, app:`whatsapp://send?phone=${n}&text=${t}`, wame:`https://api.whatsapp.com/send?phone=${n}&text=${t}` };
-  try { if (win && !win.closed) win.location.href = links.wame; else window.open(links.wame, "_blank", "noopener"); } catch(e){}
+  // Inside the Claude app's browser (an embedded browser WhatsApp Web refuses), hand off to the WhatsApp desktop app instead.
+  if (WA_EMBEDDED){ try { win && win.close(); } catch(e){} try { location.href = links.app; } catch(e){} }
+  else { try { if (win && !win.closed) win.location.href = links.wame; else window.open(links.wame, "_blank", "noopener"); } catch(e){} }
   document.getElementById("waPanel")?.remove();
   const d = document.createElement("div"); d.id = "waPanel";
   d.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
   d.innerHTML = `<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);font:14px system-ui">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>WhatsApp to ${esc(p.company)} · +${n}</b><button type="button" class="btn btn-sm" data-wp="close">Close</button></div>
-    <p class="muted" style="margin:0 0 8px;font-size:12px">If WhatsApp didn't open, copy the message or use one of the buttons below.</p>
+    <p class="muted" style="margin:0 0 8px;font-size:12px">${WA_EMBEDDED ? "WhatsApp Web doesn't work inside the Claude app, so this opens the WhatsApp desktop app. If it doesn't open, install WhatsApp for Mac/Windows, or copy the message." : "If WhatsApp didn't open, copy the message or use one of the buttons below."}</p>
     <textarea readonly style="width:100%;height:220px;font:13px system-ui;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box" dir="auto">${esc(text)}</textarea>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
-      <button type="button" class="btn btn-primary btn-sm" data-wp="copy">Copy message</button>
+      <a class="btn btn-primary btn-sm" href="${links.app}">Open WhatsApp app</a>
+      <button type="button" class="btn btn-sm" data-wp="copy">Copy message</button>
       <a class="btn btn-sm" href="${links.web}" target="_blank" rel="noopener">Open WhatsApp Web</a>
-      <a class="btn btn-sm" href="${links.app}">Open WhatsApp app</a>
       <a class="btn btn-sm" href="${links.wame}" target="_blank" rel="noopener">Open WhatsApp link</a>
     </div></div>`;
   d.addEventListener("click", async e=>{ const k = e.target.dataset?.wp;
