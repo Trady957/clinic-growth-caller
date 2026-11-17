@@ -1930,7 +1930,16 @@ async function waMark(p, kind){
   if (kind==="replied") return waSave(p, { wa_status:"replied", wa_next_at:null, status: ["booked","hot"].includes(p.status) ? p.status : "hot", next:"Replied on WhatsApp: answer and book the demo" }, { event:"replied" });
   if (kind==="booked"){ await waSave(p, { wa_status:"booked", wa_next_at:null }, { event:"booked" }); openSchedule(p.id); location.hash = "#meetings"; return; }
   if (kind==="nowa") return waSave(p, { wa_status:"no_whatsapp", wa_next_at:null }, { event:"no_whatsapp" });
+  if (kind==="nowa_call"){ await waSave(p, { wa_status:"no_whatsapp", wa_next_at:null, next:"Not on WhatsApp: call directly" }, { event:"no_whatsapp" }); return waGoCall(p); }
+  if (kind==="call") return waGoCall(p);
   if (kind==="stop"){ if (!confirm(`${p.company} asked not to be contacted?\n\nThis stops WhatsApp, calls and emails to them.`)) return; return waSave(p, { wa_status:"stopped", wa_next_at:null, opted_out:true, optedOut:true, next:"Asked not to be contacted" }, { event:"stopped" }); }
+}
+function waGoCall(p){
+  selectedId = p.id; if (p.campaign) activeCamp = p.campaign;
+  renderAll(); location.hash = "#calls";
+  setTimeout(()=>$("callee")?.scrollIntoView({behavior:"smooth", block:"center"}), 60);
+  const g = checkLead(p, p.campaign, simTime);
+  toast(g.ok ? `${p.company} is open in the caller: press Call now.` : `${p.company} is open in the caller. Not callable right now: ${g.checks.filter(c=>!c.ok).map(c=>c.text).join("; ")}`);
 }
 function renderWa(){
   if (!$("waRows")) return;
@@ -1953,12 +1962,13 @@ function renderWa(){
 <td><select class="btn btn-sm" data-wafocus="${esc(p.id)}">${Object.entries(WA_FOCUS).map(([k,v])=>`<option value="${k}" ${k===f?"selected":""}>${v}</option>`).join("")}</select><span class="cellsub">${esc(waPick(p).map(n=>WA_T.en.find[n.k](n)).join("; "))}${p.report?" · from report":" · quick scan only"}</span></td>
 <td dir="auto" style="white-space:pre-wrap;font-size:12.5px;max-width:520px">${p.wa_status==="replied" ? `<span class="muted">Reply with a ready answer:</span>` : `<span class="cellsub">${esc(WA_STEP[step-1])}</span>${esc(msg)}`}</td>
 <td style="text-align:right;white-space:nowrap"><div class="leadbar" style="justify-content:flex-end;flex-wrap:wrap;gap:4px">
-${p.wa_status==="replied" ? "" : `<button type="button" class="btn btn-sm btn-primary" data-wasend="${esc(p.id)}">Open WhatsApp</button>`}
+${p.quality?.phone_type==="mobile" ? "" : `<button type="button" class="btn btn-sm btn-primary" data-wamark="call" data-id="${esc(p.id)}" title="Landline numbers usually aren't on WhatsApp. Opens this clinic in the caller.">📞 Landline: call directly</button>`}
+${p.wa_status==="replied" ? "" : `<button type="button" class="btn btn-sm ${p.quality?.phone_type==="mobile"?"btn-primary":""}" data-wasend="${esc(p.id)}">Open WhatsApp</button>`}
 <select class="btn btn-sm" data-wareply="${esc(p.id)}" aria-label="Send a ready reply"><option value="">Reply with…</option><option value="details">More details</option><option value="price">Price question</option><option value="who">Who are you?</option><option value="manager">Ask for the manager</option><option value="book">Book the call</option><option value="report">Send the report (PDF)</option><option value="no">Not interested (close)</option></select>
 <button type="button" class="btn btn-sm" data-wareport="${esc(p.id)}" title="Makes the clinic's growth report as a PDF and opens WhatsApp with the link">Send report (PDF)</button>
 <button type="button" class="btn btn-sm" data-wamark="replied" data-id="${esc(p.id)}">They replied</button>
 <button type="button" class="btn btn-sm" data-wamark="booked" data-id="${esc(p.id)}">Booked</button>
-<button type="button" class="btn btn-sm btn-ghost" data-wamark="nowa" data-id="${esc(p.id)}" title="The number isn't on WhatsApp">No WhatsApp</button>
+<button type="button" class="btn btn-sm btn-ghost" data-wamark="nowa_call" data-id="${esc(p.id)}" title="The number isn't on WhatsApp: takes it out of the WhatsApp queue and opens it in the caller">No WhatsApp → call</button>
 <button type="button" class="btn btn-sm btn-ghost" data-wamark="stop" data-id="${esc(p.id)}">Stop</button></div></td></tr>`; }).join("")
     : `<tr><td colspan="4" class="muted">${filter==="due" ? "Nothing due right now. New first messages and follow-ups appear here each day." : "No clinics here yet."}</td></tr>`;
   const byId = id => state.leads.find(x=>x.id===id);
@@ -2102,7 +2112,7 @@ ${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.
 </div>
 <div class="leadbar" style="justify-content:center;margin-top:6px">
 <button type="button" class="btn btn-sm" id="webCallBtn" title="Talk to the AI caller through your microphone, playing the clinic. Free: no phone line is used.">${webCall?"End browser call":"Free browser test (mic)"}</button>
-${waNum(p.phone)?(waEligible(p)?`<button type="button" class="btn btn-sm" id="waCalleeBtn" title="Opens WhatsApp with the next message of this clinic's sequence and schedules the follow-up.">WhatsApp: ${p.wa_step?"next message":"first message"}</button><button type="button" class="btn btn-sm" id="waRptBtn" title="Makes the clinic's growth report as a PDF and opens WhatsApp with the link">Send report (PDF)</button>`:`<a class="btn btn-sm" href="https://wa.me/${waNum(p.phone)}" target="_blank" rel="noopener" title="Opens a WhatsApp chat. First messages go only to calls-first countries or clinics that already engaged.">WhatsApp chat / call</a>`):""}
+${waNum(p.phone)?(waEligible(p)?`<button type="button" class="btn btn-sm" id="waCalleeBtn" title="Opens WhatsApp with the next message of this clinic's sequence and schedules the follow-up.">WhatsApp: ${p.wa_step?"next message":"first message"}</button><button type="button" class="btn btn-sm" id="waRptBtn" title="Makes the clinic's growth report as a PDF and opens WhatsApp with the link">Send report (PDF)</button><button type="button" class="btn btn-sm btn-ghost" id="waNoBtn" title="This number isn't on WhatsApp (or is a landline): stop WhatsApp for it and call instead">No WhatsApp / landline</button>`:`<a class="btn btn-sm" href="https://wa.me/${waNum(p.phone)}" target="_blank" rel="noopener" title="Opens a WhatsApp chat. First messages go only to calls-first countries or clinics that already engaged.">WhatsApp chat / call</a>`):""}
 </div>
 ${(MARKETS[p.market]||{}).nanp ? nanpPanel(p) : ""}
 ${hasTestCall()?"":`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Run a test call to your own phone first. "Call now" asks you to confirm until one test has finished.</p>`}`}`;
@@ -2111,6 +2121,7 @@ const t = $("testCallBtn"); if (t) t.onclick = ()=>startCall(p, testNum || "your
 const w = $("webCallBtn"); if (w) w.onclick = ()=> webCall ? endWebCall() : startWebCall(p);
 const wb = $("waCalleeBtn"); if (wb) wb.onclick = ()=>waSend(p);
 const wr = $("waRptBtn"); if (wr) wr.onclick = ()=>waSendReport(p, wr);
+const nw = $("waNoBtn"); if (nw) nw.onclick = async ()=>{ await waSave(p, { wa_status:"no_whatsapp", wa_next_at:null, next:"Not on WhatsApp: call directly" }, { event:"no_whatsapp" }); toast(`${p.company} marked: no WhatsApp. Call them with "Call now".`); renderAll(); };
 document.querySelectorAll("[data-nanp]").forEach(x=>x.onclick = async ()=>{ const k = x.dataset.nanp, a = {...(p.audit||{})};
 if (k==="landline"){ if (!confirm(`Confirm ${p.phone} is ${p.company}'s business landline (not a mobile)?
 
