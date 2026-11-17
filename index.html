@@ -1696,7 +1696,7 @@ const WA_T = {
     hi:(c,P)=>`Hi ${c} team 👋 ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"} here.`,
     checked:(c,f)=>`We checked ${c} online: ${f}.`,
     and:" and ",
-    cta1:(c)=>`👉 Reply "YES" and I'll send ${c}'s free growth report with the fixes.`,
+    cta1:(c)=>`👉 Reply "YES" and I'll send ${waPoss(c)} free growth report with the fixes.`,
     cta2:{ receptionist:(c,P)=>`👉 Want to hear it answer a call as ${c}? Reply "DEMO"${P.demo_link?` or listen here: ${P.demo_link}`:""}.`,
       website:()=>`👉 Reply "CALL" for a 15-minute walkthrough of what your new site would look like.`,
       website_intl:()=>`👉 Reply "CALL" for a 15-minute walkthrough of what your new site would look like.`,
@@ -1796,8 +1796,16 @@ function waSlots(p, lang){
 }
 function waFindings(p, lang){ const T = WA_T[lang]; return waPick(p).map(n=>T.find[n.k](n)).join(T.and); }
 const WA_ARABIC_MK = ["SA","QA","KW","BH","OM","EG","JO","AE","MA"];
+// A clinic name fit for the message language: "عيادات صادق | Sadig Dental Clinic" -> the Arabic part in Arabic, the Latin part otherwise.
+function waName(p, lang){
+  const full = String(p.company||"").trim(), parts = full.split(/\s*[|｜]\s*|\s+-\s+/).map(x=>x.trim()).filter(Boolean);
+  if (parts.length < 2) return full;
+  const ar = parts.find(x=>/[\u0600-\u06FF]/.test(x)), lat = parts.find(x=>!/[\u0600-\u06FF]/.test(x));
+  return (lang==="ar" ? (ar||lat) : (lat||ar)) || full;
+}
+function waPoss(c){ return /[sS]$/.test(c) ? c+"'" : c+"'s"; }
 function waOne(p, step, lang){
-  const T = WA_T[lang], P = profile, c = p.company, f0 = waFocus(p);
+  const T = WA_T[lang], P = profile, c = waName(p, lang), f0 = waFocus(p);
   const f = lang==="en" && f0==="website" && !WA_ARABIC_MK.includes(p.market) ? "website_intl" : f0;
   if (step===1) return `${T.hi(c,P)}\n${T.checked(c, waFindings(p, lang))}\n${T.fix[f]}\n${T.cta1(c)}`;
   if (step===2) return `${T.quick(c)}\n• ${T.get[f].join("\n• ")}\n${T.cta2[f](c,P)}`;
@@ -1818,7 +1826,7 @@ function waReply(p, kind){
 }
 // ---------- Send the clinic its growth report on WhatsApp (PDF link) ----------
 const WA_RPT = {
-  en:(c,u,P,s)=>`Here is ${c}'s free growth report, as promised 📄\n${u}\nThe top fixes for the clinic are inside.\n👉 ${P.booking_link ? "Pick a time for a 15-minute walkthrough: "+P.booking_link : `${s[0]} or ${s[1]} for a 15-minute walkthrough?`}`,
+  en:(c,u,P,s)=>`Here is ${waPoss(c)} free growth report, as promised 📄\n${u}\nThe top fixes for the clinic are inside.\n👉 ${P.booking_link ? "Pick a time for a 15-minute walkthrough: "+P.booking_link : `${s[0]} or ${s[1]} for a 15-minute walkthrough?`}`,
   ar:(c,u,P,s)=>`كما وعدتكم، هذا تقرير ${c} المجاني 📄\n${u}\nفي داخله أهم الحلول لعيادتكم.\n👈 ${P.booking_link ? "اختاروا وقتاً لشرح التقرير في 15 دقيقة: "+P.booking_link : `هل يناسبكم ${s[0]} أو ${s[1]} لشرح التقرير في 15 دقيقة؟`}`,
   fr:(c,u,P,s)=>`Comme promis, voici le rapport gratuit de ${c} 📄\n${u}\nVous y trouverez les priorités pour votre clinique.\n👉 ${P.booking_link ? "Choisissez un créneau de 15 minutes pour le parcourir : "+P.booking_link : `${s[0]} ou ${s[1]} pour le parcourir en 15 minutes ?`}`,
 };
@@ -1858,7 +1866,7 @@ async function waSendReport(p, btn){
       p.report_pdf_url = url; p.report_pdf_at = Date.now();
       await sb.from("leads").update({report_pdf_url:url}).eq("id", p.id);
     }
-    const text = waLangs(p).map(l=>WA_RPT[l](p.company, url, profile, waSlots(p, l))).join(WA_SEP);
+    const text = waLangs(p).map(l=>WA_RPT[l](waName(p, l), url, profile, waSlots(p, l))).join(WA_SEP);
     waOpen(p, text, win);
     await waSave(p, { wa_status: p.wa_status==="booked" ? "booked" : "replied", wa_next_at: null, status: ["booked"].includes(p.status) ? p.status : "hot", next: "Report sent on WhatsApp: book the walkthrough" }, { event:"report_sent", url });
     toast(`Report ready for ${p.company}. Message with the link is ready.`);
