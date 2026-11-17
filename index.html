@@ -155,7 +155,7 @@
 </div></section>
 <section class="blk" id="whatsapp"><div class="wrap">
   <div class="sec-h"><div><h2>WhatsApp</h2><p>A short, personal sequence per clinic, built around what each clinic needs most: an AI receptionist, a website, or marketing. Each day's queue is ready; one tap opens WhatsApp with the message written, and the next follow-up is scheduled.</p></div>
-    <div class="leadbar"><select id="waFilter" class="btn btn-sm" aria-label="Show"><option value="due">Due today</option><option value="active">In sequence</option><option value="replied">Replied</option><option value="all">All eligible</option></select></div></div>
+    <div class="leadbar"><select id="waFilter" class="btn btn-sm" aria-label="Show"><option value="due">Due today</option><option value="active">In sequence</option><option value="replied">Replied</option><option value="reached">Reached out + replies</option><option value="all">All eligible</option></select></div></div>
   <div class="ops-conn" id="waKpis"></div>
   <div class="glass" style="margin-top:14px">
     <div class="card-h"><div><h3 id="waHead">Today's WhatsApp queue</h3><small id="waSum"></small></div></div>
@@ -990,7 +990,7 @@ $("pipeSum").textContent = `${state.leads.length} leads · ${state.leads.filter(
 $("pipe").innerHTML = rows.length ? rows.map(p=>`<tr data-pipe="${esc(p.id)}"><td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.name)}</b><small>${esc(p.company)}</small><small class="mono">${esc(p.phone)}${p.email?" · "+esc(p.email):""}</small></div></div></td>
 <td>${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}<span class="cellsub">${esc(p.source||"")}</span></td>
 <td><select data-status="${esc(p.id)}" class="btn btn-sm" aria-label="Status for ${esc(p.name)}">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${(p.status||"new")===k?"selected":""}>${v[0]}</option>`).join("")}</select></td>
-<td>${scoreHtml(p.score)}</td><td>${esc(p.next||"")}</td>
+<td>${scoreHtml(p.score)}</td><td>${esc(p.next||"")}${waReplyHtml(p, true)}</td>
 <td style="text-align:right;white-space:nowrap"><button type="button" class="btn btn-sm" data-sched="${esc(p.id)}">Schedule</button> <button type="button" class="btn btn-sm btn-ghost" data-del="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">Remove</button></td></tr>`).join("")
 : `<tr><td colspan="6" class="muted" style="cursor:default">No leads match.</td></tr>`;
 }
@@ -1693,6 +1693,8 @@ const WA_T = {
       website_intl:"We build fast clinic websites with online booking and WhatsApp.",
       seo:"We fix your Google ranking so nearby patients find you first.",
       marketing:"We run ads, content and a review system that bring new patients every month." },
+    also:{ receptionist:"an AI receptionist that answers calls and WhatsApp 24/7", website:"clinic websites with online booking", mkt:"marketing and Google ranking that bring new patients", say:(a,b)=>`We also do ${a} and ${b}.` },
+    optout:"Not relevant? Reply STOP and I won't message again.",
     hi:(c,P)=>`Hi ${c} team 👋 ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"} here.`,
     checked:(c,f)=>`We checked ${c} online: ${f}.`,
     and:" and ",
@@ -1729,6 +1731,8 @@ const WA_T = {
       website:"نصمّم مواقع سريعة للعيادات بالعربية والإنجليزية مع حجز إلكتروني وواتساب.",
       seo:"نحسّن ظهوركم في جوجل ليجدكم المرضى القريبون أولاً.",
       marketing:"ندير الإعلانات والمحتوى ونظام التقييمات لجلب مرضى جدد كل شهر." },
+    also:{ receptionist:"موظف استقبال ذكي يرد على المكالمات وواتساب على مدار الساعة", website:"مواقع للعيادات مع حجز إلكتروني", mkt:"التسويق وتحسين الظهور على جوجل لجلب مرضى جدد", say:(a,b)=>`ونقدّم أيضاً ${a}، و${b}.` },
+    optout:"غير مهتمين؟ ردّوا بـ «توقف» ولن أراسلكم مجدداً.",
     hi:(c,P)=>`مرحباً فريق ${c} 👋 معكم ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}.`,
     checked:(c,f)=>`راجعنا حضور ${c} على الإنترنت: ${f}.`,
     and:"، و",
@@ -1763,6 +1767,8 @@ const WA_T = {
       website:"Nous créons des sites rapides pour cliniques, avec réservation en ligne et WhatsApp.",
       seo:"Nous améliorons votre référencement Google pour que les patients proches vous trouvent en premier.",
       marketing:"Nous gérons publicité, contenus et avis pour amener de nouveaux patients chaque mois." },
+    also:{ receptionist:"un réceptionniste IA qui répond aux appels et à WhatsApp 24h/24", website:"des sites de clinique avec prise de RDV en ligne", mkt:"du marketing et du référencement Google qui amènent de nouveaux patients", say:(a,b)=>`Nous proposons aussi ${a}, et ${b}.` },
+    optout:"Pas intéressés ? Répondez STOP et je ne vous écrirai plus.",
     hi:(c,P)=>`Bonjour l'équipe ${c} 👋 Ici ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}.`,
     checked:(c,f)=>`Nous avons vérifié ${c} en ligne : ${f}.`,
     and:" et ",
@@ -1807,7 +1813,12 @@ function waPoss(c){ return /[sS]$/.test(c) ? c+"'" : c+"'s"; }
 function waOne(p, step, lang){
   const T = WA_T[lang], P = profile, c = waName(p, lang), f0 = waFocus(p);
   const f = lang==="en" && f0==="website" && !WA_ARABIC_MK.includes(p.market) ? "website_intl" : f0;
-  if (step===1) return `${T.hi(c,P)}\n${T.checked(c, waFindings(p, lang))}\n${T.fix[f]}\n${T.cta1(c)}`;
+  if (step===1){
+    // Lead with the report's finding and its fix, then name the other two services in one line.
+    const grp = f0==="receptionist" ? "receptionist" : (f0==="website" ? "website" : "mkt"), others = ["receptionist","website","mkt"].filter(x=>x!==grp);
+    const cold = (waCfg.wa_cold_markets||[]).includes(p.market) || waEngaged(p);
+    return `${T.hi(c,P)}\n${T.checked(c, waFindings(p, lang))}\n${T.fix[f]}\n${T.also.say(T.also[others[0]], T.also[others[1]])}\n${T.cta1(c)}${cold ? "" : "\n"+T.optout}`;
+  }
   if (step===2) return `${T.quick(c)}\n• ${T.get[f].join("\n• ")}\n${T.cta2[f](c,P)}`;
   if (step===3){ const s = waSlots(p, lang); return `${T.offer}\n${P.booking_link ? T.pick(P.booking_link) : T.slots(s[0], s[1])}`; }
   return T.last(c);
@@ -1949,6 +1960,34 @@ function waGoCall(p){
   const g = checkLead(p, p.campaign, simTime);
   toast(g.ok ? `${p.company} is open in the caller: press Call now.` : `${p.company} is open in the caller. Not callable right now: ${g.checks.filter(c=>!c.ok).map(c=>c.text).join("; ")}`);
 }
+const WA_REPLY = {
+  auto_reply:["Auto-reply only","p-mute","Wait: the follow-up sequence continues",0],
+  hours:["Sent working hours (auto)","p-mute","Wait: the follow-up sequence continues",0],
+  question:["Asked a question","p-warn","Answer and offer the free report",0],
+  interested:["Interested","p-ok","Send the report and book the call",0],
+  not_interested:["Not interested","p-bad","Try again in 3 months, or call the manager",90],
+  later:["Asked to talk later","p-warn","Check back in 3 months",90],
+  wrong_number:["Wrong number","p-bad","Find the right number or call the clinic",0],
+  no_whatsapp:["Not on WhatsApp","p-bad","Call directly",0],
+};
+function waStage(p){ const n = p.wa_step||0; return n ? (n===1 ? "First message sent" : n>=4 ? "Last message sent (4 of 4)" : `Follow-up ${n-1} sent (${n} of 4)`) : ""; }
+function waReplyHtml(p, compact){
+  const st = waStage(p), k = WA_REPLY[p.wa_reply_kind];
+  if (!st && !k) return "";
+  const when = p.wa_reply_at ? new Date(p.wa_reply_at).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "";
+  const retry = p.wa_retry_at ? ` · retry ${new Date(p.wa_retry_at).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}` : "";
+  return `<span class="cellsub">💬 WhatsApp: ${esc(st||"reached")}${p.wa_last_at?` · ${new Date(p.wa_last_at).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}`:""}</span>${k?`<span class="pill ${k[1]}" title="${esc(p.wa_reply_text||"")}"><span class="d"></span>${esc(k[0])}${when?" · "+when:""}</span>${!compact&&p.wa_reply_text?`<span class="cellsub" dir="auto" style="font-style:italic">“${esc(String(p.wa_reply_text).slice(0,140))}”</span>`:""}<span class="cellsub">Next: ${esc(k[2])}${retry}</span>`:""}`;
+}
+async function waSetReply(p, kind, text){
+  const k = WA_REPLY[kind]; if (!k) return;
+  const upd = { wa_reply_kind:kind, wa_reply_text:text||null, wa_reply_at:new Date().toISOString(), wa_retry_at: k[3] ? new Date(Date.now()+k[3]*DAY).toISOString() : null };
+  if (["interested","question"].includes(kind)) Object.assign(upd, { wa_status:"replied", wa_next_at:null, status: p.status==="booked" ? "booked" : "hot", next: k[2] });
+  else if (["not_interested","later"].includes(kind)) Object.assign(upd, { wa_status:"stopped", wa_next_at:null, status: p.status==="booked" ? "booked" : "cold", next: k[2] });
+  else if (["wrong_number","no_whatsapp"].includes(kind)) Object.assign(upd, { wa_status:"no_whatsapp", wa_next_at:null, next: k[2] });
+  else Object.assign(upd, { next: k[2] });
+  await waSave(p, upd, { event:"reply", kind, text: text||"" });
+  renderAll();
+}
 function renderWa(){
   if (!$("waRows")) return;
   const Q = waQueue(), filter = $("waFilter").value;
@@ -1959,14 +1998,14 @@ function renderWa(){
     ["In sequence", active.length, "waiting for a reply"],
     ["Replied", replied.length, "answer them and book the demo"],
   ].map(([a,b,c])=>`<div class="glass conn"><b>${a}</b><span style="font-size:22px;font-weight:800">${b}</span><span class="muted">${esc(c)}</span></div>`).join("");
-  let rows = filter==="due" ? [...Q.follow, ...Q.newToday] : filter==="active" ? active : filter==="replied" ? replied : Q.L;
+  let rows = filter==="due" ? [...Q.follow, ...Q.newToday] : filter==="active" ? active : filter==="replied" ? replied : filter==="reached" ? state.leads.filter(p=>p.wa_step>0 || p.wa_reply_kind).sort((a,b)=>Date.parse(b.wa_reply_at||b.wa_last_at||0)-Date.parse(a.wa_reply_at||a.wa_last_at||0)) : Q.L;
   rows = rows.slice(0, 200);
-  $("waHead").textContent = {due:"Today's WhatsApp queue", active:"In sequence", replied:"Replied", all:"All clinics you can WhatsApp"}[filter];
+  $("waHead").textContent = {due:"Today's WhatsApp queue", active:"In sequence", replied:"Replied", reached:"Reached out and their replies", all:"All clinics you can WhatsApp"}[filter];
   $("waSum").textContent = filter==="due" ? `${Q.follow.length} follow-up${Q.follow.length===1?"":"s"} + ${Q.newToday.length} new` : `${rows.length} clinics`;
   $("waRows").innerHTML = rows.length ? rows.map(p=>{
     const step = Math.min(4, (p.wa_step||0)+1), f = waFocus(p), msg = p.wa_status==="replied" ? "" : waMessage(p, step), lang = waLang(p);
     const tag = p.wa_status==="replied" ? `<span class="pill p-ok"><span class="d"></span>Replied</span>` : `<span class="pill p-mute"><span class="d"></span>${p.wa_step ? "Step "+step+" of 4" : "New"}</span>`;
-    return `<tr><td><b>${esc(p.company)}</b><span class="cellsub">${esc((MARKETS[p.market]||{}).name||p.market)} · <span class="mono">${esc(p.phone)}</span>${p.quality?.phone_type==="mobile"?"":" · landline: may not have WhatsApp"}</span>${tag}</td>
+    return `<tr><td><b>${esc(p.company)}</b><span class="cellsub">${esc((MARKETS[p.market]||{}).name||p.market)} · <span class="mono">${esc(p.phone)}</span>${p.quality?.phone_type==="mobile"?"":" · landline: may not have WhatsApp"}</span>${tag}${waReplyHtml(p)}</td>
 <td><select class="btn btn-sm" data-wafocus="${esc(p.id)}">${Object.entries(WA_FOCUS).map(([k,v])=>`<option value="${k}" ${k===f?"selected":""}>${v}</option>`).join("")}</select><span class="cellsub">${esc(waPick(p).map(n=>WA_T.en.find[n.k](n)).join("; "))}${p.report?" · from report":" · quick scan only"}</span></td>
 <td dir="auto" style="white-space:pre-wrap;font-size:12.5px;max-width:520px">${p.wa_status==="replied" ? `<span class="muted">Reply with a ready answer:</span>` : `<span class="cellsub">${esc(WA_STEP[step-1])}</span>${esc(msg)}`}</td>
 <td style="text-align:right;white-space:nowrap"><div class="leadbar" style="justify-content:flex-end;flex-wrap:wrap;gap:4px">
@@ -1977,11 +2016,13 @@ ${p.wa_status==="replied" ? "" : `<button type="button" class="btn btn-sm ${p.qu
 <button type="button" class="btn btn-sm" data-wamark="replied" data-id="${esc(p.id)}">They replied</button>
 <button type="button" class="btn btn-sm" data-wamark="booked" data-id="${esc(p.id)}">Booked</button>
 <button type="button" class="btn btn-sm btn-ghost" data-wamark="nowa_call" data-id="${esc(p.id)}" title="The number isn't on WhatsApp: takes it out of the WhatsApp queue and opens it in the caller">No WhatsApp → call</button>
+<select class="btn btn-sm" data-wareplykind="${esc(p.id)}" aria-label="Log their reply"><option value="">Log their reply…</option>${Object.entries(WA_REPLY).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("")}</select>
 <button type="button" class="btn btn-sm btn-ghost" data-wamark="stop" data-id="${esc(p.id)}">Stop</button></div></td></tr>`; }).join("")
     : `<tr><td colspan="4" class="muted">${filter==="due" ? "Nothing due right now. New first messages and follow-ups appear here each day." : "No clinics here yet."}</td></tr>`;
   const byId = id => state.leads.find(x=>x.id===id);
   document.querySelectorAll("[data-wasend]").forEach(b=>b.onclick = ()=>{ const p = byId(b.dataset.wasend); if (p) waSend(p); });
   document.querySelectorAll("[data-wamark]").forEach(b=>b.onclick = ()=>{ const p = byId(b.dataset.id); if (p) waMark(p, b.dataset.wamark); });
+  document.querySelectorAll("[data-wareplykind]").forEach(sel=>sel.onchange = async ()=>{ const p = byId(sel.dataset.wareplykind), k = sel.value; sel.value = ""; if (!p || !k) return; const t = prompt(`What did ${p.company} reply? (paste their message, optional)`, ""); if (t===null) return; await waSetReply(p, k, t.trim()); toast(`${p.company}: ${WA_REPLY[k][0]}. Next: ${WA_REPLY[k][2]}`); });
   document.querySelectorAll("[data-wareport]").forEach(b=>b.onclick = ()=>{ const p = byId(b.dataset.wareport); if (p) waSendReport(p, b); });
   document.querySelectorAll("[data-wafocus]").forEach(s=>s.onchange = ()=>{ const p = byId(s.dataset.wafocus); if (p) waSave(p, { wa_focus: s.value }, null); });
   document.querySelectorAll("[data-wareply]").forEach(s=>s.onchange = ()=>{ const p = byId(s.dataset.wareply), k = s.value; s.value = ""; if (!p || !k) return;
@@ -2112,7 +2153,7 @@ const testNum = String(profile.test_phone||"").replace(/[^\d+]/g,"");
 $("callee").innerHTML = `<div class="big ${onCall?"ring":""}" style="--c:${avColor(p.id)}">${initials(p.name)}</div>
 <h3>${esc(p.company)}</h3><span class="meta mono">${esc(p.phone)} · ${esc(p.city||"")} · ${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}</span>
 ${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.agent_name||"Noor")} is on the call · results appear here when it ends</span>`:
-`<span class="pill ${g.ok?"p-ok":"p-bad"}"><span class="d"></span>${g.ok?"Cleared to call now":"Blocked by the calling rules"}</span>
+`<span class="pill ${g.ok?"p-ok":"p-bad"}"><span class="d"></span>${g.ok?"Cleared to call now":"Blocked by the calling rules"}</span><div style="text-align:center">${waReplyHtml(p)}</div>
 <div class="gate"><ul>${g.checks.map(c=>`<li><span class="tick ${c.ok?"y":"n"}">${c.ok?"✓":"✕"}</span><span>${esc(c.text)}</span></li>`).join("")}</ul></div>
 <div class="leadbar" style="justify-content:center;margin-top:6px">
 <button type="button" class="btn btn-primary" id="liveCallBtn" ${g.ok&&!callBusy?"":"disabled"}>${ICON.phone}${callBusy?"Starting…":"Call now"}</button>
