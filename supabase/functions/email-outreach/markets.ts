@@ -6,11 +6,12 @@ export type Market = {
   excluded?: boolean; consent?: boolean; nanp?: boolean; tzs?: [number, string][];
 };
 
-const GULF = { start: 9, end: 18, weekend: [5, 6] };
-const WEST = { start: 9, end: 17, weekend: [0, 6] };
+// Morning rule: outreach starts at 9:30 local time on working days, in each clinic's own time zone.
+const GULF = { start: 9.5, end: 18, weekend: [5, 6] };
+const WEST = { start: 9.5, end: 17, weekend: [0, 6] };
 
 export const MARKETS: Record<string, Market> = {
-  AE: { name: "United Arab Emirates", tz: "Asia/Dubai", start: 9, end: 18, weekend: [0, 6], excluded: true },
+  AE: { name: "United Arab Emirates", tz: "Asia/Dubai", start: 9.5, end: 18, weekend: [0, 6], excluded: true },
   SA: { name: "Saudi Arabia", tz: "Asia/Riyadh", ...GULF },
   QA: { name: "Qatar", tz: "Asia/Qatar", ...GULF },
   KW: { name: "Kuwait", tz: "Asia/Kuwait", ...GULF },
@@ -18,7 +19,7 @@ export const MARKETS: Record<string, Market> = {
   OM: { name: "Oman", tz: "Asia/Muscat", ...GULF },
   EG: { name: "Egypt", tz: "Africa/Cairo", ...GULF },
   JO: { name: "Jordan", tz: "Asia/Amman", ...GULF },
-  MA: { name: "Morocco", tz: "Africa/Casablanca", start: 9, end: 18, weekend: [0, 6] },
+  MA: { name: "Morocco", tz: "Africa/Casablanca", start: 9.5, end: 18, weekend: [0, 6] },
   GB: { name: "United Kingdom", tz: "Europe/London", ...WEST, consent: true },
   IE: { name: "Ireland", tz: "Europe/Dublin", ...WEST, consent: true },
   FR: { name: "France", tz: "Europe/Paris", ...WEST, consent: true },

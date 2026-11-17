@@ -344,7 +344,7 @@ function tzOffset(tz, ms){ const d = new Date(ms ?? Date.now()); const p = Objec
   return Math.round((Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute) - Math.floor(d.getTime()/6e4)*6e4)/36e5*4)/4; }
 const GULF_NOTES = ["Conservative defaults until confirmed with an advisor","Identity, AI assistant and recording announced first","Unanswered: max 1 a day, 2 a week; declined: never again for that campaign"];
 const CONSENT_NOTES = ["AI voice calls only after the clinic replied or asked for a call","First touch is an email; record the reply as consent","Check the national do-not-call register before dialling"];
-const mkDef = (o)=>({start:9,end:18,dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,verified:false,consentRequired:false,...o, get offset(){ return tzOffset(this.tz); }});
+const mkDef = (o)=>({start:9.5,end:18,dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,verified:false,consentRequired:false,...o, get offset(){ return tzOffset(this.tz); }});
 const MARKETS = {
 AE:mkDef({name:"UAE (excluded)",cc:"AE",tz:"Asia/Dubai",weekend:[0,6],excluded:true,center:[24.4,54.4],notes:["Not called: UAE telemarketing needs TDRA approval and a licensed local number"],source:"Cabinet Resolutions 56 & 57 of 2024",verified:true}),
 SA:mkDef({name:"Saudi Arabia",cc:"SA",tz:"Asia/Riyadh",weekend:[5,6],center:[24.7,46.7],notes:["Promotional calls need documented consent","Unsubscribe honoured within 24 hours","Window set conservatively to 09:00–18:00"],source:"CST rules; confirm window locally"}),
@@ -352,20 +352,20 @@ QA:mkDef({name:"Qatar",cc:"QA",tz:"Asia/Qatar",weekend:[5,6],center:[25.3,51.5],
 KW:mkDef({name:"Kuwait",cc:"KW",tz:"Asia/Kuwait",weekend:[5,6],center:[29.3,47.9],notes:GULF_NOTES,source:"Conservative default"}),
 BH:mkDef({name:"Bahrain",cc:"BH",tz:"Asia/Bahrain",weekend:[5,6],center:[26.1,50.55],notes:GULF_NOTES,source:"Conservative default"}),
 OM:mkDef({name:"Oman",cc:"OM",tz:"Asia/Muscat",weekend:[5,6],center:[23.6,58.4],notes:GULF_NOTES,source:"Conservative default"}),
-EG:mkDef({name:"Egypt",cc:"EG",tz:"Africa/Cairo",weekend:[5,6],start:10,end:17,center:[30.04,31.24],notes:GULF_NOTES,source:"Conservative default"}),
-JO:mkDef({name:"Jordan",cc:"JO",tz:"Asia/Amman",weekend:[5,6],start:9,end:17,center:[31.95,35.93],notes:GULF_NOTES,source:"Conservative default"}),
-MA:mkDef({name:"Morocco",cc:"MA",tz:"Africa/Casablanca",weekend:[0,6],start:9,end:17,center:[33.57,-7.59],notes:GULF_NOTES,source:"Conservative default"}),
-GB:mkDef({name:"United Kingdom",cc:"GB",tz:"Europe/London",weekend:[0,6],start:9,end:17,consentRequired:true,center:[51.5,-0.12],notes:[...CONSENT_NOTES,"Screen against TPS/CTPS"],source:"PECR reg. 19 (automated calls)"}),
-IE:mkDef({name:"Ireland",cc:"IE",tz:"Europe/Dublin",weekend:[0,6],start:9,end:17,consentRequired:true,center:[53.35,-6.26],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
-FR:mkDef({name:"France",cc:"FR",tz:"Europe/Paris",weekend:[0,6],start:10,end:17,consentRequired:true,center:[48.86,2.35],notes:[...CONSENT_NOTES,"Screen against Bloctel"],source:"ePrivacy art. 13"}),
-BE:mkDef({name:"Belgium",cc:"BE",tz:"Europe/Brussels",weekend:[0,6],start:9,end:17,consentRequired:true,center:[50.85,4.35],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
-DE:mkDef({name:"Germany",cc:"DE",tz:"Europe/Berlin",weekend:[0,6],start:9,end:17,consentRequired:true,center:[52.52,13.4],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
-ES:mkDef({name:"Spain",cc:"ES",tz:"Europe/Madrid",weekend:[0,6],start:9,end:17,consentRequired:true,center:[40.42,-3.7],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
-IT:mkDef({name:"Italy",cc:"IT",tz:"Europe/Rome",weekend:[0,6],start:9,end:17,consentRequired:true,center:[41.9,12.5],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
-NL:mkDef({name:"Netherlands",cc:"NL",tz:"Europe/Amsterdam",weekend:[0,6],start:9,end:17,consentRequired:true,center:[52.37,4.9],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
-US:{name:"United States",cc:"US",center:[39.8,-98.6],offset:-5,tzs:["America/New_York","America/Chicago","America/Denver","America/Los_Angeles"],nanp:true,start:9,end:17,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
+EG:mkDef({name:"Egypt",cc:"EG",tz:"Africa/Cairo",weekend:[5,6],start:9.5,end:17,center:[30.04,31.24],notes:GULF_NOTES,source:"Conservative default"}),
+JO:mkDef({name:"Jordan",cc:"JO",tz:"Asia/Amman",weekend:[5,6],start:9.5,end:17,center:[31.95,35.93],notes:GULF_NOTES,source:"Conservative default"}),
+MA:mkDef({name:"Morocco",cc:"MA",tz:"Africa/Casablanca",weekend:[0,6],start:9.5,end:17,center:[33.57,-7.59],notes:GULF_NOTES,source:"Conservative default"}),
+GB:mkDef({name:"United Kingdom",cc:"GB",tz:"Europe/London",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[51.5,-0.12],notes:[...CONSENT_NOTES,"Screen against TPS/CTPS"],source:"PECR reg. 19 (automated calls)"}),
+IE:mkDef({name:"Ireland",cc:"IE",tz:"Europe/Dublin",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[53.35,-6.26],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+FR:mkDef({name:"France",cc:"FR",tz:"Europe/Paris",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[48.86,2.35],notes:[...CONSENT_NOTES,"Screen against Bloctel"],source:"ePrivacy art. 13"}),
+BE:mkDef({name:"Belgium",cc:"BE",tz:"Europe/Brussels",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[50.85,4.35],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+DE:mkDef({name:"Germany",cc:"DE",tz:"Europe/Berlin",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[52.52,13.4],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+ES:mkDef({name:"Spain",cc:"ES",tz:"Europe/Madrid",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[40.42,-3.7],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+IT:mkDef({name:"Italy",cc:"IT",tz:"Europe/Rome",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[41.9,12.5],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+NL:mkDef({name:"Netherlands",cc:"NL",tz:"Europe/Amsterdam",weekend:[0,6],start:9.5,end:17,consentRequired:true,center:[52.37,4.9],notes:CONSENT_NOTES,source:"ePrivacy art. 13"}),
+US:{name:"United States",cc:"US",center:[39.8,-98.6],offset:-5,tzs:["America/New_York","America/Chicago","America/Denver","America/Los_Angeles"],nanp:true,start:9.5,end:17,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
 notes:["Business landlines only: AI-voice calls to mobiles need prior written consent (TCPA; FCC 2024 ruling on AI voices)","Scrub against the National Do Not Call Registry at least every 31 days","Calls 09:00–17:00 in the clinic's own time zone, weekdays","Identity, AI assistant and recording announced first; some states need all-party consent to record","Honour every do-not-call request immediately"],source:"TCPA / FTC Telemarketing Sales Rule; confirm with counsel",verified:false},
-CA:{name:"Canada",cc:"CA",center:[45.4,-75.7],offset:-5,tzs:["America/Toronto","America/Winnipeg","America/Edmonton","America/Vancouver","America/Halifax"],nanp:true,start:9,end:17,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
+CA:{name:"Canada",cc:"CA",center:[45.4,-75.7],offset:-5,tzs:["America/Toronto","America/Winnipeg","America/Edmonton","America/Vancouver","America/Halifax"],nanp:true,start:9.5,end:17,weekend:[0,6],dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,
 notes:["Business landlines only","Check the National DNCL (CRTC) at least every 31 days and register as a telemarketer","CRTC limits weekday calls to 09:00–21:30; this console uses 09:00–17:00 local","Automated or AI calls for solicitation can need express consent (CRTC ADAD rules): confirm before calling","Identify yourself and who you call for at the start"],source:"CRTC Unsolicited Telecommunications Rules; confirm with counsel",verified:false}
 
 };
@@ -461,7 +461,7 @@ function renderClock(){
 const t = localHourMin(simTime, 4);
 $("clockTxt").textContent = fmtHM(t.h,t.m);
 $("clock").value = t.h*60+t.m;
-const mk=MARKETS[DEFAULT_MK], lt0 = localHourMin(simTime, mk.offset), open = !mk.weekend.includes(lt0.dow) && lt0.h>=mk.start && lt0.h<mk.end, wp=$("winPill");
+const mk=MARKETS[DEFAULT_MK], lt0 = localHourMin(simTime, mk.offset), open = !mk.weekend.includes(lt0.dow) && lt0.h*60+lt0.m>=mk.start*60 && lt0.h<mk.end, wp=$("winPill");
 wp.className = "pill "+(open?"p-ok":"p-warn"); wp.innerHTML = `<span class="d"></span>${open?`Calling open in ${mk.name}`:`Calling closed in ${mk.name}`}`;
 const seen = new Set([DEFAULT_MK,...state.leads.map(p=>p.market)].filter(k=>MARKETS[k]&&!MARKETS[k].excluded));
 $("windowPills").innerHTML = [...seen].map(k=>{
@@ -1924,13 +1924,29 @@ function waEligible(p){
   return (waCfg.wa_cold_markets||[]).includes(p.market) || waEngaged(p);
 }
 const dubaiDayStart = () => { const n = Date.now(); return Math.floor((n + 4*36e5)/DAY)*DAY - 4*36e5; };
+// Morning rule: outreach to a clinic starts at 9:30 in its own time zone, on its working days, before closing.
+const US_TZ = [[-87,"America/New_York"],[-102,"America/Chicago"],[-115,"America/Denver"],[-180,"America/Los_Angeles"]];
+const CA_TZ = [[-66,"America/Halifax"],[-90,"America/Toronto"],[-102,"America/Winnipeg"],[-120,"America/Edmonton"],[-180,"America/Vancouver"]];
+function clinicTz(p){ const M = MARKETS[p.market]; if (!M) return "Asia/Dubai"; const t = p.market==="US" ? US_TZ : p.market==="CA" ? CA_TZ : null;
+  if (t && typeof p.lon === "number") { for (const [lon, tz] of t) if (p.lon >= lon) return tz; } return M.tz || (M.tzs||[])[0] || "Asia/Dubai"; }
+function morningState(p, now){
+  const M = MARKETS[p.market] || {start:9.5,end:18,weekend:[5,6]}, tz = clinicTz(p);
+  const x = Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",hour:"2-digit",minute:"2-digit",weekday:"short"}).formatToParts(new Date(now||Date.now())).map(v=>[v.type,v.value]));
+  const dow = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(x.weekday), mins = (+x.hour%24)*60 + (+x.minute);
+  const open = !M.weekend.includes(dow) && mins >= M.start*60 && mins < M.end*60 - 15;
+  const label = `${String(+x.hour%24).padStart(2,"0")}:${x.minute} in ${tz.split("/").pop().replace("_"," ")}`;
+  return { open, label, why: M.weekend.includes(dow) ? "weekend there" : mins < M.start*60 ? "before 9:30 there" : "after hours there" };
+}
 function waQueue(){
   const now = Date.now(), L = state.leads.filter(waEligible);
   const startedToday = L.filter(p=>(p.wa_log||[]).some(x=>x.step===1 && x.at >= dubaiDayStart())).length;
   const follow = L.filter(p=>p.wa_status==="active" && p.wa_step>=1 && p.wa_step<4 && p.wa_next_at && Date.parse(p.wa_next_at) <= now);
   const fresh = L.filter(p=>!p.wa_step).sort((a,b)=>(b.quality?.phone_type==="mobile")-(a.quality?.phone_type==="mobile") || (waEngaged(b)-waEngaged(a)) || ((["dental","aesthetic"].includes(b.campaign))-(["dental","aesthetic"].includes(a.campaign))));
   const newLeft = Math.max(0, Number(waCfg.wa_daily_new||30) - startedToday);
-  return { L, follow, fresh, newToday: fresh.slice(0, newLeft), startedToday, newLeft };
+  // Only clinics where it's 9:30+ on a working day are offered now; the rest wait for their own morning.
+  const ready = (p)=>morningState(p, now).open;
+  const waiting = [...follow, ...fresh].filter(p=>!ready(p));
+  return { L, follow: follow.filter(ready), fresh: fresh.filter(ready), newToday: fresh.filter(ready).slice(0, newLeft), startedToday, newLeft, waiting };
 }
 async function waSave(p, upd, logItem){
   const log = [...(p.wa_log||[])]; if (logItem) log.push({...logItem, at: Date.now()});
@@ -1997,6 +2013,16 @@ async function waSetReply(p, kind, text){
   await waSave(p, upd, { event:"reply", kind, text: text||"" });
   renderAll();
 }
+// The morning rule, per market: when 9:30 local is in Dubai time today, and whether that market is open right now.
+function morningRuleHtml(Q){
+  const now = Date.now(), dub = (tz)=>{ const off = (tzOffset(tz, now) - tzOffset("Asia/Dubai", now)); const m = Math.round((9.5 - off)*60); const h = ((Math.floor(m/60)%24)+24)%24; return `${String(h).padStart(2,"0")}:${String(((m%60)+60)%60).padStart(2,"0")}`; };
+  const rows = Object.entries(MARKETS).filter(([k,m])=>!m.excluded && k!=="DE").flatMap(([k,m])=>{
+    const tzs = k==="US" ? [["America/New_York","ET"],["America/Chicago","CT"],["America/Denver","MT"],["America/Los_Angeles","PT"]] : k==="CA" ? [["America/Halifax","AT"],["America/Toronto","ET"],["America/Winnipeg","CT"],["America/Edmonton","MT"],["America/Vancouver","PT"]] : [[m.tz, ""]];
+    return tzs.map(([tz, z])=>{ const st = morningState({market:k, lon: z ? (US_TZ.concat(CA_TZ).find(x=>x[1]===tz)||[0])[0] : undefined}, now);
+      return `<span class="pill ${st.open?"p-ok":"p-mute"}" title="${esc(st.label)} · ${st.open?"open now":esc(st.why)}">${esc(m.name.replace(" (excluded)",""))}${z?" "+z:""} · 9:30 = ${dub(tz)} Dubai</span>`; });
+  }).join(" ");
+  return `<div class="glass conn" style="grid-column:1/-1"><b>Morning rule</b><span class="muted">Calls, emails and WhatsApp start at <b>9:30 in each clinic's own time</b>, on its working days, and stop before closing. Green = open now. ${Q.waiting.length} clinics are waiting for their 9:30.</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${rows}</div></div>`;
+}
 function renderWa(){
   if (!$("waRows")) return;
   const Q = waQueue(), filter = $("waFilter").value;
@@ -2006,7 +2032,7 @@ function renderWa(){
     ["New chats today", `${Q.startedToday} / ${waCfg.wa_daily_new||30}`, `${Q.fresh.length} clinics waiting for a first message`],
     ["In sequence", active.length, "waiting for a reply"],
     ["Replied", replied.length, "answer them and book the demo"],
-  ].map(([a,b,c])=>`<div class="glass conn"><b>${a}</b><span style="font-size:22px;font-weight:800">${b}</span><span class="muted">${esc(c)}</span></div>`).join("");
+  ].map(([a,b,c])=>`<div class="glass conn"><b>${a}</b><span style="font-size:22px;font-weight:800">${b}</span><span class="muted">${esc(c)}</span></div>`).join("") + morningRuleHtml(Q);
   let rows = filter==="due" ? [...Q.follow, ...Q.newToday] : filter==="active" ? active : filter==="replied" ? replied : filter==="reached" ? state.leads.filter(p=>p.wa_step>0 || p.wa_reply_kind).sort((a,b)=>Date.parse(b.wa_reply_at||b.wa_last_at||0)-Date.parse(a.wa_reply_at||a.wa_last_at||0)) : Q.L;
   rows = rows.slice(0, 200);
   $("waHead").textContent = {due:"Today's WhatsApp queue", active:"In sequence", replied:"Replied", reached:"Reached out and their replies", all:"All clinics you can WhatsApp"}[filter];

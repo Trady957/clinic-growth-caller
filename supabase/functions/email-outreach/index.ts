@@ -16,7 +16,7 @@
 //   setup    create the Instantly campaigns now (normally done on the first push)
 // Auth: the owner's sign-in, or the scheduler's x-cron-key.
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
-import { callBlocks, DAY, MARKETS } from "./markets.ts";
+import { callBlocks, DAY, MARKETS, leadTz, offsetMin } from "./markets.ts";
 
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-key", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
@@ -31,13 +31,14 @@ async function inst(path: string, init: RequestInit = {}) {
 }
 
 // ---------- regions, languages, copy ----------
-const REGION: Record<string, { key: string; tz: string; days: number[] }> = {
-  gulf: { key: "gulf", tz: "Asia/Dubai", days: [0, 1, 2, 3, 4] },
-  north_africa: { key: "north_africa", tz: "Africa/Casablanca", days: [1, 2, 3, 4, 5] },
-  europe: { key: "europe", tz: "Europe/London", days: [1, 2, 3, 4, 5] },
-  americas: { key: "americas", tz: "America/New_York", days: [1, 2, 3, 4, 5] },
-};
-const regionOf = (mk: string) => ["MA"].includes(mk) ? "north_africa" : ["US", "CA"].includes(mk) ? "americas" : ["GB", "IE", "FR", "BE", "DE", "ES", "IT", "NL"].includes(mk) ? "europe" : "gulf";
+// Morning rule: every country (and each US/Canada time zone) gets its own Instantly schedule that starts at
+// 9:30 in the clinic's local time, on that country's working days, and stops before closing time.
+const zoneKey = (l: any) => `${leadTz(l).replace(/\//g, "-")}~${l.market}`;
+function zoneOf(key: string) {
+  const [tzk, mk] = key.split("~"); const tz = tzk.replace(/-/g, "/"); const M = MARKETS[mk] || MARKETS.SA;
+  const endH = M.end - 1; // last send 30 min before closing
+  return { tz, mk, name: M.name + (M.tzs ? ` (${tz.split("/").pop()!.replace("_", " ")})` : ""), days: [0, 1, 2, 3, 4, 5, 6].filter((d) => !M.weekend.includes(d)), from: "09:30", to: `${String(endH).padStart(2, "0")}:30` };
+}
 const langOf = (l: any) => {
   if (["ar", "fr", "en"].includes(l.lang) && !(l.lang === "ar" && !["SA", "KW", "OM", "EG", "JO", "QA", "BH", "AE"].includes(l.market))) return l.lang;
   return ["SA", "KW", "OM", "EG", "JO"].includes(l.market) ? "ar" : ["MA", "FR", "BE"].includes(l.market) ? "fr" : "en";
@@ -62,7 +63,7 @@ function copy(lang: string, S: { name: string; company: string; address: string 
     { delay: 0, subject: "", body: `Dernier message de ma part : si améliorer vos prises de rendez-vous n'est pas une priorité en ce moment, aucun souci. Sinon, répondez avec un créneau qui vous convient et j'organise une courte démo.\n\n${sig}${foot}` },
   ];
   return [
-    { delay: 3, subject: "{{companyName}}: answering every patient call", body: `Hi {{companyName}} team,\n\n{{personalization}}\n\nWe set up AI receptionists for clinics: it answers every call and WhatsApp message, 24/7, in English and Arabic, books appointments straight into your calendar and sends reminders, so fewer patients are lost to missed calls or no-shows. We also run marketing for clinics that want more new patients.\n\nWould a 15-minute demo next week be useful? You can hear it answer a call as your clinic.\n\n${sig}${foot}` },
+    { delay: 3, subject: "{{companyName}}: answering every patient call", body: `Hi {{companyName}} team,\n\n{{personalization}}\n\nWe set up AI receptionists for clinics: it answers every call and WhatsApp message, 24/7, in your patients' languages, books appointments straight into your calendar and sends reminders, so fewer patients are lost to missed calls or no-shows. We also run marketing for clinics that want more new patients.\n\nWould a 15-minute demo next week be useful? You can hear it answer a call as your clinic.\n\n${sig}${foot}` },
     { delay: 4, subject: "", body: `Hi again,\n\nMany clinics we speak to miss calls in busy hours and after closing. I can send you a 2-minute recording of our AI receptionist booking an appointment. Shall I?\n\n${sig}${foot}` },
     { delay: 0, subject: "", body: `A last note from me: if improving bookings isn't a priority right now, no problem. If it is, reply with a time that suits you and I'll set up a short demo.\n\n${sig}${foot}` },
   ];
@@ -160,13 +161,13 @@ async function ensureCampaign(key: string, O: any, P: any, accounts: string[], r
   const ids = O.campaigns || {};
   if (ids[key]) return { id: ids[key] as string };
   const [regionKey, lang] = [key.slice(0, key.lastIndexOf("_")), key.slice(key.lastIndexOf("_") + 1)];
-  const R = REGION[regionKey];
+  const R = zoneOf(regionKey);
   const S = { name: O.sender_name || P.freelancer_name || "Maha", company: O.sender_company || P.business_name || "Mizan AI Agents", address: String(O.sender_address || "") };
   const steps = copy(lang, S).map((s) => ({ type: "email", delay: s.delay, delay_unit: "days", variants: [{ subject: s.subject, body: s.body }] }));
   const days: Record<string, boolean> = {}; for (let d = 0; d < 7; d++) days[String(d)] = R.days.includes(d);
   const body: any = {
-    name: `Mizan AI · ${regionKey.replace("_", " ")} · ${lang.toUpperCase()}`,
-    campaign_schedule: { schedules: [{ name: "Clinic hours", timing: { from: "09:00", to: "16:30" }, days, timezone: R.tz }] },
+    name: `Mizan AI · ${R.name} · ${lang.toUpperCase()}`,
+    campaign_schedule: { schedules: [{ name: "Morning rule: 9:30 local", timing: { from: R.from, to: R.to }, days, timezone: R.tz }] },
     sequences: [{ steps }],
     daily_limit: Math.max(30, Math.ceil(ramp * 2)),
     stop_on_reply: true, stop_on_auto_reply: false, link_tracking: false, open_tracking: false, text_only: true,
@@ -175,7 +176,9 @@ async function ensureCampaign(key: string, O: any, P: any, accounts: string[], r
   if (accounts.length) body.email_list = accounts;
   let r = await inst("/campaigns", { method: "POST", body: JSON.stringify(body) });
   if (!r.ok && /timezone/i.test(JSON.stringify(r.j))) {
-    for (const tz of ({ gulf: ["Asia/Muscat", "Etc/GMT-4"], north_africa: ["Africa/Casablanca", "Europe/London"], europe: ["Europe/Dublin", "Etc/GMT"], americas: ["America/Detroit", "Etc/GMT+5"] } as Record<string, string[]>)[regionKey] || []) {
+    // Fallback if Instantly doesn't list this zone name: the fixed offset it has right now (Etc/GMT signs are inverted).
+    const off = Math.round(offsetMin(R.tz, Date.now()) / 60);
+    for (const tz of [off === 0 ? "Etc/GMT" : `Etc/GMT${off > 0 ? "-" : "+"}${Math.abs(off)}`]) {
       body.campaign_schedule.schedules[0].timezone = tz;
       r = await inst("/campaigns", { method: "POST", body: JSON.stringify(body) });
       if (r.ok) break;
@@ -204,7 +207,7 @@ async function push(O: any, P: any, limit: number) {
   const pick = list.slice(0, limit);
   if (!pick.length) return { ok: true, pushed: 0, reason: "No clinics need an email right now." };
   const groups = new Map<string, any[]>();
-  for (const l of pick) { const k = `${regionOf(l.market)}_${langOf(l)}`; groups.set(k, [...(groups.get(k) || []), l]); }
+  for (const l of pick) { const k = `${zoneKey(l)}_${langOf(l)}`; groups.set(k, [...(groups.get(k) || []), l]); }
   const res: any[] = []; let pushed = 0;
   for (const [key, ls] of groups) {
     const c = await ensureCampaign(key, O, P, acc.emails, limit);
@@ -313,7 +316,7 @@ Deno.serve(async (req) => {
       eligible: list.length, eligible_by_reason: byReason, eligible_by_market: byMarket, not_eligible: skipped, totals,
       instantly: { key_saved: !!KEY, ok: acc?.ok ?? false, sending_accounts: acc?.emails.length ?? 0, warmed: acc?.warmup ?? 0, error: acc?.error ?? null, campaigns: O.campaigns || {} },
       auto: !!O.email_auto, sender_address_set: !!String(O.sender_address || "").trim(), excluded_markets: O.email_excluded_markets || ["DE"],
-      preview: mode === "plan" ? list.slice(0, Math.min(emailLeft, 25)).map((l) => ({ company: l.company, market: l.market, email: l.email, reason: l.reason, campaign: `${regionOf(l.market)}_${langOf(l)}`, opener: opener(l, langOf(l)) })) : undefined,
+      preview: mode === "plan" ? list.slice(0, Math.min(emailLeft, 25)).map((l) => ({ company: l.company, market: l.market, email: l.email, reason: l.reason, campaign: `${zoneKey(l)}_${langOf(l)}`, opener: opener(l, langOf(l)) })) : undefined,
     });
   }
   if (mode === "push") {
@@ -326,7 +329,7 @@ Deno.serve(async (req) => {
   if (mode === "setup") {
     if (!KEY) return json({ error: "not_configured", message: "Add INSTANTLY_API_KEY in Supabase secrets." }, 503);
     const acc = await accountsList();
-    const keys = (body.campaigns as string[]) || ["gulf_en", "gulf_ar"];
+    const keys = (body.campaigns as string[]) || ["Asia-Riyadh~SA_en", "Asia-Riyadh~SA_ar"];
     const out: any = {}; for (const k of keys) out[k] = await ensureCampaign(k, O, P, acc.emails, ramp.emails);
     return json({ ok: true, campaigns: out, sending_accounts: acc.emails.length });
   }
