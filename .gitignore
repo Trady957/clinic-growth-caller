@@ -2,3 +2,5 @@ dist/
 node_modules/
 .netlify/*
 !.netlify/results.md
+# Local secrets written by `elevenlabs onboard`
+/.env.local

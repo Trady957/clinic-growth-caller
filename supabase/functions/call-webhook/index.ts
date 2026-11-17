@@ -206,6 +206,12 @@ Deno.serve(async (req) => {
   if (cronKey) {
     const { data } = await admin.from("settings").select("data").eq("id", "cron").maybeSingle();
     if (!data?.data?.key || data.data.key !== cronKey) return new Response("not allowed", { status: 403 });
+    const b = await req.json().catch(() => ({}));
+    if (b?.check) { // health check: is the ElevenLabs key saved and accepted? (never returns the key)
+      const agentId = Deno.env.get("ELEVENLABS_AGENT_ID") || "agent_3401m6p7pqnjepwv9rgy15kfq48c";
+      const r = apiKey ? await fetch(`${EL}/agents/${agentId}`, { headers: { "xi-api-key": apiKey } }) : null;
+      return Response.json({ key_saved: !!apiKey, key_works: !!r?.ok, http: r?.status ?? null, phone_number_id_saved: !!Deno.env.get("ELEVENLABS_PHONE_NUMBER_ID") });
+    }
     return Response.json(await sync());
   }
 
