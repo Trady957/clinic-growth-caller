@@ -1,0 +1,11 @@
+{
+  "name": "clinic-growth-caller",
+  "version": "1.0.0",
+  "description": "Mizan AI Growth Caller: consent-first AI calls to clinics outside the UAE, demos booked on your Google Calendar",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "test": "node --test test/*.test.js"
+  }
+}

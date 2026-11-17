@@ -1,0 +1,39 @@
+{
+  "_note": "Add these as Webhook tools on the ElevenLabs agent. Replace YOUR_SERVER with your backend URL and set header x-api-key to SERVER_KEY.",
+  "tools": [
+    {
+      "name": "free_slots",
+      "description": "Get up to six free 30-minute demo slots on the owner's calendar in the next five working days. Returns ISO UTC times.",
+      "method": "POST",
+      "url": "https://YOUR_SERVER/tools/free_slots",
+      "body": {}
+    },
+    {
+      "name": "book_meeting",
+      "description": "Book the demo once the person has agreed a slot and confirmed their email. Sends a Google Calendar invite with a Meet link.",
+      "method": "POST",
+      "url": "https://YOUR_SERVER/tools/book_meeting",
+      "body": {
+        "lead_id": { "type": "string", "value_type": "dynamic_variable", "dynamic_variable": "lead_id" },
+        "start": { "type": "string", "description": "ISO start time from free_slots" },
+        "attendee_name": { "type": "string" },
+        "attendee_email": { "type": "string" },
+        "attendee_tz": { "type": "string", "description": "IANA time zone of the attendee, e.g. Asia/Riyadh" },
+        "clinic_name": { "type": "string", "value_type": "dynamic_variable", "dynamic_variable": "clinic_name" },
+        "notes": { "type": "string", "description": "Answers to the qualifying questions" }
+      }
+    },
+    {
+      "name": "log_outcome",
+      "description": "Record how the call ended. outcome: meeting, callback, interested, not_interested, opt_out.",
+      "method": "POST",
+      "url": "https://YOUR_SERVER/tools/log_outcome",
+      "body": {
+        "lead_id": { "type": "string", "value_type": "dynamic_variable", "dynamic_variable": "lead_id" },
+        "outcome": { "type": "string", "enum": ["meeting", "callback", "interested", "not_interested", "opt_out"] },
+        "summary": { "type": "string" }
+      }
+    }
+  ],
+  "system_tools": ["end_call", "language_detection"]
+}

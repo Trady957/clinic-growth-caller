@@ -1,0 +1,2 @@
+clinic,name,role,email,phone,country,tz,consent,registry_checked,source
+Example Dental Riyadh,Dr Example,Owner,owner@example.com,+966500000000,SA,,no,no,google-maps

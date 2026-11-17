@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Receptionist Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;600&display=swap">
+<style>
+:root{--ink:#0B2227;--muted:#566C70;--line:#E0E8E7;--bg:#F4F7F7;--paper:#fff;--brand:#0E7C74;--brand2:#14A396;--violet:#5B3FD9;--vsoft:#EEEAFF;--ok:#0E7C4A;--oks:#E1F6EA;--warn:#946000;--warns:#FFF3D9;--bad:#B9410D;--bads:#FDECE3;--stage:#061A20;
+--d:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;--t:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font:15px/1.5 var(--t);color:var(--ink);background:var(--paper)}
+h1,h2,h3{font-family:var(--d);margin:0;letter-spacing:-.02em;text-wrap:balance}
+p{margin:0}button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px;border-radius:8px}
+[lang=ar],.ar{font-family:"Noto Sans Arabic",var(--t)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:12px;border:1.5px solid transparent;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn-main{background:var(--brand);color:#fff}.btn-main:hover{filter:brightness(1.08)}
+.btn-ai{background:linear-gradient(120deg,#6A4CE8,#14A396);color:#fff;box-shadow:0 8px 24px -10px rgba(106,76,232,.8)}
+.btn-line{background:#fff;border-color:#CFDAD8}.btn-line:hover{border-color:var(--ink)}
+.btn-sm{min-height:36px;padding:0 12px;font-size:14px;border-radius:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;min-height:64px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand2),#6A4CE8);display:grid;place-items:center;color:#fff;font-style:normal;font-family:var(--d);font-weight:800}
+.logo b{display:block;font-family:var(--d);font-size:18px;line-height:1.1}.logo div>span{display:block;font-size:12.5px;color:var(--muted)}
+.top .sp{flex:1}
+.demo-tag{font-size:12px;font-weight:700;color:var(--violet);background:var(--vsoft);padding:4px 10px;border-radius:999px}
+/* hero */
+.hero{background:radial-gradient(800px 380px at 15% 20%,rgba(20,163,150,.18),transparent 60%),radial-gradient(700px 360px at 90% 10%,rgba(91,63,217,.16),transparent 60%),var(--bg);padding:42px 0 34px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:center}
+@media (max-width:900px){.hero .wrap{grid-template-columns:minmax(0,1fr)}}
+.hero h1{font-size:clamp(30px,4.4vw,48px);line-height:1.05}
+.hero p.lead{font-size:17px;color:var(--muted);margin:14px 0 20px;max-width:52ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.chip{font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.hero .row{display:flex;gap:10px;flex-wrap:wrap}
+/* noor card */
+.noor{background:var(--stage);color:#EAF4F2;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 60px -30px rgba(6,26,32,.7)}
+.orb{width:88px;height:88px;border-radius:50%;background:conic-gradient(#9FF0DF,#A9C8FF,#D4B8FF,#FFC2D9,#FFE28A,#9FF0DF);display:grid;place-items:center;animation:spin 9s linear infinite}
+.orb span{width:70px;height:70px;border-radius:50%;background:var(--stage);display:grid;place-items:center;font-family:var(--d);font-weight:800;color:#9FF0DF;animation:spin 9s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.orb,.orb span{animation:none}}
+.noor h2{font-size:22px}.noor p{color:#93AEAD;font-size:14px}
+.tries{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.tries li{font-size:14px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.tries li b{color:#C9BEFF;font-weight:600}
+#widget-slot:empty{display:none}
+/* sections */
+section.blk{padding:40px 0;border-bottom:1px solid var(--line)}
+.blk-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.blk-h h2{font-size:28px}.blk-h p{color:var(--muted);max-width:60ch}
+.step{font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:4px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px rgba(11,34,39,.05),0 10px 30px -18px rgba(11,34,39,.25);min-width:0}
+.card-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.card-h b{font-family:var(--d);font-size:17px}
+.card-h small{color:var(--muted);margin-left:auto;font-size:12.5px}
+/* chat */
+.chat{display:flex;flex-direction:column;height:460px}
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.m{max-width:85%;padding:9px 13px;border-radius:14px;font-size:14.5px;white-space:pre-wrap}
+.m.a{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+.m.u{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:4px}
+.m.sys{align-self:center;background:var(--oks);color:var(--ok);font-size:13px;font-weight:600}
+.qr{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
+.qr button{border:1px solid #CFDAD8;background:#fff;border-radius:999px;min-height:36px;padding:0 13px;font-size:13.5px;cursor:pointer}
+.qr button:hover{border-color:var(--brand);color:var(--brand)}
+.qr input{flex:1;min-width:140px;min-height:38px;border:1.5px solid #CFDAD8;border-radius:10px;padding:0 12px}
+/* teeth */
+.teeth{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.jaw{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:4px}
+.jaw button{aspect-ratio:3/4;border:1.5px solid #CFDAD8;background:#fff;border-radius:8px 8px 12px 12px;font-size:10.5px;font-weight:700;color:var(--muted);cursor:pointer;padding:0}
+.jaw.low button{border-radius:12px 12px 8px 8px}
+.jaw button[aria-pressed=true]{background:var(--bads);border-color:var(--bad);color:var(--bad)}
+.jl{font-size:12px;color:var(--muted)}
+.syms{display:flex;flex-wrap:wrap;gap:6px}
+.syms label{display:inline-flex;gap:6px;align-items:center;font-size:14px;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+.pain{display:flex;align-items:center;gap:12px;font-size:14px}.pain input{flex:1;accent-color:var(--bad)}
+.res{border-radius:14px;padding:12px 14px;font-size:14.5px}
+.res.urgent{background:var(--bads);color:var(--bad)}.res.soon{background:var(--warns);color:var(--warn)}.res.ok{background:var(--oks);color:var(--ok)}
+.res b{display:block;font-size:16px;margin-bottom:2px}
+/* behind the scenes */
+.flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.flow{grid-template-columns:minmax(0,1fr)}}
+.flow li{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;display:flex;flex-direction:column;gap:6px;position:relative;opacity:.55;transition:opacity .3s,border-color .3s}
+.flow li.on{opacity:1;border-color:var(--brand)}
+.flow li .n{font-size:12px;font-weight:700;color:var(--brand)}
+.flow li b{font-family:var(--d);font-size:16px}
+.flow li p{font-size:13.5px;color:var(--muted)}
+.wa{margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:700px){.wa{grid-template-columns:minmax(0,1fr)}}
+.wa .bub{background:#E7FFDB;border-radius:12px 12px 12px 4px;padding:10px 12px;font-size:14px;white-space:pre-wrap;border:1px solid #CFEFC0}
+.wa small{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:800px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpis div{border-radius:16px;background:var(--bg);padding:14px 16px}
+.kpis strong{display:block;font-family:var(--d);font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.kpis span{font-size:12.5px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}th{font-size:12px;color:var(--muted);background:var(--bg)}
+.tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.t-ok{background:var(--oks);color:var(--ok)}.t-warn{background:var(--warns);color:var(--warn)}.t-bad{background:var(--bads);color:var(--bad)}.t-ai{background:var(--vsoft);color:var(--violet)}
+/* contact */
+.cta{background:var(--stage);color:#EAF4F2;padding:40px 0}
+.cta .wrap{display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.cta h2{font-size:30px}.cta p{color:#93AEAD}
+.cta .lines{display:flex;flex-direction:column;gap:4px;font-size:15px}
+.cta .lines b{color:#9FF0DF}
+.foot{font-size:12.5px;color:var(--muted);padding:18px 0 40px}
+/* settings */
+.scrim{position:fixed;inset:0;background:rgba(6,26,32,.35);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:#fff;z-index:41;box-shadow:-30px 0 60px -30px rgba(11,34,39,.5);display:flex;flex-direction:column}
+.drawer header{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.drawer header h2{font-size:19px}.drawer header button{margin-left:auto}
+.drawer form{padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.drawer label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.drawer input,.drawer select{min-height:42px;border:1.5px solid #CFDAD8;border-radius:10px;padding:0 12px;font-weight:400;color:var(--ink)}
+.drawer p.hint{font-size:12.5px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:60}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="logo"><i aria-hidden="true" id="logo-i">C</i><div><b data-k="clinic">Clinic</b><span><span data-k="city">City</span> · AI front desk</span></div></div>
+  <span class="sp"></span>
+  <span class="demo-tag">Live demo · sample data</span>
+  <button class="btn btn-line btn-sm" id="set-open" type="button">Customise for a clinic</button>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <div>
+    <h1>Every call answered. Every patient confirmed. <span style="color:var(--brand)">Day and night.</span></h1>
+    <p class="lead">This is what <b data-k="clinic">Clinic</b> looks like with an AI front desk: a website that books patients by itself, Noor the voice assistant who answers and confirms in Arabic and English, and a dashboard that shows which ads bring real patients.</p>
+    <div class="chips"><span class="chip">Books 24/7</span><span class="chip">Arabic + English</span><span class="chip">Urgent cases go to a dentist</span><span class="chip">Says it's an AI, always</span></div>
+    <div class="row"><a class="btn btn-main" href="#book">Try booking a visit</a><a class="btn btn-line" href="#triage">Tap the tooth that hurts</a></div>
+  </div>
+  <aside class="noor" aria-labelledby="noor-h">
+    <div style="display:flex;gap:16px;align-items:center"><div class="orb" aria-hidden="true"><span>Noor</span></div><div><h2 id="noor-h">Talk to Noor, out loud</h2><p>The real voice agent. Use your microphone, in English or Arabic.</p></div></div>
+    <div id="widget-slot"></div>
+    <a class="btn btn-ai" id="talk" href="https://elevenlabs.io/app/talk-to?agent_id=agent_6401m6p2f0xreryv70h0sbam5qyz" target="_blank" rel="noopener">Start a voice call with Noor</a>
+    <p id="talk-note">Opens Noor in a new tab, where your browser asks for the microphone.</p>
+    <ul class="tries" aria-label="Things to try">
+      <li><b>Book:</b> "I'd like a cleaning tomorrow evening."</li>
+      <li><b>Price:</b> "How much is teeth whitening?"</li>
+      <li><b>Arabic:</b> "ممكن أحجز موعد يوم السبت؟"</li>
+      <li><b>Urgent:</b> "My face is swollen since the extraction."</li>
+      <li><b>Honesty:</b> "Are you a real person?"</li>
+    </ul>
+  </aside>
+</div></section>
+
+<section class="blk" id="book"><div class="wrap">
+  <div class="blk-h"><div><span class="step">Step 1 · the website</span><h2>A patient books, at 11 pm, in under a minute</h2></div><p>This is the booking assistant patients see after tapping your Google ad. Tap the answers, or type your own name.</p></div>
+  <div class="grid2">
+    <div class="card chat" aria-label="Booking assistant">
+      <div class="card-h"><b>Booking assistant</b><small data-k="clinic">Clinic</small></div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="qr" id="qr"></div>
+    </div>
+    <div class="card" id="triage" aria-labelledby="tri-h">
+      <div class="card-h"><b id="tri-h">Tap the tooth that hurts</b><small>Never a diagnosis</small></div>
+      <div class="teeth">
+        <span class="jl">Upper teeth</span><div class="jaw" id="up"></div>
+        <div class="jaw low" id="low"></div><span class="jl">Lower teeth</span>
+        <div class="syms" id="syms">
+          <label><input type="checkbox" value="swelling"> Swelling</label>
+          <label><input type="checkbox" value="fever"> Fever</label>
+          <label><input type="checkbox" value="bleeding"> Bleeding that won't stop</label>
+          <label><input type="checkbox" value="cold"> Sensitive to cold</label>
+          <label><input type="checkbox" value="broken"> Broken or chipped</label>
+        </div>
+        <div class="pain"><span>Pain</span><input type="range" min="0" max="10" value="3" id="pain" aria-label="Pain from 0 to 10"><b id="pain-v">3/10</b></div>
+        <div class="res ok" id="tri-res" aria-live="polite"><b>Pick a tooth to start</b>The chart suggests how soon to be seen and books the right slot.</div>
+        <button class="btn btn-main" id="tri-book" type="button" disabled>Book this slot</button>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="blk"><div class="wrap">
+  <div class="blk-h"><div><span class="step">Step 2 · behind the scenes</span><h2>What happens after a booking</h2></div><p>Book something above and watch each step light up.</p></div>
+  <ol class="flow" id="flow">
+    <li data-s="0"><span class="n">1 · now</span><b>Slot held</b><p>Written straight into the clinic calendar, right dentist, right chair.</p></li>
+    <li data-s="1"><span class="n">2 · next morning</span><b>Noor calls to confirm</b><p>Between 9 am and 6 pm only, in the patient's language. Moves the visit if needed.</p></li>
+    <li data-s="2"><span class="n">3 · day before</span><b>WhatsApp reminder</b><p>Time, dentist, map pin and a reschedule link.</p></li>
+    <li data-s="3"><span class="n">4 · visit day</span><b>Patient arrives</b><p>Reception sees who is coming, and who needs extra time.</p></li>
+    <li data-s="4"><span class="n">5 · after</span><b>Google learns</b><p>The visit is reported to Google Ads, so budget follows real patients, not clicks.</p></li>
+  </ol>
+  <div class="wa" id="wa" hidden>
+    <div><small>WhatsApp reminder · English</small><div class="bub" id="wa-en"></div></div>
+    <div><small>WhatsApp reminder · Arabic</small><div class="bub ar" dir="rtl" lang="ar" id="wa-ar"></div></div>
+  </div>
+</div></section>
+
+<section class="blk"><div class="wrap">
+  <div class="blk-h"><div><span class="step">Step 3 · the owner's view</span><h2>Today at <span data-k="clinic">Clinic</span></h2></div><p>The numbers update with every booking you make on this page.</p></div>
+  <div class="kpis">
+    <div><strong id="k-b">0</strong><span>Booked today</span></div>
+    <div><strong id="k-a">0</strong><span>Booked after hours</span></div>
+    <div><strong id="k-u">0</strong><span>Urgent, sent to dentist</span></div>
+    <div><strong id="k-c">0</strong><span>Confirmed by Noor</span></div>
+    <div><strong id="k-n">–</strong><span>No-shows avoided (est.)</span></div>
+  </div>
+  <div style="overflow-x:auto"><table><thead><tr><th>Time</th><th>Patient</th><th>Visit</th><th>Source</th><th>Status</th></tr></thead><tbody id="log"></tbody></table></div>
+</div></section>
+</main>
+
+<section class="cta"><div class="wrap">
+  <div><h2>Want this for <span data-k="clinic">your clinic</span>?</h2><p>Live in four weeks. Your ads keep running while we build.</p></div>
+  <div class="lines"><span>Call or WhatsApp <b data-k="phone">+971 52 685 5212</b></span><span>Email <b data-k="email">maha.lasfar.2015@gmail.com</b></span><span data-k="agency">Mizan AI</span></div>
+</div></section>
+<div class="wrap"><p class="foot">Demo with sample data. Names, prices and times are examples. Noor is an AI assistant and says so on every call; she never gives a diagnosis. Final content is approved by the clinic's medical director.</p></div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-labelledby="set-h">
+  <header><h2 id="set-h">Customise this demo</h2><button class="btn btn-line btn-sm" type="button" id="set-x">Done</button></header>
+  <form id="set">
+    <label>Clinic name<input name="clinic" autocomplete="off"></label>
+    <label>City<input name="city" autocomplete="off"></label>
+    <label>Clinic type<select name="type"><option value="dental">Dental</option><option value="aesthetic">Aesthetic / skin</option></select></label>
+    <label>First dentist or doctor<input name="doc1" autocomplete="off"></label>
+    <label>Second dentist or doctor<input name="doc2" autocomplete="off"></label>
+    <label>Currency<input name="cur" autocomplete="off"></label>
+    <label>Check-up and clean price<input name="p1" inputmode="numeric"></label>
+    <label>Whitening price<input name="p2" inputmode="numeric"></label>
+    <label>Your phone (shown at the bottom)<input name="phone" autocomplete="off"></label>
+    <label>Your email<input name="email" autocomplete="off"></label>
+    <label>Your company<input name="agency" autocomplete="off"></label>
+    <p class="hint">Changes apply instantly and stay in this browser. Set them before you share your screen. The voice agent's own script is set in ElevenLabs.</p>
+    <button class="btn btn-line" type="button" id="set-reset">Reset to defaults</button>
+  </form>
+</aside>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const DEF={clinic:"Bayview Dental Clinic",city:"Riyadh",type:"dental",doc1:"Dr. Sara Haddad",doc2:"Dr. Omar Khalil",cur:"SAR",p1:"350",p2:"950",phone:"+971 52 685 5212",email:"maha.lasfar.2015@gmail.com",agency:"Mizan AI"};
+let S={...DEF};try{const s=JSON.parse(localStorage.getItem("ai-demo-settings")||"null");if(s)S={...DEF,...s};}catch(e){}
+function save(){try{localStorage.setItem("ai-demo-settings",JSON.stringify(S));}catch(e){}}
+function apply(){
+  $$('[data-k]').forEach(el=>{const k=el.dataset.k;if(S[k]!==undefined)el.textContent=S[k];});
+  $("#logo-i").textContent=(S.clinic||"C").trim().charAt(0).toUpperCase();
+  document.title=S.clinic+" · AI Receptionist Demo";
+}
+/* voice: embed the widget only when hosted on its own site (the claude.ai frame blocks the microphone) */
+(function(){let framed=true;try{framed=window.self!==window.top;}catch(e){framed=true;}
+  if(!framed){const slot=$("#widget-slot");slot.innerHTML='<elevenlabs-convai agent-id="agent_6401m6p2f0xreryv70h0sbam5qyz" variant="expanded"></elevenlabs-convai>';
+    const sc=document.createElement("script");sc.src="https://unpkg.com/@elevenlabs/convai-widget-embed";sc.async=true;document.body.appendChild(sc);
+    $("#talk").textContent="Or open Noor in a new tab";$("#talk").className="btn btn-line";$("#talk-note").textContent="Press the call button above and allow the microphone.";}})();
+
+/* settings drawer */
+const dr=$("#drawer"),sc=$("#scrim"),form=$("#set");
+function openSet(o){dr.hidden=!o;sc.hidden=!o;if(o){[...form.elements].forEach(el=>{if(el.name)el.value=S[el.name]||"";});form.elements[0].focus();}}
+$("#set-open").onclick=()=>openSet(true);$("#set-x").onclick=()=>openSet(false);sc.onclick=()=>openSet(false);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")openSet(false);});
+form.addEventListener("input",e=>{if(e.target.name){S[e.target.name]=e.target.value;save();apply();if(e.target.name==="type"||e.target.name.startsWith("p")||e.target.name==="cur")restartChat();}});
+form.addEventListener("submit",e=>e.preventDefault());
+$("#set-reset").onclick=()=>{S={...DEF};save();openSet(true);apply();restartChat();};
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,2600);}
+
+/* shared state */
+const T={b:0,a:0,u:0,c:0};let rows=[];
+function now(){const d=new Date();return d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});}
+function addRow(r){rows.unshift(r);T.b++;if(r.after)T.a++;if(r.urgent)T.u++;renderDash();lightFlow(r);
+  setTimeout(()=>{if(r.urgent){r.status="Dentist called back";}else{r.status="Confirmed by Noor";T.c++;}renderDash();},2600);}
+function renderDash(){$("#k-b").textContent=T.b;$("#k-a").textContent=T.a;$("#k-u").textContent=T.u;$("#k-c").textContent=T.c;$("#k-n").textContent=T.b?Math.max(0,Math.round(T.c*.2)):"–";
+  const cls=s=>/Urgent|dentist/i.test(s)?"t-bad":/Confirmed|called back/i.test(s)?"t-ok":/Noor/.test(s)?"t-ai":"t-warn";
+  $("#log").innerHTML=rows.length?rows.map(r=>`<tr><td>${r.t}</td><td>${esc(r.name)}</td><td>${esc(r.visit)}</td><td>${esc(r.src)}</td><td><span class="tag ${cls(r.status)}">${esc(r.status)}</span></td></tr>`).join(""):`<tr><td colspan="5" style="color:var(--muted)">No bookings yet. Book one above.</td></tr>`;}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function lightFlow(r){const lis=$$("#flow li");lis.forEach(l=>l.classList.remove("on"));lis.forEach((l,i)=>setTimeout(()=>l.classList.add("on"),i*450));
+  const first=(r.name||"there").split(" ")[0];
+  $("#wa-en").textContent=`Hi ${first}, a reminder of your ${r.visit.toLowerCase()} at ${S.clinic} on ${r.when} with ${r.doc}.\nMap: ${S.city}\nNeed to change it? Reply 1 or tap the link.\n${S.clinic}`;
+  $("#wa-ar").textContent=`مرحباً ${first}، نذكّرك بموعدك في ${S.clinic} يوم ${r.whenAr} مع ${r.doc}.\nلتغيير الموعد أرسل ١ أو اضغط الرابط.\n${S.clinic}`;
+  $("#wa").hidden=false;}
+
+/* booking chat (scripted, no AI account needed) */
+const msgs=$("#msgs"),qr=$("#qr");let st={};
+function bub(c,t){const d=document.createElement("div");d.className="m "+c;d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
+function ask(t,opts,typed){setTimeout(()=>{bub("a",t);qr.innerHTML="";(opts||[]).forEach(o=>{const b=document.createElement("button");b.type="button";b.textContent=o;b.onclick=()=>pick(o);qr.appendChild(b);});
+  if(typed){const f=document.createElement("form");f.style.cssText="display:flex;gap:6px;flex:1";f.innerHTML='<input placeholder="Your first name" aria-label="Your first name" autocomplete="off"><button class="btn btn-main btn-sm">Send</button>';f.onsubmit=e=>{e.preventDefault();const v=f.querySelector("input").value.trim();if(v)pick(v);};qr.appendChild(f);f.querySelector("input").focus({preventScroll:true});}},350);}
+function treats(){return S.type==="aesthetic"?[["Skin consultation",0],["Hydrafacial",S.p1],["Laser session",S.p2]]:[["Check-up and clean",S.p1],["Teeth whitening",S.p2],["Toothache, today",0]];}
+function restartChat(){msgs.innerHTML="";st={step:"treat"};
+  ask(`Hi, I'm the ${S.clinic} booking assistant, an AI. What would you like to book?`,treats().map(x=>x[0]).concat(["How much does it cost?"]));}
+function pick(v){bub("u",v);qr.innerHTML="";
+  if(st.step==="treat"){
+    if(/cost/i.test(v)){ask(treats().filter(x=>+x[1]).map(x=>`${x[0]}: ${S.cur} ${x[1]}`).join("\n")+"\nPrices are fixed before treatment. What would you like to book?",treats().map(x=>x[0]));return;}
+    if(/toothache/i.test(v)){ask("I'm sorry it hurts. The quickest way is the tooth chart next to this chat: tap the tooth and I'll find the right slot today.",["Book something else"]);st.step="treat";return;}
+    st.treat=v;st.step="day";ask(`${v}, good choice. When suits you?`,["Tomorrow evening","Saturday morning","Next week"]);return;}
+  if(st.step==="day"){st.day=v;st.step="time";const t=/evening/i.test(v)?["6:30 pm","7:30 pm"]:/morning/i.test(v)?["10:00 am","11:30 am"]:["Mon 4:30 pm","Tue 10:00 am"];ask(`I have two slots with ${S.doc1}:`,t);return;}
+  if(st.step==="time"){st.time=v;st.step="name";ask("Lovely. What's your first name?",[],true);return;}
+  if(st.step==="name"){st.name=v;st.step="lang";ask(`Thanks ${v}. Which language would you like for your reminder and confirmation call?`,["English","العربية"]);return;}
+  if(st.step==="lang"){st.step="done";const when=`${/next week/i.test(st.day)?"":st.day.replace(/ (morning|evening)/i,"")+" "}${st.time}`.trim();
+    bub("sys",`Booked: ${st.treat}, ${when}, ${S.doc1}`);
+    ask(`You're booked, ${st.name}. Noor, our AI assistant, will call tomorrow between 9 am and 6 pm to confirm${/ع/.test(v)?" in Arabic":""}, and you'll get a WhatsApp reminder the day before.`,["Book another visit"]);
+    const h=new Date().getHours();addRow({t:now(),name:st.name,visit:st.treat,src:"Website chat · Google ad",status:"Waiting for Noor's call",after:h>=20||h<8,when,whenAr:when,doc:S.doc1});
+    toast("Booking added to the owner's dashboard below");return;}
+  if(st.step==="done"||/another|else/i.test(v)){restartChat();}
+}
+/* tooth chart */
+const UP=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28],LOW=[48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];let tooth=null;
+function jaw(el,arr){el.innerHTML=arr.map(n=>`<button type="button" aria-pressed="false" data-t="${n}" aria-label="Tooth ${n}">${n}</button>`).join("");}
+jaw($("#up"),UP);jaw($("#low"),LOW);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;tooth=+b.dataset.t;$$("[data-t]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));triage();});
+$("#syms").addEventListener("change",triage);$("#pain").addEventListener("input",triage);
+let tri=null;
+function triage(){const pain=+$("#pain").value;$("#pain-v").textContent=pain+"/10";if(!tooth)return;
+  const s=$$("#syms input:checked").map(i=>i.value),r=$("#tri-res");
+  if(s.includes("swelling")&&pain>=7||s.includes("fever")||s.includes("bleeding")){tri={lvl:"urgent",slot:"today in 90 minutes"};r.className="res urgent";r.innerHTML=`<b>Urgent: see a dentist today</b>Tooth ${tooth}. The on-call dentist is alerted to call you back within 10 minutes. Slot held ${tri.slot}. If breathing or swallowing gets hard, go to the emergency department.`;}
+  else if(pain>=5||s.includes("broken")){tri={lvl:"soon",slot:"tomorrow 10:00 am"};r.className="res soon";r.innerHTML=`<b>Soon: within a day or two</b>Tooth ${tooth}. Best slot: ${tri.slot} with ${S.doc1}.`;}
+  else{tri={lvl:"ok",slot:"Saturday 11:30 am"};r.className="res ok";r.innerHTML=`<b>Routine check</b>Tooth ${tooth}. Book a normal visit: ${tri.slot} with ${S.doc2}.`;}
+  $("#tri-book").disabled=false;}
+$("#tri-book").onclick=()=>{if(!tri)return;const urgent=tri.lvl==="urgent";
+  addRow({t:now(),name:"Tooth-chart patient",visit:urgent?"Emergency visit":"Tooth "+tooth+" check",src:"Tooth chart · Google ad",status:urgent?"Urgent: dentist paged":"Waiting for Noor's call",urgent,after:false,when:tri.slot,whenAr:tri.slot,doc:urgent?S.doc1:S.doc2});
+  toast(urgent?"On-call dentist alerted. See the dashboard below":"Slot booked. See the dashboard below");$("#tri-book").disabled=true;};
+
+apply();restartChat();renderDash();
+})();
+</script>
+</body>
+</html>
