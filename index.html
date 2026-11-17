@@ -1804,7 +1804,8 @@ function waFindings(p, lang){ const T = WA_T[lang]; return waPick(p).map(n=>T.fi
 const WA_ARABIC_MK = ["SA","QA","KW","BH","OM","EG","JO","AE","MA"];
 // A clinic name fit for the message language: "عيادات صادق | Sadig Dental Clinic" -> the Arabic part in Arabic, the Latin part otherwise.
 function waName(p, lang){
-  const full = String(p.company||"").trim(), parts = full.split(/\s*[|｜]\s*|\s+-\s+/).map(x=>x.trim()).filter(Boolean);
+  const full = String(p.company||"").replace(/\s*\([^)]*\)\s*/g," ").replace(/\s+/g," ").trim();
+  const parts = full.split(/\s*[|｜/]\s*|\s+[-–—]\s*|\s*[-–—]\s+/).map(x=>x.trim()).filter(Boolean);
   if (parts.length < 2) return full;
   const ar = parts.find(x=>/[\u0600-\u06FF]/.test(x)), lat = parts.find(x=>!/[\u0600-\u06FF]/.test(x));
   return (lang==="ar" ? (ar||lat) : (lat||ar)) || full;
