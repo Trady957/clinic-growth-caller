@@ -1859,14 +1859,38 @@ async function waSendReport(p, btn){
       await sb.from("leads").update({report_pdf_url:url}).eq("id", p.id);
     }
     const text = waLangs(p).map(l=>WA_RPT[l](p.company, url, profile, waSlots(p, l))).join(WA_SEP);
-    win.location.href = waUrl(p, text);
+    waOpen(p, text, win);
     await waSave(p, { wa_status: p.wa_status==="booked" ? "booked" : "replied", wa_next_at: null, status: ["booked"].includes(p.status) ? p.status : "hot", next: "Report sent on WhatsApp: book the walkthrough" }, { event:"report_sent", url });
-    toast(`Report ready for ${p.company}. WhatsApp opened with the link.`);
-  } catch(e){ win.close(); toast("Couldn't send the report: "+e.message); }
+    toast(`Report ready for ${p.company}. Message with the link is ready.`);
+  } catch(e){ try { win && win.close(); } catch(_){} toast("Couldn't send the report: "+e.message); }
   finally { if (btn){ btn.disabled = false; btn.textContent = label; } }
 }
 
 function waUrl(p, text){ return `https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(text)}`; }
+// Opens WhatsApp, and always shows a panel with the message and other ways to open it (copy, WhatsApp Web, the app),
+// because some browsers and in-app panes block new windows or wa.me links.
+function waOpen(p, text, win){
+  const n = waNum(p.phone), t = encodeURIComponent(text);
+  const links = { web:`https://web.whatsapp.com/send?phone=${n}&text=${t}`, app:`whatsapp://send?phone=${n}&text=${t}`, wame:`https://wa.me/${n}?text=${t}` };
+  try { if (win && !win.closed) win.location.href = links.wame; else window.open(links.wame, "_blank", "noopener"); } catch(e){}
+  document.getElementById("waPanel")?.remove();
+  const d = document.createElement("div"); d.id = "waPanel";
+  d.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
+  d.innerHTML = `<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);font:14px system-ui">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>WhatsApp to ${esc(p.company)} · +${n}</b><button type="button" class="btn btn-sm" data-wp="close">Close</button></div>
+    <p class="muted" style="margin:0 0 8px;font-size:12px">If WhatsApp didn't open, copy the message or use one of the buttons below.</p>
+    <textarea readonly style="width:100%;height:220px;font:13px system-ui;padding:8px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box" dir="auto">${esc(text)}</textarea>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+      <button type="button" class="btn btn-primary btn-sm" data-wp="copy">Copy message</button>
+      <a class="btn btn-sm" href="${links.web}" target="_blank" rel="noopener">Open WhatsApp Web</a>
+      <a class="btn btn-sm" href="${links.app}">Open WhatsApp app</a>
+      <a class="btn btn-sm" href="${links.wame}" target="_blank" rel="noopener">Open wa.me link</a>
+    </div></div>`;
+  d.addEventListener("click", async e=>{ const k = e.target.dataset?.wp;
+    if (e.target===d || k==="close") d.remove();
+    if (k==="copy"){ try { await navigator.clipboard.writeText(text); } catch(_){ const ta = d.querySelector("textarea"); ta.select(); document.execCommand("copy"); } e.target.textContent = "Copied ✓"; } });
+  document.body.appendChild(d);
+}
 function waEngaged(p){ return !!(p.consent || ["replied","interested"].includes(p.email_status) || ["hot","callback","referral","warm"].includes(p.status)); }
 function waEligible(p){
   if (!waNum(p.phone) || String(p.phone).startsWith("nophone")) return false;
@@ -1894,7 +1918,7 @@ async function waSave(p, upd, logItem){
 }
 async function waSend(p){
   const step = Math.min(4, (p.wa_step||0) + 1), text = waMessage(p, step);
-  window.open(waUrl(p, text), "_blank", "noopener");
+  waOpen(p, text);
   const next = step < 4 ? new Date(Date.now() + WA_GAP[step]*DAY).toISOString() : null;
   await waSave(p, { wa_step: step, wa_status: step < 4 ? "active" : "stopped", wa_last_at: new Date().toISOString(), wa_next_at: next, wa_focus: p.wa_focus || waFocus(p) }, { step, focus: waFocus(p) });
   toast(`WhatsApp opened for ${p.company}. ${step < 4 ? "Next follow-up in "+WA_GAP[step]+" days." : "Sequence finished."}`);
@@ -1941,7 +1965,7 @@ ${p.wa_status==="replied" ? "" : `<button type="button" class="btn btn-sm btn-pr
   document.querySelectorAll("[data-wafocus]").forEach(s=>s.onchange = ()=>{ const p = byId(s.dataset.wafocus); if (p) waSave(p, { wa_focus: s.value }, null); });
   document.querySelectorAll("[data-wareply]").forEach(s=>s.onchange = ()=>{ const p = byId(s.dataset.wareply), k = s.value; s.value = ""; if (!p || !k) return;
     if (k==="report"){ waSendReport(p, null); return; }
-    window.open(waUrl(p, waReply(p, k)), "_blank", "noopener");
+    waOpen(p, waReply(p, k));
     if (k==="no") waSave(p, { wa_status:"stopped", wa_next_at:null, status:"cold" }, { event:"not_interested" }); else waSave(p, {}, { reply:k }); });
 }
 $("waFilter").onchange = renderWa;
