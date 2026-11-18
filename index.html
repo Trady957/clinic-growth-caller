@@ -107,7 +107,7 @@
   <div class="sec-h"><div><h2>Today's call list</h2><p>You call from your own phone. Pick a country, click a clinic to open its script in its language, then save the outcome. Red rows have no website: they need us most, so call them first. Best leads first; the Gulf closes around 6 pm their time.</p></div>
     <div class="leadbar"><select id="clMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select><label class="chk"><input type="checkbox" id="clNoWeb" checked> No website first</label><select id="clFilter" class="btn btn-sm" aria-label="Show"><option value="todo">To call</option><option value="done">Called</option><option value="all">All</option></select></div></div>
   <div class="glass"><div class="card-h"><div><h3>Call list</h3><small id="clSum"></small></div></div>
-    <div class="tbl"><table><thead><tr><th>#</th><th>Clinic</th><th>Phone</th><th>Outcome</th></tr></thead><tbody id="clRows"></tbody></table></div></div>
+    <div class="tbl"><table><thead><tr><th>#</th><th>Clinic</th><th>Phone</th><th>Est. loss</th><th>Outcome</th></tr></thead><tbody id="clRows"></tbody></table></div></div>
 </div></section>
 <section class="blk" id="calls"><div class="wrap">
   <div class="sec-h"><div><h2>Calls</h2><p>Pick a clinic type. Every number is checked against each country's calling rules before your caller dials.</p></div></div>
@@ -2110,6 +2110,30 @@ catch(err){ toast("Couldn't save: "+err.message); } b.disabled = false; });
 $("futureList").addEventListener("click", async e=>{ const b = e.target.closest("[data-toqueue]"); if (!b) return; const p = state.leads.find(x=>x.id===b.dataset.toqueue); if (!p) return;
 if ((MARKETS[p.market]||{}).nanp){ const a = p.audit||{}; if (a.lineType!=="landline" || !a.dncCheckedAt || a.onDnc || Date.now()-a.dncCheckedAt>=31*DAY){ selectedId = p.id; renderAll(); toast("US/Canada: confirm the business landline and the Do Not Call check in the call panel first."); return; } }
 b.disabled = true; const { error } = await sb.from("leads").update({list:"queue"}).eq("id", p.id); if (error){ toast("Couldn't move: "+error.message); b.disabled=false; return; } p.list = "queue"; toast(`${p.company} moved to the call queue.`); renderAll(); });
+
+// ===== Revenue at risk: rough monthly loss from each clinic's report findings (an estimate, shown with its assumptions) =====
+const LOSS_VALUE = {US:1200,CA:1000,GB:900,IE:900,FR:700,BE:700,NL:700,IT:650,ES:650,DE:800,SA:800,AE:900,QA:850,KW:800,BH:700,OM:600,JO:350,EG:200,MA:300};
+const LOSS_CUR = {US:["USD",1],CA:["CAD",1.38],GB:["GBP",0.79],IE:["EUR",0.92],FR:["EUR",0.92],BE:["EUR",0.92],NL:["EUR",0.92],IT:["EUR",0.92],ES:["EUR",0.92],DE:["EUR",0.92],SA:["SAR",3.75],AE:["AED",3.67],QA:["QAR",3.64],KW:["KWD",0.31],BH:["BHD",0.38],OM:["OMR",0.38],JO:["JOD",0.71],EG:["EGP",49],MA:["MAD",10]};
+const LOSS_ISSUE = {noweb:[6,"No website: patients who search can't find or book you"],down:[6,"Website down: visitors leave"],nobook:[4,"No online booking: evening and weekend bookings go elsewhere"],rate:[4,"Rating below nearby clinics: patients pick the higher-rated one"],few:[3,"Few reviews: new patients trust clinics with hundreds"],kw:[3,"Missing from treatment searches near you"],ads:[2,"Ad spend you can't track to bookings"],pixel:[1,"Instagram visitors never retargeted"],busy:[5,"Busy clinic: calls and WhatsApps missed at peak times and after hours"]};
+function clinicLoss(p){
+  const r = p.report||{}, have = r.have||[], enh = r.enhance||[];
+  const keys = new Set(clFindings(p).map(x=>x[0]));
+  for (const e of enh){ if (/Only \d+ Google reviews/.test(e)) keys.add("few"); if (/Raise Google rating/.test(e)) keys.add("rate"); if (/no Meta pixel/.test(e)) keys.add("pixel"); if (/Create pages for searches/.test(e)) keys.add("kw"); if (/Google Ads running without GA4/.test(e)) keys.add("ads"); }
+  if (p.report && have.some(h=>/^Website/.test(h)) && !have.some(h=>/Online booking/i.test(h))) keys.add("nobook");
+  const rv = +(p.quality?.g_reviews ?? r.maps?.count ?? 0);
+  const size = rv < 50 ? 0.6 : rv < 200 ? 1 : rv < 700 ? 1.3 : 1.6;
+  const items = [...keys].filter(k=>LOSS_ISSUE[k]).map(k=>({k, n: LOSS_ISSUE[k][0]*size, why: LOSS_ISSUE[k][1]})).sort((a,b)=>b.n-a.n).slice(0,3);
+  const pts = Math.max(1, Math.round(items.reduce((a,x)=>a+x.n,0))), val = LOSS_VALUE[p.market]||600, usd = pts*val;
+  const [cur, fx] = LOSS_CUR[p.market]||["USD",1], local = Math.round(usd*fx/50)*50;
+  return { pts, val, usd, cur, local, items };
+}
+function lossHtml(p){
+  const L = clinicLoss(p), fmt = n => n.toLocaleString("en-US");
+  return `<div class="stx-c" style="max-width:820px;margin-top:8px;border-color:var(--bad)"><div class="nd-top"><b style="color:var(--bad)">Est. revenue lost: ~${fmt(L.local)} ${L.cur} / month</b><span class="muted" style="font-size:12px">≈ ${L.pts} new patients × ${fmt(Math.round(L.val*(LOSS_CUR[p.market]||["",1])[1]))} ${L.cur} first-year value</span></div>
+<ul class="stx-ul">${L.items.map(x=>`<li>${esc(x.why)} · ~${Math.round(x.n*10)/10} patients/month</li>`).join("")}</ul>
+<small class="muted">Estimate from the report findings, clinic size (Google reviews) and a typical first-year patient value in ${esc((MARKETS[p.market]||{}).name||p.market)}. Say "around" on calls, not an exact number.</small></div>`;
+}
+
 // ===== Manual call list (Maha calls from her own phone) =====
 const CL_FIND = {
  en:{noweb:v=>"no website comes up for you on Google, so new patients can only book by calling",down:v=>"your website didn't load when we checked it",ads:v=>"your Google Ads run without Analytics, so you can't see which ads bring bookings",rate:v=>`your Google rating is ${v}★, below the clinics around you`,few:v=>`you have only ${v} Google reviews while competitors have hundreds`,kw:v=>`you don't show up when patients search "${v}"`,pixel:v=>"there's no Meta pixel on your site, so Instagram ads can't follow up with visitors",busy:v=>"with this many patients, calls and WhatsApps get missed at busy times and after hours"},
@@ -2153,6 +2177,7 @@ function callScript(p){
    en:[`OPEN: Hello, is this ${c}? This is Maha from Mizan AI Agents. Could I speak with the clinic manager or owner for one minute?`,
      wa?`CONTEXT: I sent you a WhatsApp${auto?" and saw your auto-reply":""}. I wanted to explain it in one minute.`:"",
      `HOOK: We checked your clinic online${rt?": "+rt:""}, great work. One thing stood out: ${fx}.`,
+     `COST: That's roughly ${clinicLoss(p).pts} new patients a month going to other clinics, around ${clinicLoss(p).local.toLocaleString("en-US")} ${clinicLoss(p).cur} a month.`,
      `PITCH: ${CL_FIX[L][fo]}. We also do ${oth[0]} and ${oth[1]}.`,
      "ASK: Can I show you the free report in a 15-minute online call, tomorrow or Sunday, morning or afternoon?",
      "IF 'send details': Sure, which WhatsApp or email? I'll send the free report today and call back to walk you through it. When suits you?",
@@ -2162,6 +2187,7 @@ function callScript(p){
    ar:[`الافتتاح: السلام عليكم، معي ${c}؟ معك مها من Mizan AI Agents. ممكن أكلم مدير العيادة أو المالك دقيقة وحدة؟`,
      wa?`السياق: أرسلت لكم رسالة واتساب${auto?" وشفت ردّكم الآلي":""}، وحبيت أوضّحها بدقيقة.`:"",
      `المدخل: راجعنا العيادة أونلاين${rt?" — "+rt:""}، ما شاء الله شغل ممتاز. بس لاحظنا: ${fx}.`,
+     `التكلفة: يعني تقريبًا ${clinicLoss(p).pts} مرضى جدد كل شهر يروحون لعيادات ثانية، بحدود ${clinicLoss(p).local.toLocaleString("en-US")} ${clinicLoss(p).cur} شهريًا.`,
      `العرض: ${CL_FIX[L][fo]}. وعندنا كمان ${oth[0]} و${oth[1]}.`,
      "الطلب: أقدر أعرض لكم التقرير المجاني في اجتماع أونلاين 15 دقيقة؟ بكرة ولا الأحد، الصبح ولا العصر؟",
      "إذا قال 'أرسلي التفاصيل': أكيد، على أي واتساب أو إيميل؟ أرسل التقرير المجاني اليوم وأتصل أشرحه. أي وقت يناسبكم؟",
@@ -2171,6 +2197,7 @@ function callScript(p){
    fr:[`OUVERTURE : Bonjour, je suis bien chez ${c} ? Ici Maha, de Mizan AI Agents. Pourrais-je parler au responsable ou au médecin une minute ?`,
      wa?`CONTEXTE : Je vous ai envoyé un WhatsApp${auto?" et j'ai vu votre réponse automatique":""}, je voulais vous l'expliquer en une minute.`:"",
      `ACCROCHE : Nous avons regardé votre clinique en ligne${rt?" — "+rt:""}, très beau travail. Un point ressort : ${fx}.`,
+     `COÛT : Cela représente environ ${clinicLoss(p).pts} nouveaux patients par mois qui vont ailleurs, autour de ${clinicLoss(p).local.toLocaleString("fr-FR")} ${clinicLoss(p).cur} par mois.`,
      `OFFRE : ${CL_FIX[L][fo]}. Nous faisons aussi ${oth[0]} et ${oth[1]}.`,
      "DEMANDE : Puis-je vous présenter le rapport gratuit en 15 minutes en visio, demain ou lundi, matin ou après-midi ?",
      "SI « envoyez les détails » : Bien sûr, sur quel WhatsApp ou e-mail ? Je vous envoie le rapport aujourd'hui et je vous rappelle. Quel moment vous convient ?",
@@ -2201,10 +2228,12 @@ function renderCallList(){
     return `<tr data-cl="${esc(p.id)}" class="${clOpen===p.id?"sel":""}" ${nw?'style="box-shadow:inset 4px 0 0 var(--bad);background:color-mix(in srgb,var(--bad-soft) 55%,transparent)"':""}><td class="mono">${p.call_rank>=1000?"★":p.call_rank}</td>
 <td>${nw?`<span class="pill p-bad" style="margin-bottom:3px">No website · priority</span><br>`:""}<b>${esc(p.company)}</b><small class="cellsub">${esc(p.city||"")} · ${esc(p.market)} · ${L==="ar"?"Arabic":L==="fr"?"French":"English"}${p.wa_step?` · WhatsApp sent${p.wa_reply_kind?" ("+esc(p.wa_reply_kind.replace("_"," "))+")":""}`:""}</small></td>
 <td class="mono" style="white-space:nowrap"><b>${esc(p.phone)}</b><small class="cellsub">Their time: ${esc(clLocal(p))}</small></td>
+<td class="mono" style="white-space:nowrap;color:var(--bad)"><b>~${clinicLoss(p).local.toLocaleString("en-US")} ${clinicLoss(p).cur}</b><small class="cellsub">lost / month</small></td>
 <td>${o?`<span class="pill ${o[1]}">${o[0]}</span>${p.call_note?`<small class="cellsub">${esc(p.call_note)}</small>`:""}`:`<span class="pill p-mute">To call</span>`}</td></tr>
-${clOpen===p.id?`<tr class="stx-row"><td colspan="4"><div class="stx-c" style="max-width:820px"><div dir="auto" style="white-space:pre-wrap;font-size:14px;line-height:1.6">${esc(callScript(p)) || "No report yet for this clinic."}</div>
+${clOpen===p.id?`<tr class="stx-row"><td colspan="5"><div class="stx-c" style="max-width:820px"><div dir="auto" style="white-space:pre-wrap;font-size:14px;line-height:1.6">${esc(callScript(p)) || "No report yet for this clinic."}</div>
+${lossHtml(p)}
 <div class="leadbar" style="margin-top:10px"><button type="button" class="btn btn-sm btn-primary" data-clpop="${esc(p.id)}" title="Free browser call: opens PopTox for this country and copies the number">📞 Call free (PopTox)</button><button type="button" class="btn btn-sm" data-clcopy="${esc(p.id)}">Copy number</button>${Object.entries(CL_OUT).map(([k,v])=>`<button type="button" class="btn btn-sm ${p.call_outcome===k?"btn-primary":""}" data-clout="${k}" data-id="${esc(p.id)}">${v[0]}</button>`).join("")}</div>
-<label class="field" style="margin-top:8px">Note (name of decision-maker, callback time, email…)<input type="text" id="clNote" dir="auto" value="${esc(p.call_note||"")}" placeholder="e.g. Dr Ahmed, call Sunday 11am, wants report on WhatsApp"></label></div></td></tr>`:""}`; }).join("") || `<tr><td colspan="4" class="muted">Nothing here.</td></tr>`;
+<label class="field" style="margin-top:8px">Note (name of decision-maker, callback time, email…)<input type="text" id="clNote" dir="auto" value="${esc(p.call_note||"")}" placeholder="e.g. Dr Ahmed, call Sunday 11am, wants report on WhatsApp"></label></div></td></tr>`:""}`; }).join("") || `<tr><td colspan="5" class="muted">Nothing here.</td></tr>`;
 }
 async function clSave(p, outcome){
   const note = ($("clNote")?.value||"").trim(), o = CL_OUT[outcome];
@@ -2310,7 +2339,7 @@ if (!p){ $("callee").innerHTML = `<div class="big" style="--c:var(--line2)">${IC
 const g = checkLead(p, p.campaign, Date.now()), last = lastCallFor(p.id), onCall = last && last.outcome==="calling" && Date.now()-last.at < 20*60000;
 const testNum = String(profile.test_phone||"").replace(/[^\d+]/g,"");
 $("callee").innerHTML = `<div class="big ${onCall?"ring":""}" style="--c:${avColor(p.id)}">${initials(p.name)}</div>
-<h3>${esc(p.company)}</h3><span class="meta mono">${esc(p.phone)} · ${esc(p.city||"")} · ${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}</span>
+<h3>${esc(p.company)}</h3><span class="meta mono">${esc(p.phone)} · ${esc(p.city||"")} · ${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}</span>${p.report||clNoWeb(p)?`<span class="pill p-bad">Est. loss ~${clinicLoss(p).local.toLocaleString("en-US")} ${clinicLoss(p).cur}/month</span>`:""}
 ${onCall?`<span class="status-line"><span class="live-dot"></span>${esc(profile.agent_name||"Noor")} is on the call · results appear here when it ends</span>`:
 `<span class="pill ${g.ok?"p-ok":"p-bad"}"><span class="d"></span>${g.ok?"Cleared to call now":"Blocked by the calling rules"}</span><div style="text-align:center">${waReplyHtml(p)}</div>
 <div class="gate"><ul>${g.checks.map(c=>`<li><span class="tick ${c.ok?"y":"n"}">${c.ok?"✓":"✕"}</span><span>${esc(c.text)}</span></li>`).join("")}</ul></div>
