@@ -65,7 +65,7 @@
   </a>
   <span class="vsep" aria-hidden="true"></span>
   <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>Worldwide · not UAE clinics</small></div>
-  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#calllist">Call list</a><a href="#calls">Calls</a><a href="#emails">Emails</a><a href="#whatsapp">WhatsApp</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
+  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#webreq">Website requests</a><a href="#calllist">Call list</a><a href="#calls">Calls</a><a href="#emails">Emails</a><a href="#whatsapp">WhatsApp</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
   <div class="bar-r"><span class="muted" id="whoami" style="font-size:12px"></span><button type="button" class="btn btn-sm btn-ghost" id="signOutBtn">Sign out</button><span class="pill p-ok" id="winPill"><span class="d"></span>Calling open</span><span class="pill p-mute" id="dbPill" title="Where your leads are saved"><span class="d"></span>Sample data</span></div>
 </div></header>
 <div class="testbar" id="testBar" hidden><div class="wrap"><span>Test mode: sign-in is off. Only your Netlify login protects this page.</span><button type="button" class="btn btn-sm" id="lockOpen">Lock it with a password</button></div></div>
@@ -102,6 +102,12 @@
     <div class="glass"><div class="card-h"><div><h3>By country</h3><small>Clinic type, data quality and progress per market</small></div></div><div class="tbl"><table><thead><tr><th>Market</th><th>Clinics</th><th>Dental</th><th>Aesthetic</th><th>Medical</th><th>Verified</th><th>Website</th><th>Called</th><th>Booked</th></tr></thead><tbody id="accRows"></tbody><tfoot id="accFoot"></tfoot></table></div></div>
     <div class="glass"><div class="card-h"><div><h3>Fresh data</h3><small>Auto-refresh every 3 days · websites checked hourly</small></div></div><div class="sync" id="syncBox"></div></div>
   </div>
+</div></section>
+<section class="blk" id="webreq"><div class="wrap">
+  <div class="sec-h"><div><h2>Website requests</h2><p>Clinics that asked for a free growth report or a plan on the landing page, with what the calculator told them. Reply within the day: email them the report, then offer the plan they picked.</p></div>
+    <div class="leadbar"><button class="btn btn-sm" id="wrRefresh">Refresh</button></div></div>
+  <div class="glass"><div class="card-h"><div><h3>Requests</h3><small id="wrSum"></small></div></div>
+    <div class="tbl"><table><thead><tr><th>When</th><th>Clinic</th><th>Contact</th><th>Wants</th><th>Calculator</th><th>Status</th></tr></thead><tbody id="wrRows"></tbody></table></div></div>
 </div></section>
 <section class="blk" id="calllist"><div class="wrap">
   <div class="sec-h"><div><h2>Today's call list</h2><p>You call from your own phone. Pick a country, click a clinic to open its script in its language, then save the outcome. Red rows have no website: they need us most, so call them first. Best leads first; the Gulf closes around 6 pm their time.</p></div>
@@ -2255,6 +2261,23 @@ document.addEventListener("click", e=>{
 });
 document.addEventListener("change", e=>{ if (e.target.id==="clFilter"){ clFilterVal = e.target.value; renderCallList(); } if (e.target.id==="clMk"){ clMk = e.target.value; clOpen = null; renderCallList(); } if (e.target.id==="clNoWeb"){ clNoWebFirst = e.target.checked; renderCallList(); } });
 
+
+// ===== Website requests (landing page form) =====
+async function loadWebReq(){
+  const { data, error } = await sb.from("offer_requests").select("id,created_at,clinic,city,country,link,contact,plan,lang,calc,page,status").order("created_at",{ascending:false}).limit(100);
+  const rows = error ? [] : (data||[]); const tb = $("wrRows"); if (!tb) return;
+  const nNew = rows.filter(r=>r.status==="new").length;
+  $("wrSum").textContent = error ? "Couldn't load requests" : `${rows.length} requests · ${nNew} new`;
+  const plan = {report:"Free report",starter:"Starter $129",growth:"Growth $249",pro:"Pro $499",website:"Website $390"};
+  tb.innerHTML = rows.length ? rows.map(r=>{ const c=r.calc||{}; const loss = c.loss ? `~${(+c.loss).toLocaleString("en-US")} ${esc(c.cur||"")}/mo · ${c.patients} pts` : "—";
+    const mail = /@/.test(r.contact) ? `<a href="mailto:${esc(r.contact)}?subject=${encodeURIComponent("Your free growth report: "+r.clinic)}">${esc(r.contact)}</a>` : esc(r.contact);
+    const link = r.link ? `<br><a href="${/^https?:/i.test(r.link)?esc(r.link):"https://"+esc(r.link)}" target="_blank" rel="noopener" class="muted" style="font-size:12px">site / map</a>` : "";
+    return `<tr${r.status==="new"?' style="box-shadow:inset 4px 0 0 var(--ok)"':''}><td>${esc(new Date(r.created_at).toLocaleString())}</td><td><b>${esc(r.clinic)}</b><br><small class="muted">${esc([r.city,r.country,(r.lang||"").toUpperCase()].filter(Boolean).join(" · "))}</small>${link}</td><td>${mail}</td><td>${esc(plan[r.plan]||r.plan||"")}</td><td>${loss}</td>
+    <td><select class="btn btn-sm" data-wr="${r.id}" aria-label="Status for ${esc(r.clinic)}">${["new","contacted","report_sent","won","lost"].map(x=>`<option${x===r.status?" selected":""}>${x}</option>`).join("")}</select></td></tr>`; }).join("")
+    : `<tr><td colspan="6" class="muted">No requests yet. They appear here when a clinic fills in the form on the landing page.</td></tr>`;
+}
+document.addEventListener("change", async e=>{ const id = e.target?.dataset?.wr; if (!id) return; await sb.from("offer_requests").update({status:e.target.value}).eq("id", id); loadWebReq(); });
+document.addEventListener("click", e=>{ if (e.target?.id==="wrRefresh") loadWebReq(); });
 function renderAll(){ syncLive(); try{ renderCallList(); }catch(e){ console.error(e); } renderClock(); renderAccounts(); renderReviews(); renderOps(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderWa(); renderTranscriptEmpty(); }
 let callBusy = false;
 function lastCallFor(id){ return state.log.filter(l=>l.pid===id).sort((a,b)=>b.at-a.at)[0] || null; }
@@ -2449,7 +2472,7 @@ hideAuth(); $("whoami").textContent = session ? session.user.email : "Test mode"
 $("testBar").hidden = !testMode; $("signOutBtn").hidden = !session;
 if (started) return; started = true;
 db = makeDb(); downloads = downloadsShim; sample = null; mcp = null;
-goLive(); loadSync(); loadOps(); setInterval(loadOps, 5*60000); loadEmails(); loadEmailSettings(); setInterval(loadEmails, 5*60000); loadWaCfg().then(renderWa);
+goLive(); loadWebReq(); setInterval(loadWebReq, 5*60000); loadSync(); loadOps(); setInterval(loadOps, 5*60000); loadEmails(); loadEmailSettings(); setInterval(loadEmails, 5*60000); loadWaCfg().then(renderWa);
 sb.channel("rt-sync").on("postgres_changes", {event:"*", schema:"public", table:"sync_runs"}, ()=>loadSync()).subscribe();
 $("dbPill").className = "pill p-ok"; $("dbPill").innerHTML = '<span class="d"></span>Live';
 $("simBtn").lastChild.textContent = "Call next cleared clinic";
