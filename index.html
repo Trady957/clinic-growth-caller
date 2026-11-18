@@ -1073,7 +1073,7 @@ function waLink(m){ const num = String(m.whatsapp||"").replace(/[^\d]/g,""); if 
 const ar = (state.leads.find(x=>x.id===m.leadId)||{}).lang==="ar";
 const txt = ar ? `مرحباً ${m.attendee||""}، معك ${profile.freelancer_name||""} من ${profile.business_name||""}. أؤكد موعدنا ${m.label} لعرض خدمات التسويق والذكاء الاصطناعي لـ ${m.clinic}. أرسلت الدعوة${m.email?" على "+m.email:""}. نتطلع للقائكم!`
 : `Hi ${m.attendee||""}, it's ${profile.freelancer_name||""} from ${profile.business_name||""}. Confirming our ${profile.meeting_length||20}-minute demo for ${m.clinic} on ${m.label}. The calendar invite is on its way${m.email?" to "+m.email:""}. Looking forward to it!`;
-return `https://wa.me/${num}?text=${encodeURIComponent(txt)}`; }
+return `https://wa.me/${num}?text=${waEnc(txt)}`; }
 function payLink(m, amount){ const to = String(profile.paypal_email||"").trim(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return "";
 const amt = String(amount ?? m.pay_amount ?? profile.pay_amount ?? "").replace(/[^\d.]/g,"");
 const q = new URLSearchParams({cmd:"_xclick", business:to, item_name:`${profile.pay_item||"Mizan AI Agents"} · ${m.clinic||"Clinic"}`.slice(0,127), currency_code:(profile.pay_currency||"USD").toUpperCase(), no_shipping:"1"});
@@ -1082,7 +1082,7 @@ function waPayLink(m){ const num = String(m.whatsapp||"").replace(/[^\d]/g,""), 
 const ar = (state.leads.find(x=>x.id===m.leadId)||{}).lang==="ar", amt = `${(profile.pay_currency||"USD").toUpperCase()} ${profile.pay_amount||""}`.trim();
 const txt = ar ? `مرحباً ${m.attendee||""}، شكراً على وقتكم اليوم. هذا رابط الدفع الآمن عبر PayPal لبدء ${profile.pay_item||"المشروع"} لـ ${m.clinic} (${amt}):\n${pl}\n${profile.freelancer_name||""} · ${profile.business_name||""}`
 : `Hi ${m.attendee||""}, thank you for your time today. Here is the secure PayPal link to start the ${profile.pay_item||"project"} for ${m.clinic} (${amt}):\n${pl}\n${profile.freelancer_name||""} · ${profile.business_name||""}`;
-return `https://wa.me/${num}?text=${encodeURIComponent(txt)}`; }
+return `https://wa.me/${num}?text=${waEnc(txt)}`; }
 function icsText(m){ const end = m.at + (+profile.meeting_length||20)*6e4, uid = (m.id||"m")+"@lead-caller";
 const escI = s => String(s||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\;");
 return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Mizan AI Agents//EN","METHOD:REQUEST","BEGIN:VEVENT",`UID:${uid}`,`DTSTAMP:${icsDate(Date.now())}`,`DTSTART:${icsDate(m.at)}`,`DTEND:${icsDate(end)}`,`SUMMARY:${escI(meetingTitle(m))}`,`DESCRIPTION:${escI(meetingDetails(m))}`,
@@ -1886,12 +1886,14 @@ async function waSendReport(p, btn){
   finally { if (btn){ btn.disabled = false; btn.textContent = label; } }
 }
 
-function waUrl(p, text){ return `https://api.whatsapp.com/send?phone=${waNum(p.phone)}&text=${encodeURIComponent(text)}`; }
+// encodeURIComponent leaves ' ( ) ! * raw; WhatsApp cut "Hi Designer's Clinic…" at the apostrophe
+function waEnc(x){ return encodeURIComponent(x).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase()); }
+function waUrl(p, text){ return `https://api.whatsapp.com/send?phone=${waNum(p.phone)}&text=${waEnc(text)}`; }
 // Opens WhatsApp, and always shows a panel with the message and other ways to open it (copy, WhatsApp Web, the app),
 // because some browsers and in-app panes block new windows or wa.me links.
 const WA_EMBEDDED = /Electron|Claude/i.test(navigator.userAgent);
 function waOpen(p, text, win, onDone){
-  const n = waNum(p.phone), t = encodeURIComponent(text);
+  const n = waNum(p.phone), t = waEnc(text);
   const links = { web:`https://web.whatsapp.com/send?phone=${n}&text=${t}`, app:`whatsapp://send?phone=${n}&text=${t}`, wame:`https://api.whatsapp.com/send?phone=${n}&text=${t}` };
   // Inside the Claude app's browser (an embedded browser WhatsApp Web refuses), hand off to the WhatsApp desktop app instead.
   if (WA_EMBEDDED){ try { win && win.close(); } catch(e){} try { navigator.clipboard.writeText(text).catch(()=>{}); } catch(e){} try { location.href = links.app; } catch(e){} }
