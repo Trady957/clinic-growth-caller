@@ -74,7 +74,7 @@ async function knownKeys() {
   return { phones, places };
 }
 
-async function harvest(budget: number) {
+async function harvest(budget: number, target = 0) {
   const P = plan();
   const { data: cur } = await admin.from("settings").select("data").eq("id", "maps_cursor").maybeSingle();
   let pos = Number(cur?.data?.pos || 0) % P.length, used = 0;
@@ -82,7 +82,8 @@ async function harvest(budget: number) {
   const stats: Record<string, { searches: number; found: number; added: number }> = {};
   const errors: string[] = [];
   const now = new Date().toISOString();
-  while (used < budget) {
+  let addedTotal = 0;
+  while (used < budget && (!target || addedTotal < target)) {
     const job = P[pos]; pos = (pos + 1) % P.length;
     const C = COUNTRY[job.mk], s = (stats[job.mk] ||= { searches: 0, found: 0, added: 0 });
     let token: string | undefined, rows: any[] = [];
@@ -121,8 +122,10 @@ async function harvest(budget: number) {
     }
     for (let i = 0; i < rows.length; i += 200) {
       const { data, error } = await admin.from("leads").upsert(rows.slice(i, i + 200), { onConflict: "phone", ignoreDuplicates: true }).select("id");
-      if (error) errors.push(`${job.mk} insert: ${error.message.slice(0, 120)}`); else s.added += data?.length || 0;
+      if (error) errors.push(`${job.mk} insert: ${error.message.slice(0, 120)}`); else { s.added += data?.length || 0; addedTotal += data?.length || 0; }
     }
+    // Save progress after every search so a run cut off by the time limit resumes in the right place.
+    await admin.from("settings").upsert({ id: "maps_cursor", data: { pos, total: P.length, last_run: now }, updated_at: new Date().toISOString() });
     if (pos === 0) break; // went round the whole plan: stop for today
   }
   await admin.from("settings").upsert({ id: "maps_cursor", data: { pos, total: P.length, last_run: now }, updated_at: now });
@@ -147,9 +150,18 @@ Deno.serve(async (req) => {
   }
   const { data: o } = await admin.from("settings").select("data").eq("id", "outreach").maybeSingle();
   const budget = Math.max(1, Math.min(Number(body.searches) || Number(o?.data?.maps_searches_per_day) || 150, 400));
+  // Daily target of NEW clinics (default 200): count what today's earlier runs already added and only fill the gap.
+  const dayTarget = Math.max(0, Number(body.target_new ?? o?.data?.maps_new_per_day ?? 200));
+  let target = 0;
+  if (dayTarget && !body.searches) {
+    const since = new Date(); since.setUTCHours(0, 0, 0, 0);
+    const { count } = await admin.from("leads").select("id", { count: "exact", head: true }).eq("source", "Google Maps").gte("created_at", since.toISOString());
+    target = dayTarget - (count || 0);
+    if (target <= 0) return json({ ok: true, skipped: `today's target of ${dayTarget} new clinics is already reached (${count})` });
+  }
   // Runs in the background so a big batch isn't cut off.
   const { data: run } = await admin.from("sync_runs").insert({ kind: "maps" }).select("id").single();
-  const job = harvest(budget).then(async (r) => {
+  const job = harvest(budget, target).then(async (r) => {
     const found = Object.values(r.stats).reduce((a: number, x: any) => a + x.found, 0), added = Object.values(r.stats).reduce((a: number, x: any) => a + x.added, 0);
     await admin.from("sync_runs").update({ status: "done", finished_at: new Date().toISOString(), found, added, by_market: r.stats, note: [r.stopped, ...(r.errors || [])].filter(Boolean).join(" | ").slice(0, 500) || null }).eq("id", run?.id);
   }).catch(async (e) => { await admin.from("sync_runs").update({ status: "failed", finished_at: new Date().toISOString(), note: String(e).slice(0, 300) }).eq("id", run?.id); });

@@ -104,8 +104,8 @@
   </div>
 </div></section>
 <section class="blk" id="calllist"><div class="wrap">
-  <div class="sec-h"><div><h2>Today's call list</h2><p>You call from your own phone. Click a clinic to open its script in its language, then save the outcome. Best leads first; the Gulf closes around 6 pm their time.</p></div>
-    <div class="leadbar"><select id="clFilter" class="btn btn-sm" aria-label="Show"><option value="todo">To call</option><option value="done">Called</option><option value="all">All</option></select></div></div>
+  <div class="sec-h"><div><h2>Today's call list</h2><p>You call from your own phone. Pick a country, click a clinic to open its script in its language, then save the outcome. Red rows have no website: they need us most, so call them first. Best leads first; the Gulf closes around 6 pm their time.</p></div>
+    <div class="leadbar"><select id="clMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select><label class="chk"><input type="checkbox" id="clNoWeb" checked> No website first</label><select id="clFilter" class="btn btn-sm" aria-label="Show"><option value="todo">To call</option><option value="done">Called</option><option value="all">All</option></select></div></div>
   <div class="glass"><div class="card-h"><div><h3>Call list</h3><small id="clSum"></small></div></div>
     <div class="tbl"><table><thead><tr><th>#</th><th>Clinic</th><th>Phone</th><th>Outcome</th></tr></thead><tbody id="clRows"></tbody></table></div></div>
 </div></section>
@@ -2125,6 +2125,7 @@ const CL_SVC = {
  fr:{receptionist:"une réceptionniste IA pour les appels et WhatsApp 24h/24",website:"des sites de cliniques avec réservation en ligne",marketing:"le marketing et le référencement Google"}};
 function clFindings(p){
   const r = p.report||{}, enh = r.enhance||[], have = r.have||[], out = [];
+  const rv = +(p.quality?.g_reviews||0); if (!p.report && rv && rv < 60) out.push(["few", String(rv)]);
   const hasWeb = have.some(h=>/^Website/.test(h));
   for (const e of enh){ let m;
     if (/^Website returned/.test(e)) out.push(["down"]);
@@ -2140,8 +2141,9 @@ function clFindings(p){
   return res.length ? res : [["busy"]];
 }
 function clLang(p){ return ["SA","KW","QA","BH","OM","EG","JO","AE"].includes(p.market) || p.lang==="ar" ? "ar" : (p.lang==="fr" || ["FR","BE","MA"].includes(p.market)) ? "fr" : "en"; }
+function clNoWeb(p){ return !p.website && !(p.report?.have||[]).some(h=>/^Website/.test(h)); }
 function callScript(p){
-  if (!p.report) return "";
+  if (!p.report && !clNoWeb(p)) return "";
   const L = clLang(p), f = clFindings(p), fo = ({noweb:"website",down:"website",ads:"marketing",rate:"marketing",few:"marketing",kw:"seo",pixel:"marketing",busy:"receptionist"})[f[0][0]];
   const g = fo==="seo" ? "marketing" : fo, oth = Object.entries(CL_SVC[L]).filter(([k])=>k!==g).map(([,v])=>v);
   const c = String(p.company||"").replace(/\s*[\(\[].*?[\)\]]/g,"").split(/\s[-|–]\s|\|/)[0].trim().slice(0,60);
@@ -2178,18 +2180,22 @@ function callScript(p){
   return S[L].filter(Boolean).join("\n");
 }
 const CL_OUT = { interested:["Interested / meeting","p-ok","hot"], send_info:["Send info","p-brand","warm"], callback:["Call back","p-info","warm"], no_answer:["No answer","p-mute",null], gatekeeper:["Manager not there","p-warn",null], not_interested:["Not interested","p-bad","cold"], wrong_number:["Wrong number","p-bad",null] };
-let clOpen = null, clFilterVal = "todo";
+let clOpen = null, clFilterVal = "todo", clMk = "", clNoWebFirst = true;
 function clLocal(p){ try{ return new Intl.DateTimeFormat("en-GB",{timeZone:clinicTz(p),hour:"2-digit",minute:"2-digit",weekday:"short"}).format(new Date()); }catch(e){ return ""; } }
 function clIsOpen(p){ const s = morningState(p, Date.now()); return s && s.open !== undefined ? s.open : true; }
 function renderCallList(){
   const el = $("clRows"); if (!el) return;
-  const all = state.leads.filter(p=>p.call_list && p.call_rank).sort((a,b)=>a.call_rank-b.call_rank);
+  const pool = state.leads.filter(p=>p.call_list && p.call_rank);
+  const mkSel = $("clMk"); if (mkSel){ const mks = [...new Set(pool.map(p=>p.market))].sort(); const want = `<option value="">All countries (${pool.length})</option>`+mks.map(m=>`<option value="${m}" ${m===clMk?"selected":""}>${esc((MARKETS[m]||{}).name||m)} (${pool.filter(p=>p.market===m && !p.call_outcome).length} to call)</option>`).join(""); if (mkSel.dataset.sig!==want){ mkSel.innerHTML = want; mkSel.dataset.sig = want; mkSel.value = clMk; } }
+  const warm = p => p.call_rank <= 4 || ["question","interested","hours","later"].includes(p.wa_reply_kind);
+  const all = pool.filter(p=>!clMk || p.market===clMk).sort((a,b)=> (warm(b)-warm(a)) || (clNoWebFirst ? clNoWeb(b)-clNoWeb(a) : 0) || a.call_rank-b.call_rank);
   const done = all.filter(p=>p.call_outcome && p.call_outcome!=="no_answer");
   const rows = clFilterVal==="todo" ? all.filter(p=>!p.call_outcome || p.call_outcome==="no_answer") : clFilterVal==="done" ? all.filter(p=>p.call_outcome) : all;
-  $("clSum").textContent = `${all.length} clinics · ${done.length} reached · ${all.filter(p=>p.call_outcome==="interested").length} interested · ${all.filter(p=>!p.call_outcome).length} still to call`;
+  $("clSum").textContent = `${all.length} clinics · ${all.filter(clNoWeb).length} with no website (red, priority) · ${done.length} reached · ${all.filter(p=>p.call_outcome==="interested").length} interested · ${all.filter(p=>!p.call_outcome).length} still to call`;
   el.innerHTML = rows.map(p=>{ const o = CL_OUT[p.call_outcome], L = clLang(p);
-    return `<tr data-cl="${esc(p.id)}" class="${clOpen===p.id?"sel":""}"><td class="mono">${p.call_rank}</td>
-<td><b>${esc(p.company)}</b><small class="cellsub">${esc(p.city||"")} · ${esc(p.market)} · ${L==="ar"?"Arabic":L==="fr"?"French":"English"}${p.wa_step?` · WhatsApp sent${p.wa_reply_kind?" ("+esc(p.wa_reply_kind.replace("_"," "))+")":""}`:""}</small></td>
+    const nw = clNoWeb(p);
+    return `<tr data-cl="${esc(p.id)}" class="${clOpen===p.id?"sel":""}" ${nw?'style="box-shadow:inset 4px 0 0 var(--bad);background:color-mix(in srgb,var(--bad-soft) 55%,transparent)"':""}><td class="mono">${p.call_rank>=1000?"★":p.call_rank}</td>
+<td>${nw?`<span class="pill p-bad" style="margin-bottom:3px">No website · priority</span><br>`:""}<b>${esc(p.company)}</b><small class="cellsub">${esc(p.city||"")} · ${esc(p.market)} · ${L==="ar"?"Arabic":L==="fr"?"French":"English"}${p.wa_step?` · WhatsApp sent${p.wa_reply_kind?" ("+esc(p.wa_reply_kind.replace("_"," "))+")":""}`:""}</small></td>
 <td class="mono" style="white-space:nowrap"><b>${esc(p.phone)}</b><small class="cellsub">Their time: ${esc(clLocal(p))}</small></td>
 <td>${o?`<span class="pill ${o[1]}">${o[0]}</span>${p.call_note?`<small class="cellsub">${esc(p.call_note)}</small>`:""}`:`<span class="pill p-mute">To call</span>`}</td></tr>
 ${clOpen===p.id?`<tr class="stx-row"><td colspan="4"><div class="stx-c" style="max-width:820px"><div dir="auto" style="white-space:pre-wrap;font-size:14px;line-height:1.6">${esc(callScript(p)) || "No report yet for this clinic."}</div>
@@ -2213,7 +2219,7 @@ document.addEventListener("click", e=>{
   const cp = e.target.closest("[data-clcopy]"); if (cp){ const p = state.leads.find(x=>x.id===cp.dataset.clcopy); if (p) navigator.clipboard?.writeText(p.phone).then(()=>toast("Number copied: "+p.phone)); return; }
   const tr = e.target.closest("tr[data-cl]"); if (tr){ clOpen = clOpen===tr.dataset.cl ? null : tr.dataset.cl; renderCallList(); }
 });
-document.addEventListener("change", e=>{ if (e.target.id==="clFilter"){ clFilterVal = e.target.value; renderCallList(); } });
+document.addEventListener("change", e=>{ if (e.target.id==="clFilter"){ clFilterVal = e.target.value; renderCallList(); } if (e.target.id==="clMk"){ clMk = e.target.value; clOpen = null; renderCallList(); } if (e.target.id==="clNoWeb"){ clNoWebFirst = e.target.checked; renderCallList(); } });
 
 function renderAll(){ syncLive(); try{ renderCallList(); }catch(e){ console.error(e); } renderClock(); renderAccounts(); renderReviews(); renderOps(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderWa(); renderTranscriptEmpty(); }
 let callBusy = false;
