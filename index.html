@@ -2180,6 +2180,10 @@ function callScript(p){
   return S[L].filter(Boolean).join("\n");
 }
 const CL_OUT = { interested:["Interested / meeting","p-ok","hot"], send_info:["Send info","p-brand","warm"], callback:["Call back","p-info","warm"], no_answer:["No answer","p-mute",null], gatekeeper:["Manager not there","p-warn",null], not_interested:["Not interested","p-bad","cold"], wrong_number:["Wrong number","p-bad",null] };
+const POPTOX = {SA:["Saudi-Arabia","966"],AE:["United-Arab-Emirates","971"],QA:["","974"],KW:["Kuwait","965"],BH:["Bahrain","973"],OM:["","968"],EG:["Egypt","20"],JO:["Jordan","962"],MA:["Morocco","212"],GB:["United-Kingdom","44"],IE:["Ireland","353"],FR:["France","33"],BE:["Belgium","32"],ES:["Spain","34"],IT:["Italy","39"],NL:["Netherlands","31"],US:["USA","1"],CA:["Canada","1"]};
+function popTox(p){ const [page, cc] = POPTOX[p.market]||["",""]; const d = String(p.phone||"").replace(/[^\d]/g,""); const local = cc && d.startsWith(cc) ? d.slice(cc.length) : d;
+  navigator.clipboard?.writeText(local).catch(()=>{}); window.open("https://www.poptox.com/"+(page||""), "_blank", "noopener");
+  toast(`PopTox opened${page?" for "+page.replace(/-/g," "):""}. Number copied: ${local} (country code +${cc}). Paste it in the dialpad and press Call.`); }
 let clOpen = null, clFilterVal = "todo", clMk = "", clNoWebFirst = true;
 function clLocal(p){ try{ return new Intl.DateTimeFormat("en-GB",{timeZone:clinicTz(p),hour:"2-digit",minute:"2-digit",weekday:"short"}).format(new Date()); }catch(e){ return ""; } }
 function clIsOpen(p){ const s = morningState(p, Date.now()); return s && s.open !== undefined ? s.open : true; }
@@ -2199,7 +2203,7 @@ function renderCallList(){
 <td class="mono" style="white-space:nowrap"><b>${esc(p.phone)}</b><small class="cellsub">Their time: ${esc(clLocal(p))}</small></td>
 <td>${o?`<span class="pill ${o[1]}">${o[0]}</span>${p.call_note?`<small class="cellsub">${esc(p.call_note)}</small>`:""}`:`<span class="pill p-mute">To call</span>`}</td></tr>
 ${clOpen===p.id?`<tr class="stx-row"><td colspan="4"><div class="stx-c" style="max-width:820px"><div dir="auto" style="white-space:pre-wrap;font-size:14px;line-height:1.6">${esc(callScript(p)) || "No report yet for this clinic."}</div>
-<div class="leadbar" style="margin-top:10px"><button type="button" class="btn btn-sm" data-clcopy="${esc(p.id)}">Copy number</button>${Object.entries(CL_OUT).map(([k,v])=>`<button type="button" class="btn btn-sm ${p.call_outcome===k?"btn-primary":""}" data-clout="${k}" data-id="${esc(p.id)}">${v[0]}</button>`).join("")}</div>
+<div class="leadbar" style="margin-top:10px"><button type="button" class="btn btn-sm btn-primary" data-clpop="${esc(p.id)}" title="Free browser call: opens PopTox for this country and copies the number">📞 Call free (PopTox)</button><button type="button" class="btn btn-sm" data-clcopy="${esc(p.id)}">Copy number</button>${Object.entries(CL_OUT).map(([k,v])=>`<button type="button" class="btn btn-sm ${p.call_outcome===k?"btn-primary":""}" data-clout="${k}" data-id="${esc(p.id)}">${v[0]}</button>`).join("")}</div>
 <label class="field" style="margin-top:8px">Note (name of decision-maker, callback time, email…)<input type="text" id="clNote" dir="auto" value="${esc(p.call_note||"")}" placeholder="e.g. Dr Ahmed, call Sunday 11am, wants report on WhatsApp"></label></div></td></tr>`:""}`; }).join("") || `<tr><td colspan="4" class="muted">Nothing here.</td></tr>`;
 }
 async function clSave(p, outcome){
@@ -2216,6 +2220,7 @@ async function clSave(p, outcome){
 }
 document.addEventListener("click", e=>{
   const out = e.target.closest("[data-clout]"); if (out){ const p = state.leads.find(x=>x.id===out.dataset.id); if (p) clSave(p, out.dataset.clout); return; }
+  const pt = e.target.closest("[data-clpop]"); if (pt){ const p = state.leads.find(x=>x.id===pt.dataset.clpop); if (p) popTox(p); return; }
   const cp = e.target.closest("[data-clcopy]"); if (cp){ const p = state.leads.find(x=>x.id===cp.dataset.clcopy); if (p) navigator.clipboard?.writeText(p.phone).then(()=>toast("Number copied: "+p.phone)); return; }
   const tr = e.target.closest("tr[data-cl]"); if (tr){ clOpen = clOpen===tr.dataset.cl ? null : tr.dataset.cl; renderCallList(); }
 });
