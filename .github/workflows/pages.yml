@@ -23,7 +23,7 @@ jobs:
       - name: Build site (only the console page)
         run: |
           mkdir -p dist
-          cp index.html dist/index.html
+          cp index.html dist/ && mkdir -p dist/offer && cp offer/index.html dist/offer/index.html
           touch dist/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
