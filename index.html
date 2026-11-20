@@ -815,6 +815,7 @@ return V(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name=
 }
 let rptLead = null;
 function downloadReport(p){
+if (p._lean){ toast("Loading this clinic's report…"); ensureFull(p).then(()=>downloadReport(p)); return; }
 if (!p.report){ toast("Run a full scan first."); return; }
 rptLead = p;
 const html = reportHtml(p), body = html.slice(html.indexOf("<body>")+6, html.lastIndexOf("</body>"));
@@ -1383,6 +1384,60 @@ return {pid:r.lead_id, camp:lead?.campaign||"dental", outcome:LIVE_OUTCOME(r), d
 transcript:r.transcript||[], test:!!r.test, answered:r.answered, analysis:r.analysis||null, status:r.status, conversationId:r.conversation_id};
 }
 const TABLES = {leads:{t:"leads", from:rowToLead, to:leadToRow, order:"created_at"}, calls:{t:"calls", from:rowToCall, to:null, order:"created_at"}, meetings:{t:"meetings", from:rowToMeeting, to:meetingToRow, order:"created_at"}};
+
+// ===== Fast lead loading =====
+// The lead table is large (11k+ rows, ~20 MB of scan reports). Load the light columns first so the
+// console opens in seconds, then fill in report/audit in the background, priority rows first.
+// Realtime changes are merged row by row instead of reloading the whole table.
+const LEAD_LEAN = "id,name,name_ar,company,city,role,industry,phone,email,website,market,lang,campaign,context,source,consent,dncr,opted_out,status,score,next,declined,created_at,updated_at,osm_id,quality,verified,last_seen_at,lat,lon,report_at,list,verify,email_status,email_campaign,email_reason,email_pushed_at,email_last_event_at,email_replies,instantly_lead_id,wa_focus,wa_step,wa_status,wa_last_at,wa_next_at,wa_log,report_pdf_url,wa_reply_kind,wa_reply_text,wa_reply_at,wa_retry_at,call_script,call_list,call_rank,call_outcome,call_note,call_at";
+let leadsFilling = false, leadRows = null;
+async function sbRetry(fn, tries=3){ let last; for (let i=0;i<tries;i++){ const r = await fn(); if (!r.error) return r; last = r; await new Promise(z=>setTimeout(z, 800*(i+1))); } return last; }
+async function ensureFull(p){
+  if (!p || !p._lean) return p;
+  const r = await sbRetry(()=>sb.from("leads").select("id,report,audit").eq("id", p.id).maybeSingle());
+  if (!r.error && r.data){ p.report = r.data.report || null; p.audit = r.data.audit || null; delete p._lean;
+    const cur = leadRows && leadRows.get(p.id); if (cur){ cur.report = r.data.report; cur.audit = r.data.audit; delete cur._lean; } }
+  return p;
+}
+function leadsSnapshot(cb, onErr, channels){
+  const rows = new Map(); leadRows = rows; let emitT = null;
+  const emit = (now) => { clearTimeout(emitT); const go = () => cb({docs:[...rows.values()].map(r=>({id:r.id, data:()=>{ const o = rowToLead(r); if (r._lean) o._lean = true; return o; }}))}); if (now) go(); else emitT = setTimeout(go, 600); };
+  const PAGE = 1000;
+  (async () => {
+    const head = await sbRetry(()=>sb.from("leads").select("id", {count:"exact", head:true}));
+    if (head.error){ onErr && onErr(head.error); return; }
+    const total = head.count || 0, pages = Math.max(1, Math.ceil(total / PAGE));
+    let failed = null, next = 0;
+    const worker = async () => { while (next < pages && !failed){ const i = next++;
+      const r = await sbRetry(()=>sb.from("leads").select(LEAD_LEAN).order("created_at",{ascending:true}).order("id",{ascending:true}).range(i*PAGE, i*PAGE+PAGE-1));
+      if (r.error){ failed = r.error; return; }
+      for (const row of r.data){ const old = rows.get(row.id); rows.set(row.id, old && !old._lean ? {...old, ...row} : {...row, _lean:true}); } } };
+    await Promise.all([worker(), worker(), worker()]);
+    if (failed && !rows.size){ onErr && onErr(failed); return; }
+    if (failed) toast("Some clinics didn't load. Reload the page to try again.");
+    emit(true);
+    // Background: fill report/audit, rows that matter today first.
+    leadsFilling = true;
+    const lean = [...rows.values()].filter(r=>r._lean);
+    const pri = r => (r.call_list ? 0 : r.email_status || r.wa_step || (r.status && r.status!=="new") ? 1 : r.campaign===activeCamp ? 2 : 3);
+    lean.sort((a,b)=>pri(a)-pri(b));
+    for (let i=0; i<lean.length; i+=150){
+      const ids = lean.slice(i, i+150).map(r=>r.id);
+      const r = await sbRetry(()=>sb.from("leads").select("id,report,audit").in("id", ids));
+      if (r.error) continue;
+      for (const x of r.data){ const cur = rows.get(x.id); if (cur){ cur.report = x.report; cur.audit = x.audit; delete cur._lean; } }
+      emit(false);
+    }
+    leadsFilling = false; emit(false);
+  })();
+  const ch = sb.channel("rt-leads").on("postgres_changes", {event:"*", schema:"public", table:"leads"}, (pl) => {
+    if (pl.eventType === "DELETE"){ if (pl.old && pl.old.id) rows.delete(pl.old.id); }
+    else if (pl.new && pl.new.id){ const old = rows.get(pl.new.id) || {}; rows.set(pl.new.id, {...old, ...pl.new, _lean: ("report" in pl.new) ? undefined : old._lean}); if (!rows.get(pl.new.id)._lean) delete rows.get(pl.new.id)._lean; }
+    emit(false);
+  }).subscribe();
+  channels.push(ch);
+  return () => sb.removeChannel(ch);
+}
 function makeDb(){
 const channels = [];
 return {
@@ -1394,6 +1449,7 @@ async set(data){ if (!T?.to) return; const { error } = await sb.from(T.t).upsert
 async delete(){ const { error } = await sb.from(T.t).delete().eq("id", id); if (error) throw {code:"permission_denied", message:error.message}; },
 }; },
 onSnapshot(cb, onErr){
+if (name === "leads") return leadsSnapshot(cb, onErr, channels);
 let timer = null;
 const load = async () => {
 let data = [], error = null;
@@ -1883,6 +1939,7 @@ async function waSendReport(p, btn){
   const win = WA_EMBEDDED ? null : window.open("", "_blank"); // opened now, so the browser doesn't block it after the upload
   const label = btn ? btn.textContent : ""; if (btn){ btn.disabled = true; btn.textContent = "Preparing report…"; }
   try {
+    await ensureFull(p);
     if (!p.report){ if (btn) btn.textContent = "Scanning the clinic…"; const ok = await deepScan(p); if (!ok || !p.report) throw new Error("the scan didn't finish"); }
     let url = p.report_pdf_url;
     if (!url || (p.report_at && p.report_pdf_at && Date.parse(p.report_at) > p.report_pdf_at)){
@@ -2284,7 +2341,7 @@ async function loadWebReq(){
 }
 document.addEventListener("change", async e=>{ const id = e.target?.dataset?.wr; if (!id) return; await sb.from("offer_requests").update({status:e.target.value}).eq("id", id); loadWebReq(); });
 document.addEventListener("click", e=>{ if (e.target?.id==="wrRefresh") loadWebReq(); });
-function renderAll(){ syncLive(); try{ renderCallList(); }catch(e){ console.error(e); } renderClock(); renderAccounts(); renderReviews(); renderOps(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderWa(); renderTranscriptEmpty(); }
+function renderAll(){ { const sel = state.leads && state.leads.find(x=>x.id===selectedId); if (sel && sel._lean && !sel._fetching){ sel._fetching = 1; ensureFull(sel).then(()=>renderAll()); } } syncLive(); try{ renderCallList(); }catch(e){ console.error(e); } renderClock(); renderAccounts(); renderReviews(); renderOps(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderWa(); renderTranscriptEmpty(); }
 let callBusy = false;
 function lastCallFor(id){ return state.log.filter(l=>l.pid===id).sort((a,b)=>b.at-a.at)[0] || null; }
 function callPayload(p){
@@ -2427,6 +2484,7 @@ p.audit = data.audit; if (data.report) p.report = data.report; renderAll(); retu
 }
 async function auditAll(){
 if (auditRun){ auditRun.stop = true; return; }
+if (leadsFilling){ toast("Still loading scan reports. Try again in a minute."); return; }
 const list = state.leads.filter(p=>p.campaign===activeCamp && !p.report && p.status!=="dnc" && !p.optedOut);
 if (!list.length){ toast("Every clinic in this campaign is already scanned."); return; }
 auditRun = {stop:false}; let done = 0;
