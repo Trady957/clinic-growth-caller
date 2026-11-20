@@ -120,7 +120,7 @@
   <div class="camps" id="campaigns"></div>
   <div class="work">
     <div class="glass">
-      <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button> <button type="button" class="btn btn-sm" id="gmapsAllBtn" title="Looks up every clinic on Google Maps: rating, reviews, open or closed, and whether the phone number matches">Google Maps check</button> <button type="button" class="btn btn-sm" id="cleanupBtn" title="Deletes clinics rated 4★ or more, duplicates and permanently closed clinics, and corrects phones and websites from Google. Shows a preview and downloads a backup first.">Clean up list</button></div>
+      <div class="card-h"><div><h3>Call queue</h3><small id="queueSum"></small></div><select id="qMk" class="btn btn-sm" aria-label="Filter call queue by country"><option value="">All countries</option></select><button type="button" class="btn btn-sm" id="auditAllBtn" title="Scans each clinic's website, Google Maps rating and Google Ads in the Claude desktop app's browser">Scan clinics</button> <button type="button" class="btn btn-sm" id="gmapsAllBtn" title="Looks up every clinic on Google Maps: rating, reviews, open or closed, and whether the phone number matches">Google Maps check</button> <button type="button" class="btn btn-sm" id="cleanupBtn" title="Deletes clinics rated 4★ or more, duplicates and permanently closed clinics, and corrects phones and websites from Google. Shows a preview and downloads a backup first.">Clean up list</button></div>
       <div class="opps" id="opps"></div>
       <div class="tbl"><table><thead><tr><th>Clinic</th><th>Has now</th><th>Propose</th><th>Enhance</th><th>Reviews</th><th>Rule check</th><th></th></tr></thead><tbody id="queue"></tbody></table></div>
     </div>
@@ -953,8 +953,14 @@ let queueLimit = 60;
 function qflag(p){ const q = p.quality; if (!q) return ""; if (q.phone_valid===false) return `<span class="qflag qf-bad">Bad number</span>`; if (q.stale) return `<span class="qflag qf-bad">Not on map</span>`;
 const c = q.confidence; return c==="high" ? `<span class="qflag qf-ok" title="Number checked for its country">Verified</span>` : `<span class="qflag qf-warn" title="${esc((q.issues||[]).join(" · "))}">Check data</span>`; }
 const CONF = {high:0, medium:1, low:2};
+document.addEventListener("change", e=>{ if (e.target?.id==="qMk"){ queueLimit = 60; renderQueue(); } });
 function renderQueue(){
-const all = state.leads.filter(p=>p.campaign===activeCamp && p.list!=="future");
+const inCamp = state.leads.filter(p=>p.campaign===activeCamp && p.list!=="future");
+const qSel = $("qMk"); if (qSel){ const cur = qSel.value, cnt = {}; inCamp.forEach(p=>{ cnt[p.market]=(cnt[p.market]||0)+1; });
+  qSel.innerHTML = `<option value="">All countries (${inCamp.length})</option>` + Object.keys(cnt).sort((a,b)=>((MARKETS[a]||{}).name||a).localeCompare((MARKETS[b]||{}).name||b)).map(k=>`<option value="${esc(k)}">${esc((MARKETS[k]||{}).name||k)} (${cnt[k]})</option>`).join("");
+  qSel.value = cnt[cur] ? cur : ""; }
+const qMkSel = qSel ? qSel.value : "";
+const all = qMkSel ? inCamp.filter(p=>p.market===qMkSel) : inCamp;
 const graded = all.map(p=>({p, g:checkLead(p, activeCamp, simTime)}));
 graded.sort((a,b)=> (b.g.ok-a.g.ok) || ((CONF[a.p.quality?.confidence]??1)-(CONF[b.p.quality?.confidence]??1)) || ((b.p.score||0)-(a.p.score||0)) || String(a.p.company).localeCompare(String(b.p.company)));
 const ready = graded.filter(x=>x.g.ok).length;
