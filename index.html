@@ -64,7 +64,7 @@
     <div><b id="brandName">Mizan AI Agents</b><span>Clinic Caller</span></div>
   </a>
   <span class="vsep" aria-hidden="true"></span>
-  <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>Worldwide · not UAE clinics</small></div>
+  <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>Worldwide · UAE included</small></div>
   <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#webreq">Website requests</a><a href="#calllist">Call list</a><a href="#calls">Calls</a><a href="#emails">Emails</a><a href="#whatsapp">WhatsApp</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
   <div class="bar-r"><span class="muted" id="whoami" style="font-size:12px"></span><button type="button" class="btn btn-sm btn-ghost" id="signOutBtn">Sign out</button><span class="pill p-ok" id="winPill"><span class="d"></span>Calling open</span><span class="pill p-mute" id="dbPill" title="Where your leads are saved"><span class="d"></span>Sample data</span></div>
 </div></header>
@@ -75,7 +75,7 @@
     <div>
       <div class="eyebrow" id="heroEyebrow">Freelance · Dubai</div>
       <h1>Every clinic called, qualified and <em>booked in.</em></h1>
-      <p class="lede" id="heroLede">Your AI caller phones dental, aesthetic and medical clinics worldwide (outside the UAE), gets past reception to the owner or manager, finds out if they need marketing or AI agents, and books confirmed demo meetings in each clinic's own time zone, with the calendar invite and WhatsApp confirmation ready to send.</p>
+      <p class="lede" id="heroLede">Your AI caller phones dental, aesthetic and medical clinics worldwide (UAE: your own calls only), gets past reception to the owner or manager, finds out if they need marketing or AI agents, and books confirmed demo meetings in each clinic's own time zone, with the calendar invite and WhatsApp confirmation ready to send.</p>
       <div class="chips">
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>UAE calling rules built in</span>
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Confirmed meetings</span>
@@ -161,13 +161,13 @@
     </div>
   </div>
   <div class="glass" style="margin-top:14px">
-    <div class="card-h"><div><h3>Email activity</h3><small id="emActSum"></small></div></div>
+    <div class="card-h"><div><h3>Email activity</h3><small id="emActSum"></small></div><select id="emMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select></div>
     <div class="tbl"><table><thead><tr><th>Clinic</th><th>Country</th><th>Email</th><th>Why email</th><th>Status</th><th>Last update</th></tr></thead><tbody id="emAct"></tbody></table></div>
   </div>
 </div></section>
 <section class="blk" id="whatsapp"><div class="wrap">
   <div class="sec-h"><div><h2>WhatsApp</h2><p>A short, personal sequence per clinic, built around what each clinic needs most: an AI receptionist, a website, or marketing. Each day's queue is ready; one tap opens WhatsApp with the message written, and the next follow-up is scheduled.</p></div>
-    <div class="leadbar"><select id="waFilter" class="btn btn-sm" aria-label="Show"><option value="due">Due today</option><option value="active">In sequence</option><option value="replied">Replied</option><option value="reached">Reached out + replies</option><option value="all">All eligible</option></select></div></div>
+    <div class="leadbar"><select id="waMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select><select id="waFilter" class="btn btn-sm" aria-label="Show"><option value="due">Due today</option><option value="active">In sequence</option><option value="replied">Replied</option><option value="reached">Reached out + replies</option><option value="all">All eligible</option></select></div></div>
   <div class="ops-conn" id="waKpis"></div>
   <div class="glass" style="margin-top:14px">
     <div class="card-h"><div><h3 id="waHead">Today's WhatsApp queue</h3><small id="waSum"></small></div></div>
@@ -198,7 +198,7 @@
 </div></section>
 <section class="blk" id="reviews"><div class="wrap">
   <div class="sec-h"><div><h2>Reviews</h2><p>Google Maps rating and latest reviews for every account, with what patients praise and complain about. Complaints are your best opening line.</p></div>
-    <div class="leadbar"><select id="revFilter" class="btn btn-sm" aria-label="Show"><option value="">All with Google data</option><option value="low">Rated below 4.5</option><option value="few">Under 100 reviews</option><option value="complaints">Has complaints</option><option value="phone">Complaints about phones</option><option value="none">Not scanned yet</option></select></div></div>
+    <div class="leadbar"><select id="revMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select><select id="revFilter" class="btn btn-sm" aria-label="Show"><option value="">All with Google data</option><option value="low">Rated below 4.5</option><option value="few">Under 100 reviews</option><option value="complaints">Has complaints</option><option value="phone">Complaints about phones</option><option value="none">Not scanned yet</option></select></div></div>
   <div class="acc-kpis" id="revKpis" style="margin-bottom:14px"></div>
   <div class="glass"><div class="tbl"><table><thead><tr><th>Clinic</th><th>Rating</th><th>Reviews</th><th>Latest review</th><th>What patients say</th><th></th></tr></thead><tbody id="revRows"></tbody></table></div></div>
 </div></section>
@@ -206,7 +206,7 @@
   <div class="sec-h"><div><h2>Clinics</h2><p>Add clinics one by one, paste a list from a spreadsheet or Google Maps export, and export your pipeline.</p></div>
     <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="all">All leads</button><button role="tab" aria-selected="false" data-tab="add">Add a lead</button><button role="tab" aria-selected="false" data-tab="import">Paste a list</button></div></div>
   <div class="glass" id="tab-all">
-    <div class="card-h"><div><h3>Pipeline</h3><small id="pipeSum"></small></div><div class="leadbar"><select id="pipeFilter" class="btn btn-sm" aria-label="Filter"><option value="">All statuses</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option><option value="new">Not called</option><option value="booked">Meeting confirmed</option><option value="referral">Got decision-maker</option><option value="dnc">Do not call</option><option value="future">Saved for later</option></select><button type="button" class="btn btn-sm" id="exportBtn">Export CSV</button></div></div>
+    <div class="card-h"><div><h3>Pipeline</h3><small id="pipeSum"></small></div><div class="leadbar"><select id="pipeMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select><select id="pipeFilter" class="btn btn-sm" aria-label="Filter"><option value="">All statuses</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cold">Cold</option><option value="new">Not called</option><option value="booked">Meeting confirmed</option><option value="referral">Got decision-maker</option><option value="dnc">Do not call</option><option value="future">Saved for later</option></select><button type="button" class="btn btn-sm" id="exportBtn">Export CSV</button></div></div>
     <div class="tbl"><table><thead><tr><th>Clinic</th><th>Campaign</th><th>Status</th><th>Score</th><th>Next step</th><th></th></tr></thead><tbody id="pipe"></tbody></table></div>
   </div>
   <form class="glass" id="tab-add" hidden>
@@ -287,7 +287,7 @@
   <div class="glass" style="margin-top:14px;padding:18px 20px" id="icp">
     <div class="eyebrow">Ideal customer profile</div>
     <h3 style="margin:4px 0 8px">Who Mizan AI Agents calls</h3>
-    <p style="margin:0 0 10px">Privately owned dental clinics first, aesthetic and dermatology clinics second: 1–5 sites, 3–40 staff, private-pay treatments. Gulf (not UAE), Egypt, Jordan, Morocco, UK and Europe (email first), US and Canada (business landlines). Not hospitals, government or insurer clinics, or groups with their own call centre.</p>
+    <p style="margin:0 0 10px">Privately owned dental clinics first, aesthetic and dermatology clinics second: 1–5 sites, 3–40 staff, private-pay treatments. Gulf incl. UAE, Egypt, Jordan, Morocco, UK and Europe (email first), US and Canada (business landlines). Not hospitals, government or insurer clinics, or groups with their own call centre.</p>
     <div class="nd-grid"><div><h4>Call first when 3+ are true</h4><ul style="margin:0;padding-left:18px">
       <li>Google rating 3.5–4.6, reviews mention phones or waiting</li><li>No online booking or no website</li><li>No WhatsApp, or slow replies</li><li>Runs Google or Instagram ads</li><li>Closed evenings or weekends</li><li>Arabic market with an English-only site</li><li>Few or old Google reviews</li><li>Hiring a receptionist</li></ul></div>
     <div><h4>What to pitch (at most two)</h4><ul style="margin:0;padding-left:18px">
@@ -350,7 +350,7 @@
 <div class="toast" id="toast" hidden></div>
 <script>
 /* Markets. Offsets come from each IANA time zone, so daylight saving is handled.
-   UAE is kept only so older leads still display; it is never called (excluded: true).
+   UAE: Maha's own manual calls only (manualOnly), 09:00–18:00 weekdays; the AI caller never dials UAE.
    consentRequired: AI voice calls need prior consent there (US/Canada TCPA; UK PECR reg. 19 and EU ePrivacy art. 13 for automated calls). Email first, call after a reply. */
 function tzOffset(tz, ms){ const d = new Date(ms ?? Date.now()); const p = Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(d).map(x=>[x.type,x.value]));
   return Math.round((Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute) - Math.floor(d.getTime()/6e4)*6e4)/36e5*4)/4; }
@@ -358,7 +358,7 @@ const GULF_NOTES = ["Conservative defaults until confirmed with an advisor","Ide
 const CONSENT_NOTES = ["AI voice calls only after the clinic replied or asked for a call","First touch is an email; record the reply as consent","Check the national do-not-call register before dialling"];
 const mkDef = (o)=>({start:9.5,end:18,dncr:true,maxUnansweredPerDay:1,maxUnansweredPerWeek:2,verified:false,consentRequired:false,...o, get offset(){ return tzOffset(this.tz); }});
 const MARKETS = {
-AE:mkDef({name:"UAE (excluded)",cc:"AE",tz:"Asia/Dubai",weekend:[0,6],excluded:true,center:[24.4,54.4],notes:["Not called: UAE telemarketing needs TDRA approval and a licensed local number"],source:"Cabinet Resolutions 56 & 57 of 2024",verified:true}),
+AE:mkDef({name:"UAE",cc:"AE",tz:"Asia/Dubai",weekend:[0,6],start:9,end:18,center:[24.4,54.4],manualOnly:true,notes:["Your own calls only (no AI calls): 09:00–18:00, Monday to Friday","Business numbers only; never numbers on the UAE do-not-call register","TDRA rules: marketing calls should come from a number registered to the business"],source:"Cabinet Resolutions 56 & 57 of 2024",verified:true}),
 SA:mkDef({name:"Saudi Arabia",cc:"SA",tz:"Asia/Riyadh",weekend:[5,6],center:[24.7,46.7],notes:["Promotional calls need documented consent","Unsubscribe honoured within 24 hours","Window set conservatively to 09:00–18:00"],source:"CST rules; confirm window locally"}),
 QA:mkDef({name:"Qatar",cc:"QA",tz:"Asia/Qatar",weekend:[5,6],center:[25.3,51.5],notes:GULF_NOTES,source:"Conservative default"}),
 KW:mkDef({name:"Kuwait",cc:"KW",tz:"Asia/Kuwait",weekend:[5,6],center:[29.3,47.9],notes:GULF_NOTES,source:"Conservative default"}),
@@ -385,7 +385,7 @@ const DEFAULT_MK = "SA";
 const callableMarkets = ()=>Object.entries(MARKETS).filter(([,m])=>!m.excluded);
 const TZNAME = Object.fromEntries(Object.entries(MARKETS).map(([k,m])=>[k, m.name.replace(/ \(excluded\)/,"")+" time"]));
 const CAMPAIGNS = {
-dental:{name:"Dental clinics",kind:"cold",desc:"Dental clinics and centres, Gulf (not UAE), Middle East, Europe and North America."},
+dental:{name:"Dental clinics",kind:"cold",desc:"Dental clinics and centres, Gulf incl. UAE, Middle East, Europe and North America."},
 aesthetic:{name:"Aesthetic & derma",kind:"cold",desc:"Cosmetic, dermatology and laser clinics."},
 medical:{name:"Medical centres",kind:"cold",desc:"Polyclinics, family and specialist clinics."},
 inbound:{name:"Demo requests",kind:"warm",desc:"Clinics that asked about marketing or AI agents."},
@@ -427,7 +427,7 @@ function normLead(l){ return {status:"new",score:null,next:"",declined:[],attemp
 function checkLead(p, campKey, now){
 const mk = MARKETS[p.market]||MARKETS[DEFAULT_MK], camp = CAMPAIGNS[campKey]||CAMPAIGNS.dental, checks = [];
 const add = (ok, okText, failText) => checks.push({ok, text: ok ? okText : failText});
-if (mk.excluded) add(false, "", "UAE is excluded: not called");
+if (mk.excluded) add(false, "", "Excluded: not called");
 if (mk.consentRequired) add(!!p.consent, "Replied or asked for a call (consent on file)", "Email first: AI calls here need the clinic's consent");
 add(!p.optedOut && p.status!=="dnc", "Has not opted out", "Asked not to be called");
 if (p.quality && p.quality.phone_valid===false) add(false, "", "Number failed the format check");
@@ -957,21 +957,18 @@ const CONF = {high:0, medium:1, low:2};
 document.addEventListener("change", e=>{ if (e.target?.id==="qMk"){ queueLimit = 60; renderQueue(); } });
 function renderQueue(){
 const inCamp = state.leads.filter(p=>p.campaign===activeCamp && p.list!=="future");
-const qSel = $("qMk"); if (qSel){ const cur = qSel.value, cnt = {}; inCamp.forEach(p=>{ cnt[p.market]=(cnt[p.market]||0)+1; });
-  qSel.innerHTML = `<option value="">All countries (${inCamp.length})</option>` + Object.keys(cnt).sort((a,b)=>((MARKETS[a]||{}).name||a).localeCompare((MARKETS[b]||{}).name||b)).map(k=>`<option value="${esc(k)}">${esc((MARKETS[k]||{}).name||k)} (${cnt[k]})</option>`).join("");
-  qSel.value = cnt[cur] ? cur : ""; }
-const qMkSel = qSel ? qSel.value : "";
+const qMkSel = fillMk("qMk", inCamp);
 const all = qMkSel ? inCamp.filter(p=>p.market===qMkSel) : inCamp;
 const graded = all.map(p=>({p, g:checkLead(p, activeCamp, simTime)}));
-graded.sort((a,b)=> (b.g.ok-a.g.ok) || ((CONF[a.p.quality?.confidence]??1)-(CONF[b.p.quality?.confidence]??1)) || ((b.p.score||0)-(a.p.score||0)) || String(a.p.company).localeCompare(String(b.p.company)));
+graded.sort((a,b)=> (b.g.ok-a.g.ok) || (clNoWeb(b.p)-clNoWeb(a.p)) || ((CONF[a.p.quality?.confidence]??1)-(CONF[b.p.quality?.confidence]??1)) || ((b.p.score||0)-(a.p.score||0)) || String(a.p.company).localeCompare(String(b.p.company)));
 const ready = graded.filter(x=>x.g.ok).length;
 const shown = graded.filter((x,i)=> i < queueLimit || x.p.id===selectedId);
 const list = all;
 $("queue").innerHTML = (shown.length ? shown.map(({p, g})=>{
 const status = g.ok ? `<span class="pill p-ok"><span class="d"></span>Cleared to call</span>` :
 `<div class="reasons">${g.fails.map(f=>`<span class="pill ${/outside|tried|Weekly|spoke|Weekend|booked/i.test(f.text)?"p-warn":"p-bad"}">${esc(f.text)}</span>`).join("")}</div>`;
-return `<tr data-id="${esc(p.id)}" class="${p.id===selectedId?"sel":""}">
-<td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.company)}</b>${qflag(p)}<small>${esc(isPerson(p)?p.name+(p.role?", "+p.role:""):(p.role||"Clinic manager"))}</small><small class="mono">${esc(p.phone)} · ${p.lang==="ar"?"Arabic":"English"} · ${esc(p.city?p.city+", ":"")}${(MARKETS[p.market]||MARKETS[DEFAULT_MK]).name}</small></div></div></td>
+return `<tr data-id="${esc(p.id)}" class="${p.id===selectedId?"sel":""}"${clNoWeb(p)?NOWEB_TR:""}>
+<td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.company)}</b>${qflag(p)}${noWebPill(p)}<small>${esc(isPerson(p)?p.name+(p.role?", "+p.role:""):(p.role||"Clinic manager"))}</small><small class="mono">${esc(p.phone)} · ${p.lang==="ar"?"Arabic":"English"} · ${esc(p.city?p.city+", ":"")}${(MARKETS[p.market]||MARKETS[DEFAULT_MK]).name}</small></div></div></td>
 <td class="qc qc-have">${haveCell(p)}</td><td class="qc">${proposeCell(p)}</td><td class="qc">${enhanceCell(p)}</td><td class="qc qc-rev">${reviewsCell(p)}</td>
 <td>${status}<span class="cellsub"><span class="pill ${STATUS[p.status||"new"][1]}">${STATUS[p.status||"new"][0]}</span></span></td>
 <td style="text-align:right"><button type="button" class="btn btn-sm ${g.ok?"btn-primary":""}" data-call="${esc(p.id)}" ${call||!g.ok?"disabled":""}>${ICON.phone}Call</button></td></tr>
@@ -1004,14 +1001,15 @@ return `<tr data-log="${esc(l.id)}" class="${selectedLog===l.id?"sel":""}"><td c
 
 function renderPipe(){
 const f = $("pipeFilter").value;
-const rows = state.leads.filter(p=>!f || (f==="future" ? p.list==="future" : f==="dnc" ? (p.status==="dnc"||p.optedOut) : (p.status||"new")===f));
+const rows0 = state.leads.filter(p=>!f || (f==="future" ? p.list==="future" : f==="dnc" ? (p.status==="dnc"||p.optedOut) : (p.status||"new")===f));
+const rowsMk = byMk(rows0, fillMk("pipeMk", rows0)).slice().sort((a,b)=>clNoWeb(b)-clNoWeb(a)); const rows = rowsMk.slice(0, 300);
 $("pipeSum").textContent = `${state.leads.length} leads · ${state.leads.filter(p=>p.status==="booked").length} meetings booked · ${state.leads.filter(p=>p.status==="hot").length} hot`;
-$("pipe").innerHTML = rows.length ? rows.map(p=>`<tr data-pipe="${esc(p.id)}"><td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.name)}</b><small>${esc(p.company)}</small><small class="mono">${esc(p.phone)}${p.email?" · "+esc(p.email):""}</small></div></div></td>
+$("pipe").innerHTML = (rows.length ? rows.map(p=>`<tr data-pipe="${esc(p.id)}"${clNoWeb(p)?NOWEB_TR:""}><td><div class="who"><span class="av" style="--c:${avColor(p.id)}">${initials(p.name)}</span><div><b>${esc(p.name)}</b>${noWebPill(p)}<small>${esc(p.company)}</small><small class="mono">${esc(p.phone)}${p.email?" · "+esc(p.email):""}</small></div></div></td>
 <td>${(CAMPAIGNS[p.campaign]||CAMPAIGNS.dental).name}<span class="cellsub">${esc(p.source||"")}</span></td>
 <td><select data-status="${esc(p.id)}" class="btn btn-sm" aria-label="Status for ${esc(p.name)}">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${(p.status||"new")===k?"selected":""}>${v[0]}</option>`).join("")}</select></td>
 <td>${scoreHtml(p.score)}</td><td>${esc(p.next||"")}${waReplyHtml(p, true)}</td>
 <td style="text-align:right;white-space:nowrap"><button type="button" class="btn btn-sm" data-sched="${esc(p.id)}">Schedule</button> <button type="button" class="btn btn-sm btn-ghost" data-del="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">Remove</button></td></tr>`).join("")
-: `<tr><td colspan="6" class="muted" style="cursor:default">No leads match.</td></tr>`;
+: `<tr><td colspan="6" class="muted" style="cursor:default">No leads match.</td></tr>`) + (rowsMk.length > rows.length ? `<tr><td colspan="6" class="muted" style="cursor:default">Showing the first ${rows.length} of ${rowsMk.length}. Pick a country or status to narrow the list.</td></tr>` : "");
 }
 function renderRules(){
 $("rules").innerHTML = Object.values(MARKETS).map(m=>`<div class="glass rule"><div class="row"><b>${m.name}</b><span class="pill ${m.verified?"p-ok":"p-mute"}">${m.verified?"Verified":"Conservative"}</span></div><span class="mono muted">${m.start}:00–${m.end}:00 local</span><ul>${m.notes.map(n=>`<li>${n}</li>`).join("")}</ul><span class="muted" style="font-size:12px">Basis: ${m.source}</span></div>`).join("");
@@ -1021,7 +1019,7 @@ const f = $("profileForm"); for (const k in DEFAULT_PROFILE){ if (f.elements[k] 
 $("brandName").textContent = profile.business_name || profile.freelancer_name || "Mizan AI Agents";
 $("agentNameBar").textContent = profile.agent_name || "Noor";
 $("footName").textContent = `${profile.business_name||""} · Clinic prospecting by ${profile.agent_name||"Noor"}`;
-$("heroEyebrow").textContent = `${profile.business_name||""} · ${profile.freelancer_title||""} · Worldwide, excl. UAE`;
+$("heroEyebrow").textContent = `${profile.business_name||""} · ${profile.freelancer_title||""} · Worldwide incl. UAE`;
 $("callerId").textContent = "Caller ID " + (profile.freelancer_phone||"");
 $("openEn").textContent = openingLine({name:"Clinic manager",lang:"en",campaign:"dental",company:"Marina Bright Dental",market:"SA"});
 $("openAr").textContent = openingLine({name:"Dr. Faisal",nameAr:"د. فيصل",lang:"ar",campaign:"dental",company:"عيادة لؤلؤة الابتسامة",market:"SA"});
@@ -1550,9 +1548,10 @@ $("revKpis").innerHTML = [["Accounts with Google data", withG.length, `of ${L.le
 let list = f==="none" ? L.filter(p=>!p.report) : withG;
 if (f==="low") list = list.filter(p=>ratingOf(p).r<4.5); else if (f==="few") list = list.filter(p=>ratingOf(p).n<100);
 else if (f==="complaints") list = list.filter(p=>comp(p).length); else if (f==="phone") list = phoneC;
+list = byMk(list, fillMk("revMk", list));
 const total = list.length; list = list.slice().sort((a,b)=>(ratingOf(a)?.r??9)-(ratingOf(b)?.r??9)).slice(0,revLimit);
 $("revRows").innerHTML = list.length ? list.map(p=>{ const g = ratingOf(p), m = (p.report&&p.report.maps)||{}, rv = (m.reviews||[])[0], ins = (p.report&&p.report.review_insights)||{};
-return `<tr data-rev="${esc(p.id)}" class="${revOpen===p.id?"rv-open":""}"><td><b>${esc(p.company)}</b><small class="cellsub">${esc([p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(", "))}</small></td>
+return `<tr data-rev="${esc(p.id)}" class="${revOpen===p.id?"rv-open":""}"${clNoWeb(p)?NOWEB_TR:""}><td><b>${esc(p.company)}</b>${noWebPill(p)}<small class="cellsub">${esc([p.city,(MARKETS[p.market]||{}).name].filter(Boolean).join(", "))}</small></td>
 <td>${g?`<span class="stars"><i>★</i> ${g.r.toFixed(1)}</span>`:'<span class="muted">–</span>'}</td><td class="mono">${g?g.n.toLocaleString():"–"}</td>
 <td style="max-width:340px">${rv?`<b>${"★".repeat(rv.rating||0)}</b> <span class="muted">${esc(rv.when||"")}</span><br><span style="font-size:12.5px">${esc((rv.text||"").slice(0,140))}${(rv.text||"").length>140?"…":""}</span>`:'<span class="muted">No review text yet</span>'}</td>
 <td>${(ins.complaints||[]).slice(0,2).map(c=>`<span class="revtag bad">${esc(c)}</span> `).join("")}${(ins.praise||[]).slice(0,2).map(c=>`<span class="revtag good">${esc(c)}</span> `).join("")}</td>
@@ -1665,11 +1664,16 @@ const EM_STATUS = {queued:["In Instantly","p-mute"], skipped:["Skipped (already 
 async function loadEmails(){
   try { emStatus = await opsCall("email-outreach", {mode:"status"}); } catch(e){ $("emReach").innerHTML = `<div class="glass conn"><b>Couldn't load email status</b><span class="muted">${esc(e.message)}</span></div>`; return; }
   renderEmails();
-  const { data: rows } = await sb.from("leads").select("company, market, email, email_status, email_reason, email_pushed_at, email_last_event_at").not("email_status","is",null).order("email_pushed_at", {ascending:false}).limit(60);
-  $("emAct").innerHTML = (rows||[]).length ? rows.map(r=>{ const s = EM_STATUS[r.email_status]||[r.email_status,"p-mute"]; const t = r.email_last_event_at||r.email_pushed_at;
-    return `<tr><td><b>${esc(r.company)}</b></td><td>${esc(r.market)}</td><td class="mono">${esc(r.email||"")}</td><td class="muted">${esc(EM_REASON[r.email_reason]||r.email_reason||"")}</td><td><span class="pill ${s[1]}"><span class="d"></span>${esc(s[0])}</span></td><td class="muted">${t?new Date(t).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</td></tr>`; }).join("")
-    : `<tr><td colspan="6" class="muted">No emails sent yet.</td></tr>`;
+  const { data: rows } = await sb.from("leads").select("id, company, market, email, website, email_status, email_reason, email_pushed_at, email_last_event_at").not("email_status","is",null).order("email_pushed_at", {ascending:false}).limit(300);
+  emActRows = rows || []; renderEmAct();
   const T = emStatus.totals||{}; $("emActSum").textContent = Object.keys(T).length ? Object.entries(T).map(([k,v])=>`${(EM_STATUS[k]||[k])[0]} ${v}`).join(" · ") : "";
+}
+let emActRows = [];
+function renderEmAct(){
+  const rows = byMk(emActRows, fillMk("emMk", emActRows));
+  $("emAct").innerHTML = rows.length ? rows.map(r=>{ const s = EM_STATUS[r.email_status]||[r.email_status,"p-mute"]; const t = r.email_last_event_at||r.email_pushed_at;
+    return `<tr${clNoWeb(r)?NOWEB_TR:""}><td><b>${esc(r.company)}</b>${noWebPill(r)}</td><td>${esc(r.market)}</td><td class="mono">${esc(r.email||"")}</td><td class="muted">${esc(EM_REASON[r.email_reason]||r.email_reason||"")}</td><td><span class="pill ${s[1]}"><span class="d"></span>${esc(s[0])}</span></td><td class="muted">${t?new Date(t).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</td></tr>`; }).join("")
+    : `<tr><td colspan="6" class="muted">No emails match.</td></tr>`;
 }
 function renderEmails(){
   const S = emStatus; if (!S) return; const t = S.today, target = S.target_per_day||1000, reach = t.calls + t.emails, plan = t.call_cap + t.email_cap, I = S.instantly||{};
@@ -2111,13 +2115,13 @@ function renderWa(){
     ["Replied", replied.length, "answer them and book the demo"],
   ].map(([a,b,c])=>`<div class="glass conn"><b>${a}</b><span style="font-size:22px;font-weight:800">${b}</span><span class="muted">${esc(c)}</span></div>`).join("") + morningRuleHtml(Q);
   let rows = filter==="due" ? [...Q.follow, ...Q.newToday] : filter==="active" ? active : filter==="replied" ? replied : filter==="reached" ? state.leads.filter(p=>p.wa_step>0 || p.wa_reply_kind).sort((a,b)=>Date.parse(b.wa_reply_at||b.wa_last_at||0)-Date.parse(a.wa_reply_at||a.wa_last_at||0)) : Q.L;
-  rows = rows.slice(0, 200);
+  rows = byMk(rows, fillMk("waMk", rows)); rows.sort((a,b)=>clNoWeb(b)-clNoWeb(a)); rows = rows.slice(0, 200);
   $("waHead").textContent = {due:"Today's WhatsApp queue", active:"In sequence", replied:"Replied", reached:"Reached out and their replies", all:"All clinics you can WhatsApp"}[filter];
   $("waSum").textContent = filter==="due" ? `${Q.follow.length} follow-up${Q.follow.length===1?"":"s"} + ${Q.newToday.length} new` : `${rows.length} clinics`;
   $("waRows").innerHTML = rows.length ? rows.map(p=>{
     const step = Math.min(4, (p.wa_step||0)+1), f = waFocus(p), msg = p.wa_status==="replied" ? "" : waMessage(p, step), lang = waLang(p);
     const tag = p.wa_status==="replied" ? `<span class="pill p-ok"><span class="d"></span>Replied</span>` : `<span class="pill p-mute"><span class="d"></span>${p.wa_step ? "Step "+step+" of 4" : "New"}</span>`;
-    return `<tr><td><b>${esc(p.company)}</b><span class="cellsub">${esc((MARKETS[p.market]||{}).name||p.market)} · <span class="mono">${esc(p.phone)}</span>${p.quality?.phone_type==="mobile"?"":" · landline: may not have WhatsApp"}</span>${tag}${waReplyHtml(p)}</td>
+    return `<tr${clNoWeb(p)?NOWEB_TR:""}><td><b>${esc(p.company)}</b>${noWebPill(p)}<span class="cellsub">${esc((MARKETS[p.market]||{}).name||p.market)} · <span class="mono">${esc(p.phone)}</span>${p.quality?.phone_type==="mobile"?"":" · landline: may not have WhatsApp"}</span>${tag}${waReplyHtml(p)}</td>
 <td><select class="btn btn-sm" data-wafocus="${esc(p.id)}">${Object.entries(WA_FOCUS).map(([k,v])=>`<option value="${k}" ${k===f?"selected":""}>${v}</option>`).join("")}</select><span class="cellsub">${esc(waPick(p).map(n=>WA_T.en.find[n.k](n)).join("; "))}${p.report?" · from report":" · quick scan only"}</span></td>
 <td dir="auto" style="white-space:pre-wrap;font-size:12.5px;max-width:520px">${p.wa_status==="replied" ? `<span class="muted">Reply with a ready answer:</span>` : `<span class="cellsub">${esc(WA_STEP[step-1])}</span>${esc(msg)}`}</td>
 <td style="text-align:right;white-space:nowrap"><div class="leadbar" style="justify-content:flex-end;flex-wrap:wrap;gap:4px">
@@ -2341,6 +2345,20 @@ async function loadWebReq(){
 }
 document.addEventListener("change", async e=>{ const id = e.target?.dataset?.wr; if (!id) return; await sb.from("offer_requests").update({status:e.target.value}).eq("id", id); loadWebReq(); });
 document.addEventListener("click", e=>{ if (e.target?.id==="wrRefresh") loadWebReq(); });
+
+// ===== Country drop-downs and no-website marking, shared by every queue =====
+const NOWEB_TR = ' style="box-shadow:inset 4px 0 0 var(--bad)"';
+const noWebPill = p => clNoWeb(p) ? ' <span class="pill p-bad" title="No website: needs us most, call first">No website · priority</span>' : "";
+function fillMk(id, list){
+  const sel = $(id); if (!sel) return "";
+  const cur = sel.value, cnt = {}; list.forEach(p=>{ if (p.market) cnt[p.market]=(cnt[p.market]||0)+1; });
+  const opts = Object.keys(cnt).sort((a,b)=>((MARKETS[a]||{}).name||a).localeCompare((MARKETS[b]||{}).name||b));
+  sel.innerHTML = `<option value="">All countries (${list.length})</option>` + opts.map(k=>`<option value="${esc(k)}">${esc((MARKETS[k]||{}).name||k)} (${cnt[k]})</option>`).join("");
+  sel.value = cnt[cur] ? cur : ""; return sel.value;
+}
+const byMk = (list, mk) => mk ? list.filter(p=>p.market===mk) : list;
+document.addEventListener("change", e=>{ const id = e.target?.id;
+  if (id==="waMk") renderWa(); else if (id==="revMk") renderReviews(); else if (id==="pipeMk") renderPipe(); else if (id==="emMk") renderEmAct(); });
 function renderAll(){ { const sel = state.leads && state.leads.find(x=>x.id===selectedId); if (sel && sel._lean && !sel._fetching){ sel._fetching = 1; ensureFull(sel).then(()=>renderAll()); } } syncLive(); try{ renderCallList(); }catch(e){ console.error(e); } renderClock(); renderAccounts(); renderReviews(); renderOps(); renderCampaigns(); renderQueue(); renderCallee(); renderKpis(); renderBars(); renderLog(); renderPipe(); renderMeetings(); renderWa(); renderTranscriptEmpty(); }
 let callBusy = false;
 function lastCallFor(id){ return state.log.filter(l=>l.pid===id).sort((a,b)=>b.at-a.at)[0] || null; }
