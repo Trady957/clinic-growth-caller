@@ -1,12 +1,16 @@
 [build]
   # Publish only the static page; netlify/server holds server code and must not be served as files.
-  command = "mkdir -p dist && cp index.html dist/"
+  command = "mkdir -p dist/offer && cp index.html dist/ && cp offer/index.html dist/offer/"
   publish = "dist"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
 
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Cache-Control = "no-cache"
