@@ -1416,7 +1416,8 @@ function leadsSnapshot(cb, onErr, channels){
     emit(true);
     // Background: fill report/audit, rows that matter today first.
     leadsFilling = true;
-    const lean = [...rows.values()].filter(r=>r._lean);
+    // Only the call list is filled in the background; every other clinic loads its report when opened (saves the database's disk budget).
+    const lean = [...rows.values()].filter(r=>r._lean && r.call_list);
     const pri = r => (r.call_list ? 0 : r.email_status || r.wa_step || (r.status && r.status!=="new") ? 1 : r.campaign===activeCamp ? 2 : 3);
     lean.sort((a,b)=>pri(a)-pri(b));
     for (let i=0; i<lean.length; i+=150){
