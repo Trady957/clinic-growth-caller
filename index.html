@@ -1403,13 +1403,17 @@ function leadsSnapshot(cb, onErr, channels){
   const PAGE = 1000;
   (async () => {
     const head = await sbRetry(()=>sb.from("leads").select("id", {count:"exact", head:true}));
-    if (head.error){ onErr && onErr(head.error); return; }
-    const total = head.count || 0, pages = Math.max(1, Math.ceil(total / PAGE));
+    // If the count times out, keep going with a generous page estimate instead of showing nothing.
+    const total = (!head.error && head.count) ? head.count : 20000, pages = Math.max(1, Math.ceil(total / PAGE));
     let failed = null, next = 0;
-    const worker = async () => { while (next < pages && !failed){ const i = next++;
+    const put = data => { for (const row of data){ const old = rows.get(row.id); rows.set(row.id, old && !old._lean ? {...old, ...row} : {...row, _lean:true}); } };
+    // Call list first, so the call queue shows within seconds even when the database is busy.
+    { const c = await sbRetry(()=>sb.from("leads").select(LEAD_LEAN).not("call_list","is",null).order("call_rank",{ascending:true}).limit(2000));
+      if (!c.error && c.data && c.data.length){ put(c.data); emit(true); } }
+    const worker = async () => { while (next < pages){ const i = next++;
       const r = await sbRetry(()=>sb.from("leads").select(LEAD_LEAN).order("created_at",{ascending:true}).order("id",{ascending:true}).range(i*PAGE, i*PAGE+PAGE-1));
-      if (r.error){ failed = r.error; return; }
-      for (const row of r.data){ const old = rows.get(row.id); rows.set(row.id, old && !old._lean ? {...old, ...row} : {...row, _lean:true}); } } };
+      if (r.error){ failed = r.error; continue; }
+      put(r.data); emit(false); } };
     await Promise.all([worker(), worker(), worker()]);
     if (failed && !rows.size){ onErr && onErr(failed); return; }
     if (failed) toast("Some clinics didn't load. Reload the page to try again.");
