@@ -1402,14 +1402,17 @@ function leadsSnapshot(cb, onErr, channels){
   const emit = (now) => { clearTimeout(emitT); const go = () => cb({docs:[...rows.values()].map(r=>({id:r.id, data:()=>{ const o = rowToLead(r); if (r._lean) o._lean = true; return o; }}))}); if (now) go(); else emitT = setTimeout(go, 600); };
   const PAGE = 1000;
   (async () => {
-    const head = await sbRetry(()=>sb.from("leads").select("id", {count:"exact", head:true}));
+    // Show the last saved call list straight away (kept in this browser), then refresh it from the database.
+    try{ const c = JSON.parse(localStorage.getItem("mizan_calllist_v1")||"null"); if (c && Array.isArray(c.rows) && c.rows.length){ for (const row of c.rows){ if (!rows.has(row.id)) rows.set(row.id, {...row, _lean:true}); } emit(true); } }catch(e){}
+    const head = await sbRetry(()=>sb.from("leads").select("id", {count:"planned", head:true}), 2);
     // If the count times out, keep going with a generous page estimate instead of showing nothing.
     const total = (!head.error && head.count) ? head.count : 20000, pages = Math.max(1, Math.ceil(total / PAGE));
     let failed = null, next = 0;
     const put = data => { for (const row of data){ const old = rows.get(row.id); rows.set(row.id, old && !old._lean ? {...old, ...row} : {...row, _lean:true}); } };
     // Call list first, so the call queue shows within seconds even when the database is busy.
     { const c = await sbRetry(()=>sb.from("leads").select(LEAD_LEAN).not("call_list","is",null).order("call_rank",{ascending:true}).limit(2000));
-      if (!c.error && c.data && c.data.length){ put(c.data); emit(true); } }
+      if (!c.error && c.data && c.data.length){ put(c.data); emit(true);
+        try{ localStorage.setItem("mizan_calllist_v1", JSON.stringify({at:Date.now(), rows:c.data})); }catch(e){} } }
     const worker = async () => { while (next < pages){ const i = next++;
       const r = await sbRetry(()=>sb.from("leads").select(LEAD_LEAN).order("created_at",{ascending:true}).order("id",{ascending:true}).range(i*PAGE, i*PAGE+PAGE-1));
       if (r.error){ failed = r.error; continue; }
