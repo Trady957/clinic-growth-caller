@@ -111,7 +111,7 @@
 </div></section>
 <section class="blk" id="calllist"><div class="wrap">
   <div class="sec-h"><div><h2>Today's call list</h2><p>You call from your own phone. Pick a country, click a clinic to open its script in its language, then save the outcome. Red rows have no website: they need us most, so call them first. Best leads first; the Gulf closes around 6 pm their time.</p></div>
-    <div class="leadbar"><select id="clMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select><label class="chk"><input type="checkbox" id="clNoWeb" checked> No website first</label><select id="clFilter" class="btn btn-sm" aria-label="Show"><option value="todo">To call</option><option value="done">Called</option><option value="all">All</option></select></div></div>
+    <div class="leadbar"><select id="clMk" class="btn btn-sm" aria-label="Country"><option value="">All countries</option></select><select id="clRate" class="btn btn-sm" aria-label="Google rating"><option value="">Any rating</option><option value="lowmid">Low + Mid rating (below 4.5★)</option><option value="low">Low rating (below 4.0★)</option><option value="mid">Mid rating (4.0–4.4★)</option><option value="high">High rating (4.5★+)</option><option value="none">No Google rating</option></select><select id="clWebF" class="btn btn-sm" aria-label="Website"><option value="">Website: any</option><option value="no">No website</option><option value="yes">Has website</option></select><select id="clReach" class="btn btn-sm" aria-label="Google reach"><option value="">Google reach: any</option><option value="low">Low reach (under 50 reviews)</option><option value="mid">Medium (50–199 reviews)</option><option value="high">High (200+ reviews)</option></select><label class="chk"><input type="checkbox" id="clNoWeb" checked> No website first</label><select id="clFilter" class="btn btn-sm" aria-label="Show"><option value="todo">To call</option><option value="done">Called</option><option value="all">All</option></select></div></div>
   <div class="glass"><div class="card-h"><div><h3>Call list</h3><small id="clSum"></small></div></div>
     <div class="tbl"><table><thead><tr><th>#</th><th>Clinic</th><th>Phone</th><th>Est. loss</th><th>Outcome</th></tr></thead><tbody id="clRows"></tbody></table></div></div>
 </div></section>
@@ -2292,7 +2292,23 @@ const POPTOX = {SA:["Saudi-Arabia","966"],AE:["United-Arab-Emirates","971"],QA:[
 function popTox(p){ const [page, cc] = POPTOX[p.market]||["",""]; const d = String(p.phone||"").replace(/[^\d]/g,""); const local = cc && d.startsWith(cc) ? d.slice(cc.length) : d;
   navigator.clipboard?.writeText(local).catch(()=>{}); window.open("https://www.poptox.com/"+(page||""), "_blank", "noopener");
   toast(`PopTox opened${page?" for "+page.replace(/-/g," "):""}. Number copied: ${local} (country code +${cc}). Paste it in the dialpad and press Call.`); }
-let clOpen = null, clFilterVal = "todo", clMk = "", clNoWebFirst = true;
+let clOpen = null, clFilterVal = "todo", clMk = "", clNoWebFirst = true, clRateF = "", clWebF = "", clReachF = "";
+const gRate = p => { const v = parseFloat((p.quality||{}).g_rating); return isFinite(v) && v>0 ? v : null; };
+const gRev = p => { const v = parseInt((p.quality||{}).g_reviews); return isFinite(v) ? v : 0; };
+function clMatch(p){
+  const r = gRate(p), n = gRev(p);
+  if (clRateF==="lowmid" && !(r!==null && r<4.5)) return false;
+  if (clRateF==="low" && !(r!==null && r<4)) return false;
+  if (clRateF==="mid" && !(r!==null && r>=4 && r<4.5)) return false;
+  if (clRateF==="high" && !(r!==null && r>=4.5)) return false;
+  if (clRateF==="none" && r!==null) return false;
+  if (clWebF==="no" && !clNoWeb(p)) return false;
+  if (clWebF==="yes" && clNoWeb(p)) return false;
+  if (clReachF==="low" && !(n<50)) return false;
+  if (clReachF==="mid" && !(n>=50 && n<200)) return false;
+  if (clReachF==="high" && !(n>=200)) return false;
+  return true;
+}
 const clDraft = {}, clWebDraft = {};
 function clLocal(p){ try{ return new Intl.DateTimeFormat("en-GB",{timeZone:clinicTz(p),hour:"2-digit",minute:"2-digit",weekday:"short"}).format(new Date()); }catch(e){ return ""; } }
 function clIsOpen(p){ const s = morningState(p, Date.now()); return s && s.open !== undefined ? s.open : true; }
@@ -2301,7 +2317,7 @@ function renderCallList(){
   const pool = state.leads.filter(p=>p.call_list && p.call_rank);
   const mkSel = $("clMk"); if (mkSel){ const mks = [...new Set(pool.map(p=>p.market))].sort(); const want = `<option value="">All countries (${pool.length})</option>`+mks.map(m=>`<option value="${m}" ${m===clMk?"selected":""}>${esc((MARKETS[m]||{}).name||m)} (${pool.filter(p=>p.market===m && !p.call_outcome).length} to call)</option>`).join(""); if (mkSel.dataset.sig!==want){ mkSel.innerHTML = want; mkSel.dataset.sig = want; mkSel.value = clMk; } }
   const warm = p => p.call_rank <= 4 || ["question","interested","hours","later"].includes(p.wa_reply_kind);
-  const all = pool.filter(p=>!clMk || p.market===clMk).sort((a,b)=> (warm(b)-warm(a)) || (clNoWebFirst ? clNoWeb(b)-clNoWeb(a) : 0) || a.call_rank-b.call_rank);
+  const all = pool.filter(p=>(!clMk || p.market===clMk) && clMatch(p)).sort((a,b)=> (warm(b)-warm(a)) || (clNoWebFirst ? clNoWeb(b)-clNoWeb(a) : 0) || a.call_rank-b.call_rank);
   const done = all.filter(p=>p.call_outcome && p.call_outcome!=="no_answer");
   const rows = clFilterVal==="todo" ? all.filter(p=>!p.call_outcome || p.call_outcome==="no_answer") : clFilterVal==="done" ? all.filter(p=>p.call_outcome) : all;
   $("clSum").textContent = `${all.length} clinics · ${all.filter(clNoWeb).length} with no website (red, priority) · ${done.length} reached · ${all.filter(p=>p.call_outcome==="interested").length} interested · ${all.filter(p=>!p.call_outcome).length} still to call`;
@@ -2310,7 +2326,7 @@ function renderCallList(){
   el.innerHTML = rows.map(p=>{ const o = CL_OUT[p.call_outcome], L = clLang(p);
     const nw = clNoWeb(p);
     return `<tr data-cl="${esc(p.id)}" class="${clOpen===p.id?"sel":""}" ${nw?'style="box-shadow:inset 4px 0 0 var(--bad);background:color-mix(in srgb,var(--bad-soft) 55%,transparent)"':""}><td class="mono">${p.call_rank>=1000?"★":p.call_rank}</td>
-<td>${nw?`<span class="pill p-bad" style="margin-bottom:3px">No website · priority</span><br>`:""}<b>${esc(p.company)}</b><small class="cellsub">${esc(p.city||"")} · ${esc(p.market)} · ${L==="ar"?"Arabic":L==="fr"?"French":"English"}${p.wa_step?` · WhatsApp sent${p.wa_reply_kind?" ("+esc(p.wa_reply_kind.replace("_"," "))+")":""}`:""}</small></td>
+<td>${nw?`<span class="pill p-bad" style="margin-bottom:3px">No website · priority</span><br>`:""}<b>${esc(p.company)}</b><small class="cellsub">${gRate(p)!==null?`<b style="color:${gRate(p)<4?"var(--bad)":gRate(p)<4.5?"#b7791f":"inherit"}">${gRate(p).toFixed(1)}★</b> (${gRev(p)} reviews${gRev(p)<50?", low reach":""}) · `:"No Google rating · "}${esc(p.city||"")} · ${esc(p.market)} · ${L==="ar"?"Arabic":L==="fr"?"French":"English"}${p.wa_step?` · WhatsApp sent${p.wa_reply_kind?" ("+esc(p.wa_reply_kind.replace("_"," "))+")":""}`:""}</small></td>
 <td class="mono" style="white-space:nowrap"><b>${esc(p.phone)}</b><small class="cellsub">Their time: ${esc(clLocal(p))}</small></td>
 <td class="mono" style="white-space:nowrap;color:var(--bad)"><b>~${clinicLoss(p).local.toLocaleString("en-US")} ${clinicLoss(p).cur}</b><small class="cellsub">lost / month</small></td>
 <td>${o?`<span class="pill ${o[1]}">${o[0]}</span>${p.call_note?`<small class="cellsub">${esc(p.call_note)}</small>`:""}`:`<span class="pill p-mute">To call</span>`}</td></tr>
@@ -2361,7 +2377,7 @@ document.addEventListener("click", e=>{
   const cp = e.target.closest("[data-clcopy]"); if (cp){ const p = state.leads.find(x=>x.id===cp.dataset.clcopy); if (p) navigator.clipboard?.writeText(p.phone).then(()=>toast("Number copied: "+p.phone)); return; }
   const tr = e.target.closest("tr[data-cl]"); if (tr){ clOpen = clOpen===tr.dataset.cl ? null : tr.dataset.cl; renderCallList(); }
 });
-document.addEventListener("change", e=>{ if (e.target.id==="clFilter"){ clFilterVal = e.target.value; renderCallList(); } if (e.target.id==="clMk"){ clMk = e.target.value; clOpen = null; renderCallList(); } if (e.target.id==="clNoWeb"){ clNoWebFirst = e.target.checked; renderCallList(); } });
+document.addEventListener("change", e=>{ if (e.target.id==="clFilter"){ clFilterVal = e.target.value; renderCallList(); } if (e.target.id==="clMk"){ clMk = e.target.value; clOpen = null; renderCallList(); } if (e.target.id==="clRate"){ clRateF = e.target.value; clOpen = null; renderCallList(); } if (e.target.id==="clWebF"){ clWebF = e.target.value; clOpen = null; renderCallList(); } if (e.target.id==="clReach"){ clReachF = e.target.value; clOpen = null; renderCallList(); } if (e.target.id==="clNoWeb"){ clNoWebFirst = e.target.checked; renderCallList(); } });
 
 
 // ===== Website requests (landing page form) =====
