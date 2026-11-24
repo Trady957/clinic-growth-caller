@@ -1,4 +1,4 @@
-# Mizan AI Agents: ideal customer profile (ICP)
+# Claimly AI: ideal customer profile (ICP)
 
 **Who we sell to:** privately owned dental clinics (first) and aesthetic/dermatology clinics (second) that lose patients to unanswered calls and slow follow-up, in markets we can call: Saudi Arabia, Qatar, Kuwait, Bahrain, Oman, Egypt, Jordan, Morocco, the UK and Europe (email first), the US and Canada (business landlines only). **Never the UAE.**
 

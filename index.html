@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"></head><body>
-<title>Mizan AI Agents · Clinic Caller</title>
+<title>Claimly AI · Clinic Caller</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +42,7 @@
 .pe{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media (max-width:700px){.pe{grid-template-columns:minmax(0,1fr)}}
 #reviews table{min-width:900px}#reviews tbody tr.rv-open td{background:var(--brand-soft)}.rv-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:4px 0}@media (max-width:800px){.rv-list{grid-template-columns:minmax(0,1fr)}}#calls .wrap{max-width:1760px}#calls .work{grid-template-columns:minmax(0,1fr) 380px}@media (max-width:1600px){#calls .work{grid-template-columns:minmax(0,1fr)}#calls .call{position:static;max-height:none}}#queue td:nth-child(3){min-width:150px}#queue tr[data-id] td:last-child{white-space:nowrap}#queue tr.stx-row td{white-space:normal}.stx{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr))}.stx-c{overflow-wrap:anywhere}.stx-c li,.stx-c p,.nd-ul li{white-space:normal}.stx-wide{grid-column:1/-1}@media (max-width:1300px){.stx{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.stx{grid-template-columns:minmax(0,1fr)}}#queue .st{max-width:520px}.more-row td{text-align:center;cursor:default}@media (max-width:520px){#winPill{display:none}.bar-r{gap:6px}}</style>
 <canvas id="bgfx" aria-hidden="true"></canvas>
-<div id="auth" hidden><form class="glass box" id="authForm"><div class="eyebrow">Mizan AI Agents · Clinic Caller</div><h2>Sign in</h2><p>Private console. Only the owner can sign in.</p>
+<div id="auth" hidden><form class="glass box" id="authForm"><div class="eyebrow">Claimly AI · Clinic Caller</div><h2>Sign in</h2><p>Private console. Only the owner can sign in.</p>
 <label class="field">Email<input id="authEmail" type="email" required autocomplete="username" placeholder="you@example.com"></label>
 <label class="field">Password<input id="authPass" type="password" autocomplete="current-password"></label>
 <button class="btn btn-primary" id="authBtn" type="submit">Sign in</button>
@@ -55,13 +55,13 @@
 <div id="rptView" hidden><div class="rv-bar"><button type="button" class="btn btn-primary" id="rptPrint">Save as PDF</button><button type="button" class="btn" id="rptHtml">Download HTML</button><button type="button" class="btn btn-ghost" id="rptClose">Close</button></div><div id="rptBody"></div></div>
 <div class="page">
 <header class="appbar"><div class="wrap">
-  <a class="brandmk" href="#top" aria-label="Mizan AI Agents">
+  <a class="brandmk" href="#top" aria-label="Claimly AI">
     <svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6A5BF0"/><stop offset="1" stop-color="#8A3FD1"/></linearGradient></defs>
       <rect x="1" y="1" width="46" height="46" rx="14" fill="url(#lg1)"/>
       <path d="M15 31V17h10.5a5 5 0 0 1 0 10H15" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M27 31l6-6m0 0l-3.2-.2M33 25l.2 3.2" fill="none" stroke="#FFD9A8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div><b id="brandName">Mizan AI Agents</b><span>Clinic Caller</span></div>
+    <div><b id="brandName">Claimly AI</b><span>Clinic Caller</span></div>
   </a>
   <span class="vsep" aria-hidden="true"></span>
   <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>Worldwide · UAE included</small></div>
@@ -149,9 +149,9 @@
     <div class="glass ops-card">
       <div class="ops-h"><div><div class="eyebrow">Settings</div><h3>Sender and plan</h3></div></div>
       <form class="ops-form" id="emForm">
-        <label class="field" style="grid-column:1/-1">Business postal address (shown in every email, required by law)<input id="emAddr" placeholder="Mizan AI Agents, Office 000, Building, Street, City, Country" autocomplete="street-address"></label>
+        <label class="field" style="grid-column:1/-1">Business postal address (shown in every email, required by law)<input id="emAddr" placeholder="Claimly AI, Office 000, Building, Street, City, Country" autocomplete="street-address"></label>
         <label class="field">Sender name<input id="emName" placeholder="Maha"></label>
-        <label class="field">Company<input id="emCompany" placeholder="Mizan AI Agents"></label>
+        <label class="field">Company<input id="emCompany" placeholder="Claimly AI"></label>
         <label class="field">Google Maps searches a day<input id="emMaps" type="number" min="0" max="400" inputmode="numeric"></label>
         <label class="field">Never email these countries<input id="emExcl" placeholder="DE"></label>
         <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="emAuto"> Send each day's batch automatically</label>
@@ -281,12 +281,12 @@
   </form>
   <div class="glass agentcard">
     <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
-    <div><b>Live voice agent · Mizan AI Agents (Noor)</b><p>The same script runs as a real-voice ElevenLabs agent. It gets past reception, qualifies the clinic, and only books a meeting after reading back the day, time zone, attendee and invite email. Each call returns the meeting details, decision-maker and next step.</p></div>
+    <div><b>Live voice agent · Claimly AI (Noor)</b><p>The same script runs as a real-voice ElevenLabs agent. It gets past reception, qualifies the clinic, and only books a meeting after reading back the day, time zone, attendee and invite email. Each call returns the meeting details, decision-maker and next step.</p></div>
     <a class="btn" href="https://elevenlabs.io/app/agents/agents/agent_3401m6p7pqnjepwv9rgy15kfq48c" target="_blank" rel="noopener">Open in ElevenLabs</a>
   </div>
   <div class="glass" style="margin-top:14px;padding:18px 20px" id="icp">
     <div class="eyebrow">Ideal customer profile</div>
-    <h3 style="margin:4px 0 8px">Who Mizan AI Agents calls</h3>
+    <h3 style="margin:4px 0 8px">Who Claimly AI calls</h3>
     <p style="margin:0 0 10px">Privately owned dental clinics first, aesthetic and dermatology clinics second: 1–5 sites, 3–40 staff, private-pay treatments. Gulf incl. UAE, Egypt, Jordan, Morocco, UK and Europe (email first), US and Canada (business landlines). Not hospitals, government or insurer clinics, or groups with their own call centre.</p>
     <div class="nd-grid"><div><h4>Call first when 3+ are true</h4><ul style="margin:0;padding-left:18px">
       <li>Google rating 3.5–4.6, reviews mention phones or waiting</li><li>No online booking or no website</li><li>No WhatsApp, or slow replies</li><li>Runs Google or Instagram ads</li><li>Closed evenings or weekends</li><li>Arabic market with an English-only site</li><li>Few or old Google reviews</li><li>Hiring a receptionist</li></ul></div>
@@ -396,13 +396,13 @@ const STATUS = {new:["Not called","p-mute"],referral:["Got decision-maker","p-in
 const MSTATUS = {proposed:["Awaiting confirmation","p-warn"],confirmed:["Confirmed","p-ok"],done:["Held","p-info"],no_show:["No-show","p-bad"],cancelled:["Cancelled","p-mute"]};
 const DEFAULT_PROFILE = {
 currency:"AED", rev_dental:"1500", rev_aesthetic:"2000", rev_medical:"700", missed_calls_week:"10",
-freelancer_name:"Maha", agent_name:"Noor", business_name:"Mizan AI Agents", freelancer_title:"marketing and AI agents for clinics",
+freelancer_name:"Maha", agent_name:"Noor", business_name:"Claimly AI", freelancer_title:"marketing and AI agents for clinics",
 freelancer_service:"marketing (social media, ads, Google reviews, websites) and AI agents (24/7 AI receptionist on calls and WhatsApp, patient recall and aftercare calls)",
 freelancer_value:"help dental and medical clinics in the Gulf, the Middle East, Europe and North America answer every patient call and message and book more appointments",
 freelancer_proof:"we can show a live demo of an AI assistant that phones dental patients for recalls and next-day aftercare check-ins in Arabic and English",
 freelancer_pricing:"marketing retainers from around AED 3,500 a month; an AI receptionist from around AED 1,500 a month after setup",
 freelancer_phone:"+971 52 685 5212", freelancer_email:"maha.lasfar.2015@gmail.com", handoff_hours:"Mon–Fri 10:00–17:00", meeting_length:"20", test_phone:"+971 52 685 5212",
-calendar_email:"maha.lasfar.2015@gmail.com", paypal_email:"maha.lasfar.2015@gmail.com", pay_currency:"USD", pay_amount:"2695", pay_item:"Mizan AI Agents: 60-day AI front desk pilot", booking_link:"", demo_link:"", freelancer_name_ar:"مها", pricing_ar:"", pricing_fr:""
+calendar_email:"maha.lasfar.2015@gmail.com", paypal_email:"maha.lasfar.2015@gmail.com", pay_currency:"USD", pay_amount:"2695", pay_item:"Claimly AI: 60-day AI front desk pilot", booking_link:"", demo_link:"", freelancer_name_ar:"مها", pricing_ar:"", pricing_fr:""
 };
 const SAMPLE_LEADS = [];
 const AV_COLORS = ["#4C3FD1","#8A3FD1","#C2672E","#0A7E8C","#2E8B57","#B2445E","#3E6FB0","#8C6A12"];
@@ -823,7 +823,7 @@ $("rptBody").innerHTML = body.replace(/<button class="pbtn"[^>]*>Save as PDF<\/b
 $("rptView").hidden = false; $("rptView").scrollTop = 0; document.body.classList.add("rpt-open");
 document.title = `${p.company} - growth report`;
 }
-$("rptClose").onclick = ()=>{ $("rptView").hidden = true; document.body.classList.remove("rpt-open"); document.title = "Mizan AI Agents · Clinic Caller"; };
+$("rptClose").onclick = ()=>{ $("rptView").hidden = true; document.body.classList.remove("rpt-open"); document.title = "Claimly AI · Clinic Caller"; };
 $("rptPrint").onclick = ()=>window.print();
 $("rptHtml").onclick = ()=>{ if (!rptLead) return; const blob = new Blob([reportHtml(rptLead)], {type:"text/html"}), url = URL.createObjectURL(blob), a = document.createElement("a");
 a.href = url; a.download = (rptLead.company||"clinic").replace(/[^\w\- ]+/g,"").trim()+" report.html"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 30000); };
@@ -1016,7 +1016,7 @@ $("rules").innerHTML = Object.values(MARKETS).map(m=>`<div class="glass rule"><d
 }
 function renderProfile(){
 const f = $("profileForm"); for (const k in DEFAULT_PROFILE){ if (f.elements[k] && document.activeElement!==f.elements[k]) f.elements[k].value = profile[k]||""; }
-$("brandName").textContent = profile.business_name || profile.freelancer_name || "Mizan AI Agents";
+$("brandName").textContent = profile.business_name || profile.freelancer_name || "Claimly AI";
 $("agentNameBar").textContent = profile.agent_name || "Noor";
 $("footName").textContent = `${profile.business_name||""} · Clinic prospecting by ${profile.agent_name||"Noor"}`;
 $("heroEyebrow").textContent = `${profile.business_name||""} · ${profile.freelancer_title||""} · Worldwide incl. UAE`;
@@ -1093,7 +1093,7 @@ const txt = ar ? `مرحباً ${m.attendee||""}، معك ${profile.freelancer_n
 return `https://wa.me/${num}?text=${waEnc(txt)}`; }
 function payLink(m, amount){ const to = String(profile.paypal_email||"").trim(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return "";
 const amt = String(amount ?? m.pay_amount ?? profile.pay_amount ?? "").replace(/[^\d.]/g,"");
-const q = new URLSearchParams({cmd:"_xclick", business:to, item_name:`${profile.pay_item||"Mizan AI Agents"} · ${m.clinic||"Clinic"}`.slice(0,127), currency_code:(profile.pay_currency||"USD").toUpperCase(), no_shipping:"1"});
+const q = new URLSearchParams({cmd:"_xclick", business:to, item_name:`${profile.pay_item||"Claimly AI"} · ${m.clinic||"Clinic"}`.slice(0,127), currency_code:(profile.pay_currency||"USD").toUpperCase(), no_shipping:"1"});
 if (+amt > 0) q.set("amount", amt); return "https://www.paypal.com/cgi-bin/webscr?"+q.toString(); }
 function waPayLink(m){ const num = String(m.whatsapp||"").replace(/[^\d]/g,""), pl = payLink(m); if (!num || !pl) return "";
 const ar = (state.leads.find(x=>x.id===m.leadId)||{}).lang==="ar", amt = `${(profile.pay_currency||"USD").toUpperCase()} ${profile.pay_amount||""}`.trim();
@@ -1102,7 +1102,7 @@ const txt = ar ? `مرحباً ${m.attendee||""}، شكراً على وقتكم 
 return `https://wa.me/${num}?text=${waEnc(txt)}`; }
 function icsText(m){ const end = m.at + (+profile.meeting_length||20)*6e4, uid = (m.id||"m")+"@lead-caller";
 const escI = s => String(s||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\;");
-return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Mizan AI Agents//EN","METHOD:REQUEST","BEGIN:VEVENT",`UID:${uid}`,`DTSTAMP:${icsDate(Date.now())}`,`DTSTART:${icsDate(m.at)}`,`DTEND:${icsDate(end)}`,`SUMMARY:${escI(meetingTitle(m))}`,`DESCRIPTION:${escI(meetingDetails(m))}`,
+return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Claimly AI//EN","METHOD:REQUEST","BEGIN:VEVENT",`UID:${uid}`,`DTSTAMP:${icsDate(Date.now())}`,`DTSTART:${icsDate(m.at)}`,`DTEND:${icsDate(end)}`,`SUMMARY:${escI(meetingTitle(m))}`,`DESCRIPTION:${escI(meetingDetails(m))}`,
 ...(m.email?[`ATTENDEE;CN=${escI(m.attendee||m.email)};RSVP=TRUE:mailto:${m.email}`]:[]),"BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:Demo tomorrow","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n"); }
 async function downloadIcs(m){ if (!m.at){ toast("Set a date and time first."); return; }
 if (downloads){ try{ await downloads.save({filename:`demo-${String(m.clinic).replace(/[^a-z0-9]+/gi,"-").toLowerCase()}.ics`, data:icsText(m)}); return; }catch(e){ if (e?.code==="declined"||e?.code==="cancelled") return; } }
@@ -1709,7 +1709,7 @@ async function loadEmailSettings(){
 }
 $("emForm").addEventListener("submit", async e=>{ e.preventDefault();
   const { data: cur } = await sb.from("settings").select("data").eq("id","outreach").maybeSingle();
-  const next = {...(cur?.data||{}), sender_address: $("emAddr").value.trim()||null, sender_name: $("emName").value.trim()||"Maha", sender_company: $("emCompany").value.trim()||"Mizan AI Agents",
+  const next = {...(cur?.data||{}), sender_address: $("emAddr").value.trim()||null, sender_name: $("emName").value.trim()||"Maha", sender_company: $("emCompany").value.trim()||"Claimly AI",
     maps_searches_per_day: Math.max(0, Math.min(400, +$("emMaps").value||0)), email_excluded_markets: $("emExcl").value.split(/[\s,]+/).map(x=>x.trim().toUpperCase()).filter(Boolean), email_auto: $("emAuto").checked};
   if (next.email_auto && !next.sender_address){ toast("Add your postal address before switching on automatic emailing."); return; }
   const { error } = await sb.from("settings").upsert({id:"outreach", data: next});
@@ -1781,7 +1781,7 @@ const WA_T = {
       marketing:"We run ads, content and a review system that bring new patients every month." },
     also:{ receptionist:"an AI receptionist that answers calls and WhatsApp 24/7", website:"clinic websites with online booking", mkt:"marketing and Google ranking that bring new patients", say:(a,b)=>`We also do ${a} and ${b}.` },
     optout:"Not relevant? Reply STOP and I won't message again.",
-    hi:(c,P)=>`Hi ${c} team 👋 ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"} here.`,
+    hi:(c,P)=>`Hi ${c} team 👋 ${P.freelancer_name||"Maha"} from ${P.business_name||"Claimly AI"} here.`,
     checked:(c,f)=>`We checked ${c} online: ${f}.`,
     and:" and ",
     cta1:(c)=>`👉 Reply "YES" and I'll send ${waPoss(c)} free growth report with the fixes.`,
@@ -1803,7 +1803,7 @@ const WA_T = {
     replies:{
       details:(c,f)=>`Of course! For ${c} we'd start with: ${WA_T.en.get[f].join("; ")}. We set everything up for you. Shall we do a 15-minute call this week?`,
       price:(P)=>`${P.freelancer_pricing ? "As a guide: "+P.freelancer_pricing+"." : "It depends on what you need."} Most clinics start with a 60-day pilot so they see results first. Shall I send the details?`,
-      who:(P,f)=>`I'm ${P.freelancer_name||"Maha"} from ${P.business_name||"Mizan AI Agents"}. We help dental and aesthetic clinics with marketing, websites and AI receptionists. I reached out because ${f}.`,
+      who:(P,f)=>`I'm ${P.freelancer_name||"Maha"} from ${P.business_name||"Claimly AI"}. We help dental and aesthetic clinics with marketing, websites and AI receptionists. I reached out because ${f}.`,
       manager:()=>`Thank you! Could you share the clinic manager's or owner's name, and the best number or email to reach them?`,
       book:(link,s)=>`Great! ${link ? "Pick a time here: "+link : `Does ${s[0]} or ${s[1]} work?`} I'll send a calendar invite with a video link.`,
       no:(c)=>`Understood, thank you. I won't message again. Wishing ${c} a great year!` },
@@ -1819,7 +1819,7 @@ const WA_T = {
       marketing:"ندير الإعلانات والمحتوى ونظام التقييمات لجلب مرضى جدد كل شهر." },
     also:{ receptionist:"موظف استقبال ذكي يرد على المكالمات وواتساب على مدار الساعة", website:"مواقع للعيادات مع حجز إلكتروني", mkt:"التسويق وتحسين الظهور على جوجل لجلب مرضى جدد", say:(a,b)=>`ونقدّم أيضاً ${a}، و${b}.` },
     optout:"غير مهتمين؟ ردّوا بـ «توقف» ولن أراسلكم مجدداً.",
-    hi:(c,P)=>`مرحباً فريق ${c} 👋 معكم ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}.`,
+    hi:(c,P)=>`مرحباً فريق ${c} 👋 معكم ${waNameAr(P)} من ${P.business_name||"Claimly AI"}.`,
     checked:(c,f)=>`راجعنا حضور ${c} على الإنترنت: ${f}.`,
     and:"، و",
     cta1:(c)=>`👈 ردّوا بـ «نعم» وأرسل لكم تقرير ${c} المجاني مع الحلول.`,
@@ -1839,7 +1839,7 @@ const WA_T = {
     replies:{
       details:(c,f)=>`بكل سرور! نبدأ لـ ${c} بـ: ${WA_T.ar.get[f].join("، ")}. ونتولى الإعداد كاملاً. هل نتحدث 15 دقيقة هذا الأسبوع؟`,
       price:(P)=>`${P.pricing_ar ? "كمرجع: "+P.pricing_ar+"." : "السعر يعتمد على حجم العيادة والخدمات المطلوبة، وسأرسل لكم عرضاً مخصصاً."} أغلب العيادات تبدأ بتجربة 60 يوماً لترى النتائج أولاً.`,
-      who:(P,f)=>`أنا ${waNameAr(P)} من ${P.business_name||"Mizan AI Agents"}. نساعد عيادات الأسنان والتجميل في التسويق والمواقع وموظفي الاستقبال بالذكاء الاصطناعي. تواصلت معكم بعد مراجعة حضوركم على الإنترنت: ${f}.`,
+      who:(P,f)=>`أنا ${waNameAr(P)} من ${P.business_name||"Claimly AI"}. نساعد عيادات الأسنان والتجميل في التسويق والمواقع وموظفي الاستقبال بالذكاء الاصطناعي. تواصلت معكم بعد مراجعة حضوركم على الإنترنت: ${f}.`,
       manager:()=>`شكراً لكم! هل يمكن مشاركة اسم مدير العيادة أو مالكها، وأفضل رقم أو بريد للتواصل معه؟`,
       book:(link,s)=>`ممتاز! ${link ? "اختاروا الوقت المناسب من هنا: "+link : `هل يناسبكم ${s[0]} أو ${s[1]}؟`} سأرسل دعوة في التقويم مع رابط المكالمة.`,
       no:(c)=>`مفهوم، شكراً لكم. لن أراسلكم مجدداً. كل التوفيق لـ ${c}!` },
@@ -1855,7 +1855,7 @@ const WA_T = {
       marketing:"Nous gérons publicité, contenus et avis pour amener de nouveaux patients chaque mois." },
     also:{ receptionist:"un réceptionniste IA qui répond aux appels et à WhatsApp 24h/24", website:"des sites de clinique avec prise de RDV en ligne", mkt:"du marketing et du référencement Google qui amènent de nouveaux patients", say:(a,b)=>`Nous proposons aussi ${a}, et ${b}.` },
     optout:"Pas intéressés ? Répondez STOP et je ne vous écrirai plus.",
-    hi:(c,P)=>`Bonjour l'équipe ${c} 👋 Ici ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}.`,
+    hi:(c,P)=>`Bonjour l'équipe ${c} 👋 Ici ${P.freelancer_name||"Maha"}, de ${P.business_name||"Claimly AI"}.`,
     checked:(c,f)=>`Nous avons vérifié ${c} en ligne : ${f}.`,
     and:" et ",
     cta1:(c)=>`👉 Répondez « OUI » et je vous envoie le rapport de croissance gratuit de ${c}, avec les solutions.`,
@@ -1875,7 +1875,7 @@ const WA_T = {
     replies:{
       details:(c,f)=>`Avec plaisir ! Pour ${c}, nous commencerions par : ${WA_T.fr.get[f].join(" ; ")}. Nous nous occupons de tout. Un appel de 15 minutes cette semaine ?`,
       price:(P)=>`${P.pricing_fr ? "À titre indicatif : "+P.pricing_fr+"." : "Le tarif dépend de la taille de la clinique et des services choisis ; je vous prépare une proposition sur mesure."} La plupart des cliniques commencent par un pilote de 60 jours.`,
-      who:(P,f)=>`Je suis ${P.freelancer_name||"Maha"}, de ${P.business_name||"Mizan AI Agents"}. Nous accompagnons les cliniques dentaires et esthétiques : marketing, sites web et réceptionnistes IA. Je vous ai contactés car ${f}.`,
+      who:(P,f)=>`Je suis ${P.freelancer_name||"Maha"}, de ${P.business_name||"Claimly AI"}. Nous accompagnons les cliniques dentaires et esthétiques : marketing, sites web et réceptionnistes IA. Je vous ai contactés car ${f}.`,
       manager:()=>`Merci ! Pourriez-vous m'indiquer le nom du responsable ou du propriétaire, et le meilleur numéro ou e-mail pour le joindre ?`,
       book:(link,s)=>`Parfait ! ${link ? "Choisissez un créneau ici : "+link : `${s[0]} ou ${s[1]} vous conviendrait-il ?`} Je vous enverrai une invitation avec un lien vidéo.`,
       no:(c)=>`Bien compris, merci. Je ne vous écrirai plus. Très belle année à ${c} !` },
@@ -2255,7 +2255,7 @@ function callScript(p){
   const rt = p.quality?.g_rating ? `${p.quality.g_rating}★ (${p.quality.g_reviews||0})` : "";
   const fx = f.map(([k,v])=>CL_FIND[L][k](v)).join(" · "), wa = p.wa_step>0, auto = ["auto_reply","hours"].includes(p.wa_reply_kind);
   const S = {
-   en:[`OPEN: Hello, is this ${c}? This is Maha from Mizan AI Agents. Could I speak with the clinic manager or owner for one minute?`,
+   en:[`OPEN: Hello, is this ${c}? This is Maha from Claimly AI. Could I speak with the clinic manager or owner for one minute?`,
      wa?`CONTEXT: I sent you a WhatsApp${auto?" and saw your auto-reply":""}. I wanted to explain it in one minute.`:"",
      `HOOK: We checked your clinic online${rt?": "+rt:""}, great work. One thing stood out: ${fx}.`,
      `COST: That's roughly ${clinicLoss(p).pts} new patients a month going to other clinics, around ${clinicLoss(p).local.toLocaleString("en-US")} ${clinicLoss(p).cur} a month.`,
@@ -2265,7 +2265,7 @@ function callScript(p){
      "IF 'how much': It depends on what the clinic needs; most start with a 60-day pilot, no long contract. I'll send the options with the report.",
      "IF manager not there: Who is the best person, and when can I reach them? Could you share their direct number or email?",
      "IF 'not interested': No problem, thank you for your time. Is it OK if I check back in 3 months?"],
-   ar:[`الافتتاح: السلام عليكم، معي ${c}؟ معك مها من Mizan AI Agents. ممكن أكلم مدير العيادة أو المالك دقيقة وحدة؟`,
+   ar:[`الافتتاح: السلام عليكم، معي ${c}؟ معك مها من Claimly AI. ممكن أكلم مدير العيادة أو المالك دقيقة وحدة؟`,
      wa?`السياق: أرسلت لكم رسالة واتساب${auto?" وشفت ردّكم الآلي":""}، وحبيت أوضّحها بدقيقة.`:"",
      `المدخل: راجعنا العيادة أونلاين${rt?" — "+rt:""}، ما شاء الله شغل ممتاز. بس لاحظنا: ${fx}.`,
      `التكلفة: يعني تقريبًا ${clinicLoss(p).pts} مرضى جدد كل شهر يروحون لعيادات ثانية، بحدود ${clinicLoss(p).local.toLocaleString("en-US")} ${clinicLoss(p).cur} شهريًا.`,
@@ -2275,7 +2275,7 @@ function callScript(p){
      "إذا سأل عن السعر: يعتمد على احتياج العيادة، وأغلب العيادات تبدأ بتجربة 60 يوم بدون عقد طويل. أرسل لكم الخيارات مع التقرير.",
      "إذا المدير مو موجود: مين الشخص المناسب ومتى أقدر أكلمه؟ ممكن رقمه المباشر أو إيميله؟",
      "إذا 'مو مهتمين': ولا يهمك، شكرًا على وقتكم. عادي أتواصل معكم بعد 3 شهور؟"],
-   fr:[`OUVERTURE : Bonjour, je suis bien chez ${c} ? Ici Maha, de Mizan AI Agents. Pourrais-je parler au responsable ou au médecin une minute ?`,
+   fr:[`OUVERTURE : Bonjour, je suis bien chez ${c} ? Ici Maha, de Claimly AI. Pourrais-je parler au responsable ou au médecin une minute ?`,
      wa?`CONTEXTE : Je vous ai envoyé un WhatsApp${auto?" et j'ai vu votre réponse automatique":""}, je voulais vous l'expliquer en une minute.`:"",
      `ACCROCHE : Nous avons regardé votre clinique en ligne${rt?" — "+rt:""}, très beau travail. Un point ressort : ${fx}.`,
      `COÛT : Cela représente environ ${clinicLoss(p).pts} nouveaux patients par mois qui vont ailleurs, autour de ${clinicLoss(p).local.toLocaleString("fr-FR")} ${clinicLoss(p).cur} par mois.`,

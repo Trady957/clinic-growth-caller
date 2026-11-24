@@ -162,11 +162,11 @@ async function ensureCampaign(key: string, O: any, P: any, accounts: string[], r
   if (ids[key]) return { id: ids[key] as string };
   const [regionKey, lang] = [key.slice(0, key.lastIndexOf("_")), key.slice(key.lastIndexOf("_") + 1)];
   const R = zoneOf(regionKey);
-  const S = { name: O.sender_name || P.freelancer_name || "Maha", company: O.sender_company || P.business_name || "Mizan AI Agents", address: String(O.sender_address || "") };
+  const S = { name: O.sender_name || P.freelancer_name || "Maha", company: O.sender_company || P.business_name || "Claimly AI", address: String(O.sender_address || "") };
   const steps = copy(lang, S).map((s) => ({ type: "email", delay: s.delay, delay_unit: "days", variants: [{ subject: s.subject, body: s.body }] }));
   const days: Record<string, boolean> = {}; for (let d = 0; d < 7; d++) days[String(d)] = R.days.includes(d);
   const body: any = {
-    name: `Mizan AI · ${R.name} · ${lang.toUpperCase()}`,
+    name: `Claimly AI · ${R.name} · ${lang.toUpperCase()}`,
     campaign_schedule: { schedules: [{ name: "Morning rule: 9:30 local", timing: { from: R.from, to: R.to }, days, timezone: R.tz }] },
     sequences: [{ steps }],
     daily_limit: Math.max(30, Math.ceil(ramp * 2)),

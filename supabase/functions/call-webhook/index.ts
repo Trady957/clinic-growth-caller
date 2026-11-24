@@ -137,7 +137,7 @@ async function saveConversation(d: any, failed?: string) {
   // Test calls to your own phone: book a [TEST] event (no guests) so you can see it work, never touch a clinic record.
   if (call.test || !call.lead_id) {
     if (meetingBooked && startMs) {
-      const cal = await bookCalendar({ title: `[TEST] Mizan AI demo – ${clinic}`, start: startMs, minutes: 30, description: desc, guests: [], location: "" });
+      const cal = await bookCalendar({ title: `[TEST] Claimly AI demo – ${clinic}`, start: startMs, minutes: 30, description: desc, guests: [], location: "" });
       await admin.from("calls").update({ analysis: { data: Object.fromEntries(Object.keys(dc).map((k) => [k, val(k)])), summary: d?.analysis?.transcript_summary || null, calendar: cal } }).eq("id", call.id);
     }
     return "test saved";
@@ -153,7 +153,7 @@ async function saveConversation(d: any, failed?: string) {
 
   if (meetingBooked) {
     const cal = startMs
-      ? await bookCalendar({ title: `Mizan AI Agents × ${clinic}${inPerson ? " (visit)" : " (online demo)"}`, start: startMs, minutes: 30, description: desc, guests, location: inPerson ? [clinic, lead?.city].filter(Boolean).join(", ") : "" })
+      ? await bookCalendar({ title: `Claimly AI × ${clinic}${inPerson ? " (visit)" : " (online demo)"}`, start: startMs, minutes: 30, description: desc, guests, location: inPerson ? [clinic, lead?.city].filter(Boolean).join(", ") : "" })
       : { ok: false, error: "No exact meeting time from the call: confirm the time, then add it to the calendar" };
     await admin.from("meetings").insert({
       lead_id: call.lead_id, clinic, market: lead?.market || null,

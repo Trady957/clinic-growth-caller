@@ -129,7 +129,7 @@ export function callVars(lead: any, P: Record<string, string>, now: number, posi
   return {
     agent_name: P.agent_name || "Noor",
     freelancer_name: P.freelancer_name || "Maha",
-    business_name: P.business_name || "Mizan AI Agents",
+    business_name: P.business_name || "Claimly AI",
     freelancer_proof: P.freelancer_proof || "",
     freelancer_pricing: P.freelancer_pricing || "",
     freelancer_phone: P.freelancer_phone || "",
