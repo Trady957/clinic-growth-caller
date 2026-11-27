@@ -65,7 +65,7 @@
   </a>
   <span class="vsep" aria-hidden="true"></span>
   <div class="product"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h0"/></svg></i><span id="agentNameBar">Noor</span> Calls <small>Worldwide · UAE included</small></div>
-  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#webreq">Website requests</a><a href="#calllist">Call list</a><a href="#calls">Calls</a><a href="#emails">Emails</a><a href="#whatsapp">WhatsApp</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
+  <nav class="nav" aria-label="Sections"><a href="#accounts">Accounts</a><a href="#webreq">Website requests</a><a href="#revamp">Website revamp</a><a href="#calllist">Call list</a><a href="#calls">Calls</a><a href="#emails">Emails</a><a href="#whatsapp">WhatsApp</a><a href="#meetings">Meetings</a><a href="#reviews">Reviews</a><a href="#leads">Clinics</a><a href="#results">Results</a><a href="#pitch">Your pitch</a><a href="#compliance">Compliance</a><a href="#ops">Data & calling</a></nav>
   <div class="bar-r"><span class="muted" id="whoami" style="font-size:12px"></span><button type="button" class="btn btn-sm btn-ghost" id="signOutBtn">Sign out</button><span class="pill p-ok" id="winPill"><span class="d"></span>Calling open</span><span class="pill p-mute" id="dbPill" title="Where your leads are saved"><span class="d"></span>Sample data</span></div>
 </div></header>
 <div class="testbar" id="testBar" hidden><div class="wrap"><span>Test mode: sign-in is off. Only your Netlify login protects this page.</span><button type="button" class="btn btn-sm" id="lockOpen">Lock it with a password</button></div></div>
@@ -108,6 +108,21 @@
     <div class="leadbar"><button class="btn btn-sm" id="wrRefresh">Refresh</button></div></div>
   <div class="glass"><div class="card-h"><div><h3>Requests</h3><small id="wrSum"></small></div></div>
     <div class="tbl"><table><thead><tr><th>When</th><th>Clinic</th><th>Contact</th><th>Wants</th><th>Calculator</th><th>Status</th></tr></thead><tbody id="wrRows"></tbody></table></div></div>
+</div></section>
+<section class="blk" id="revamp"><div class="wrap">
+  <div class="sec-h"><div><h2>Website revamp</h2><p>Companies that are clearly working but have an old or broken website. We build each one a ready 4-page site (Home, About, Services, Contact) with a before/after slider, then sell it to them as ready to go live. Target segments: construction, military &amp; uniforms, real estate.</p>
+    <div class="leadbar"><select id="rvSeg" class="btn btn-sm" aria-label="Segment"><option value="">All segments</option><option value="construction">Construction</option><option value="military_uniforms">Military &amp; uniforms</option><option value="real_estate">Real estate</option><option value="other">Other</option></select><button class="btn btn-sm" id="rvRefresh">Refresh</button></div></div></div>
+  <div class="glass"><div class="card-h"><div><h3>Revamp pipeline</h3><small id="rvSum"></small></div></div>
+    <div class="tbl"><table><thead><tr><th>Company</th><th>Segment</th><th>Current site issues</th><th>Concept</th><th>Contact</th><th>Status</th><th>Notes</th></tr></thead><tbody id="rvRows"></tbody></table></div></div>
+  <form class="glass" id="rvAdd" style="margin-top:16px"><div class="card-h"><div><h3>Add a company</h3><small>Then ask Claude: "build a revamp concept for &lt;company&gt;". It pulls their details, writes the issues and the 4-page site, and puts the concept link here.</small></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:0 16px 16px">
+      <input class="btn btn-sm" name="company" placeholder="Company name" required aria-label="Company name">
+      <select class="btn btn-sm" name="segment" aria-label="Segment"><option value="construction">Construction</option><option value="military_uniforms">Military &amp; uniforms</option><option value="real_estate">Real estate</option><option value="other">Other</option></select>
+      <input class="btn btn-sm" name="website" placeholder="Current website" aria-label="Current website">
+      <input class="btn btn-sm" name="city" placeholder="City" aria-label="City">
+      <input class="btn btn-sm" name="phone" placeholder="Phone" aria-label="Phone">
+      <input class="btn btn-sm" name="email" placeholder="Email" aria-label="Email">
+      <button class="btn btn-sm" type="submit">Add</button></div></form>
 </div></section>
 <section class="blk" id="calllist"><div class="wrap">
   <div class="sec-h"><div><h2>Today's call list</h2><p>You call from your own phone. Pick a country, click a clinic to open its script in its language, then save the outcome. Red rows have no website: they need us most, so call them first. Best leads first; the Gulf closes around 6 pm their time.</p></div>
@@ -2397,6 +2412,38 @@ async function loadWebReq(){
 document.addEventListener("change", async e=>{ const id = e.target?.dataset?.wr; if (!id) return; await sb.from("offer_requests").update({status:e.target.value}).eq("id", id); loadWebReq(); });
 document.addEventListener("click", e=>{ if (e.target?.id==="wrRefresh") loadWebReq(); });
 
+
+// ===== Website revamp pipeline =====
+const RV_SEG = {construction:"Construction", military_uniforms:"Military & uniforms", real_estate:"Real estate", other:"Other"};
+const RV_ST = ["found","concept_ready","sent","meeting","won","lost"];
+async function loadRevamp(){
+  const tb = $("rvRows"); if (!tb) return;
+  let q = sb.from("revamp_prospects").select("*").order("created_at",{ascending:false}).limit(300);
+  const seg = $("rvSeg")?.value; if (seg) q = q.eq("segment", seg);
+  const { data, error } = await q; const rows = error ? [] : (data||[]);
+  const cnt = s => rows.filter(r=>r.status===s).length;
+  $("rvSum").textContent = error ? "Couldn't load: "+error.message : `${rows.length} companies · ${cnt("concept_ready")} concepts ready · ${cnt("sent")} sent · ${cnt("won")} won`;
+  tb.innerHTML = rows.length ? rows.map(r=>{
+    const site = r.website ? `<br><a href="${esc(r.website)}" target="_blank" rel="noopener" class="muted" style="font-size:12px">current site</a>` : "";
+    const iss = (r.issues||[]).length ? `<small>${(r.issues||[]).map(esc).join("<br>")}</small>` : '<small class="muted">Not checked yet</small>';
+    const concept = r.concept_url ? `<a class="btn btn-sm" href="${esc(r.concept_url)}" target="_blank" rel="noopener">Open concept</a>` : '<small class="muted">To build</small>';
+    const contact = [r.phone ? esc(r.phone) : "", r.email ? `<a href="mailto:${esc(r.email)}?subject=${encodeURIComponent("Your new website, ready to go live: "+r.company)}">${esc(r.email)}</a>` : ""].filter(Boolean).join("<br>") || "—";
+    return `<tr><td><b>${esc(r.company)}</b><br><small class="muted">${esc(r.city||"")}</small>${site}</td><td>${esc(RV_SEG[r.segment]||r.segment)}</td><td>${iss}</td><td>${concept}</td><td>${contact}</td>
+      <td><select class="btn btn-sm" data-rv="${r.id}" aria-label="Status for ${esc(r.company)}">${RV_ST.map(x=>`<option${x===r.status?" selected":""}>${x}</option>`).join("")}</select></td>
+      <td><textarea data-rvnote="${r.id}" rows="2" style="width:160px" aria-label="Notes for ${esc(r.company)}">${esc(r.notes||"")}</textarea></td></tr>`; }).join("")
+    : `<tr><td colspan="7" class="muted">No companies yet. Add one below.</td></tr>`;
+}
+document.addEventListener("change", async e=>{
+  const id = e.target?.dataset?.rv; if (id){ await sb.from("revamp_prospects").update({status:e.target.value, updated_at:new Date().toISOString()}).eq("id", id); loadRevamp(); return; }
+  const nid = e.target?.dataset?.rvnote; if (nid){ await sb.from("revamp_prospects").update({notes:e.target.value, updated_at:new Date().toISOString()}).eq("id", nid); toast("Note saved."); return; }
+  if (e.target?.id==="rvSeg") loadRevamp();
+});
+document.addEventListener("click", e=>{ if (e.target?.id==="rvRefresh") loadRevamp(); });
+document.addEventListener("submit", async e=>{ if (e.target?.id!=="rvAdd") return; e.preventDefault();
+  const f = new FormData(e.target); const row = Object.fromEntries([...f.entries()].map(([k,v])=>[k, String(v).trim()||null]));
+  const { error } = await sb.from("revamp_prospects").insert(row);
+  if (error){ toast("Couldn't add: "+error.message); return; } e.target.reset(); toast(`${row.company} added.`); loadRevamp(); });
+
 // ===== Country drop-downs and no-website marking, shared by every queue =====
 const NOWEB_TR = ' style="box-shadow:inset 4px 0 0 var(--bad)"';
 const noWebPill = p => clNoWeb(p) ? ' <span class="pill p-bad" title="No website: needs us most, call first">No website · priority</span>' : "";
@@ -2605,7 +2652,7 @@ hideAuth(); $("whoami").textContent = session ? session.user.email : "Test mode"
 $("testBar").hidden = !testMode; $("signOutBtn").hidden = !session;
 if (started) return; started = true;
 db = makeDb(); downloads = downloadsShim; sample = null; mcp = null;
-goLive(); loadWebReq(); setInterval(loadWebReq, 5*60000); loadSync(); loadOps(); setInterval(loadOps, 5*60000); loadEmails(); loadEmailSettings(); setInterval(loadEmails, 5*60000); loadWaCfg().then(renderWa);
+goLive(); loadWebReq(); setInterval(loadWebReq, 5*60000); loadRevamp(); loadSync(); loadOps(); setInterval(loadOps, 5*60000); loadEmails(); loadEmailSettings(); setInterval(loadEmails, 5*60000); loadWaCfg().then(renderWa);
 sb.channel("rt-sync").on("postgres_changes", {event:"*", schema:"public", table:"sync_runs"}, ()=>loadSync()).subscribe();
 $("dbPill").className = "pill p-ok"; $("dbPill").innerHTML = '<span class="d"></span>Live';
 $("simBtn").lastChild.textContent = "Call next cleared clinic";
